@@ -1,0 +1,41 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.springframework.boot' version '3.4.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'me._hanho'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security' // 스프링보안(비밀번호 암호화)
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // 로그인토큰
+	implementation 'org.slf4j:slf4j-api:2.0.9' // SLF4J API
+	implementation 'ch.qos.logback:logback-classic:1.4.11' // Logback Classic (SLF4J 기본 구현체)
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // 로그인토큰
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // 로그인토큰
+	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 서버 자동 재실행
+	providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
