@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.controller;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ public class AuthController {
 	@PostMapping
 	public ResponseEntity<Map<String, Object>> login(@ModelAttribute User user, @RequestHeader("user-agent") String agent
 			, HttpServletRequest request) {
-		logger.info("login :" + user.getId());
+		logger.info("login :" + user.getUser_id());
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		User checkUser = authService.getUser(user);
@@ -72,11 +73,11 @@ public class AuthController {
 					, HttpStatus.BAD_REQUEST);
 		} else {
 			User onlyId = new User();
-			onlyId.setId(checkUser.getId());
+			onlyId.setUser_id(checkUser.getUser_id());
 			String accessToken = tokenService.makeJwtToken(600, onlyId);
 			String refreshToken = tokenService.makeJwtToken(1800);
 			String ipAddress = request.getRemoteAddr();
-			Token token = new Token(ipAddress, agent, refreshToken, checkUser.getId());
+			Token token = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(refreshToken).user_id(checkUser.getUser_id()).build();
 			authService.insertToken(token);
 			
 			result.put("msg", "로그인");
@@ -143,15 +144,15 @@ public class AuthController {
 		
 		if(claims != null) {
 			String ipAddress = request.getRemoteAddr();
-			Token token = new Token(ipAddress, agent, refresh_token);
+			Token token = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(refresh_token).build();
 			User checkUser = authService.getUser(token);
 			
 			if(checkUser != null) {
 				User onlyId = new User();
-				onlyId.setId(checkUser.getId());
+				onlyId.setUser_id(checkUser.getUser_id());
 				String accessToken = tokenService.makeJwtToken(600, onlyId);
 				String refreshToken = tokenService.makeJwtToken(1800);
-				Token token2 = new Token(ipAddress, agent, refreshToken, checkUser.getId());
+				Token token2 = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(refresh_token).user_id(checkUser.getUser_id()).build();
 				authService.updateToken(token2);
 				
 				result.put("msg", "access 토큰 재발급 성공");

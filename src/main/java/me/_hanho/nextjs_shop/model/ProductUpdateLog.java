@@ -9,13 +9,10 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class ProductUpdateLog {
+    private int product_update_log_id;
     private int product_id;
-    private String name;
-    private Integer price;
-    private Date created_at;
-    private Integer view_count;
-    private Integer wish_count;
     private String seller_id;
-    private Integer menu_sub_id;
+    private Date updated_at;
+    private String updated_detail;
 }

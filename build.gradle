@@ -31,6 +31,8 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 서버 자동 재실행
 	providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    compileOnly 'org.projectlombok:lombok:1.18.30' // Lombok
+    annotationProcessor 'org.projectlombok:lombok:1.18.30' // Lombok
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
