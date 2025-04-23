@@ -39,12 +39,12 @@ public class AuthController {
 	
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("id") String id) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("user_id") String user_id) {
 		logger.info("getUserInfo");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		if(id != null) {
-			User user = authService.getUser(id);
+		if(user_id != null) {
+			User user = authService.getUserExceptPassword(user_id);
 			result.put("msg", "success");
 			result.put("user", user);
 			return new ResponseEntity<>(result, HttpStatus.OK);
@@ -54,14 +54,14 @@ public class AuthController {
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
 	}
-	
+	// 로그인
 	@PostMapping
 	public ResponseEntity<Map<String, Object>> login(@ModelAttribute User user, @RequestHeader("user-agent") String agent
 			, HttpServletRequest request) {
-		logger.info("login :" + user.getUser_id());
+		logger.info("login :" + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		User checkUser = authService.getUser(user);
+		User checkUser = authService.getUser(user.getUser_id());
 		if (checkUser == null || !authService.passwordCheck(user.getPassword(), checkUser.getPassword())) {
 			result.put("msg", "입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
 			result.put("response_code", 430);
@@ -90,8 +90,7 @@ public class AuthController {
 					, HttpStatus.OK);
 		}
 	}
-	
-	
+	// 아이디 중복확인 
 	@GetMapping("/id")
 	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("id") String id) {
 		logger.info("idDuplcheck");
@@ -107,7 +106,7 @@ public class AuthController {
 			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
 		}
 	}
-	
+	// 휴대폰인증
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone) {
 		logger.info("phoneAuth");
@@ -116,7 +115,7 @@ public class AuthController {
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+	// 회원가입
 	@PostMapping("/member")
 	public ResponseEntity<Map<String, Object>> join(@ModelAttribute User user) {
 		logger.info("join : " + user);
@@ -125,9 +124,9 @@ public class AuthController {
 		authService.joinMember(user);
 		
 		result.put("msg", "success");
-		return new ResponseEntity<>(null, HttpStatus.OK);
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
+	// 토큰 재생성
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> reToken(@RequestParam("refresh_token") String refresh_token,
 			HttpServletRequest request, @RequestHeader("user-agent") String agent) {
@@ -145,19 +144,19 @@ public class AuthController {
 		if(claims != null) {
 			String ipAddress = request.getRemoteAddr();
 			Token token = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(refresh_token).build();
-			User checkUser = authService.getUser(token);
+			User checkUser = authService.getUserByToken(token);
 			
 			if(checkUser != null) {
 				User onlyId = new User();
 				onlyId.setUser_id(checkUser.getUser_id());
-				String accessToken = tokenService.makeJwtToken(600, onlyId);
-				String refreshToken = tokenService.makeJwtToken(1800);
-				Token token2 = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(refresh_token).user_id(checkUser.getUser_id()).build();
+				String updated_accessToken = tokenService.makeJwtToken(600, onlyId);
+				String updated_refreshToken = tokenService.makeJwtToken(1800);
+				Token token2 = Token.builder().connect_ip(ipAddress).connect_agent(agent).refresh_token(updated_refreshToken).user_id(checkUser.getUser_id()).build();
 				authService.updateToken(token2);
 				
 				result.put("msg", "access 토큰 재발급 성공");
-				result.put("access_token", accessToken);
-				result.put("refresh_token", refreshToken);
+				result.put("access_token", updated_accessToken);
+				result.put("refresh_token", updated_refreshToken);
 				result.put("response_code", 200);
 				result.put("status", "success");
 				return new ResponseEntity<>(result, HttpStatus.OK);

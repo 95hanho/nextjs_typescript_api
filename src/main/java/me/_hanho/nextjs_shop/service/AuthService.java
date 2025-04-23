@@ -5,17 +5,17 @@ import me._hanho.nextjs_shop.model.User;
 
 public interface AuthService {
 
-	User getUser(User user);
+	User getUser(String user_id);
 	
-	User getUser(String id);
+	User getUserExceptPassword(String user_id);
 	
-	User getUser(Token token);
+	User getUserByToken(Token token);
 
 	void insertToken(Token token);
 
 	void updateToken(Token token);
 
-	boolean getId(String id);
+	boolean getId(String user_id);
 	
 	void joinMember(User user);
 

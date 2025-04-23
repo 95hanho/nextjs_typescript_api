@@ -52,7 +52,7 @@ private static final String SECRET_KEY = "HANHOSEONGTOKENTESTHANHOSEONGTOKENTEST
 				.setIssuer("myteam")
 				.setIssuedAt(now)
 				.setExpiration(expire)
-				.claim("id", user.getUser_id())
+				.claim("user_id", user.getUser_id())
 //				.claim("nickName", user.getNickName())
 //				.claim("createDate", user.getCreateDate())
 				.signWith(key)

@@ -29,11 +29,11 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
         <!-- INFO 이상의 로그만 처리 -->
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+        <!-- <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
-        </filter>
+        </filter> -->
     </appender>
 
     <!-- 루트 로거 설정 -->

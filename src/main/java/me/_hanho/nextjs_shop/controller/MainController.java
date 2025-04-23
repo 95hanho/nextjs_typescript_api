@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import me._hanho.nextjs_shop.model.MenuTop;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.service.MainService;
 
@@ -25,11 +26,23 @@ public class MainController {
 	
 	@Autowired
 	private MainService mainService;
-
-	//
+	
+	// 메뉴 가져오기
+	@GetMapping("/menu")
+	public ResponseEntity<Map<String, Object>> getMenus() {
+		logger.info("getMenus");
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<MenuTop> menu_list = mainService.getMenusWithSubs();
+		
+		result.put("menu_list", menu_list);
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	// 제품 가져오기 예시
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getMainInfo() {
-		logger.info("getMain");
+	public ResponseEntity<Map<String, Object>> getProducts() {
+		logger.info("getProducts");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<Product> product_list = mainService.getMainImages();

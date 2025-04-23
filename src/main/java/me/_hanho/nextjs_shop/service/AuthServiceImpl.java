@@ -22,18 +22,18 @@ public class AuthServiceImpl implements AuthService {
 	private AuthRepository authDAO;
 	
 	@Override
-	public User getUser(User user) {
-		return authDAO.getUser(user);
+	public User getUser(String user_id) {
+		return authDAO.getUser(user_id);
 	}
 	
 	@Override
-	public User getUser(String id) {
-		return authDAO.getUser(id);
+	public User getUserExceptPassword(String user_id) {
+		return authDAO.getUserExceptPassword(user_id);
 	}
 	
 	@Override
-	public User getUser(Token token) {
-		return authDAO.getUser(token);
+	public User getUserByToken(Token token) {
+		return authDAO.getUserByToken(token);
 	}
 
 	@Override
@@ -47,8 +47,8 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public boolean getId(String id) {
-		return authDAO.getId(id);
+	public boolean getId(String user_id) {
+		return authDAO.getId(user_id);
 	}
 	
 	@Override
