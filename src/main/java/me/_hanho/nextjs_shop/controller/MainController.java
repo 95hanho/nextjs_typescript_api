@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import me._hanho.nextjs_shop.dto.ProductMainSlideDto;
 import me._hanho.nextjs_shop.model.MenuTop;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.service.MainService;
@@ -39,13 +40,13 @@ public class MainController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	// 제품 가져오기 예시
+	// 메인 슬라이드 제품 가져오기
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProducts() {
 		logger.info("getProducts");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<Product> product_list = mainService.getMainImages();
+		List<ProductMainSlideDto> product_list = mainService.getMainSlideProducts();
 		
 		result.put("msg", "success");
 		result.put("productList", product_list);

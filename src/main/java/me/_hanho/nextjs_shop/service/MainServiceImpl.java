@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import me._hanho.nextjs_shop.dto.ProductMainSlideDto;
 import me._hanho.nextjs_shop.model.MenuTop;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.repository.MainRepository;
@@ -21,8 +22,8 @@ public class MainServiceImpl implements MainService {
 	}
 
 	@Override
-	public List<Product> getMainImages() {
-		return mainDAO.getMainImages();
+	public List<ProductMainSlideDto> getMainSlideProducts() {
+		return mainDAO.getMainSlideProducts();
 	}
 
 

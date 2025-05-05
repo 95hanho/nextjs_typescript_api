@@ -23,4 +23,24 @@
 		select *
 		from nextjs_shop_product
 	</select>
+	<select id="getMainSlideProducts" resultType="ProductMainSlideDto">
+		SELECT
+	      p.product_id AS productId,
+	      p.name,
+	      p.price,
+	      p.view_count AS viewCount,
+	      p.wish_count AS wishCount,
+	      f.file_path AS img_path,
+	      f.copyright,
+	      f.copyright_url
+	    FROM
+	      nextjs_shop_product p
+	    LEFT JOIN nextjs_shop_product_image pi ON p.product_id = pi.product_id
+	    LEFT JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+	    WHERE
+	      pi.thumbnail_status = 'Y'
+	    ORDER BY
+	      p.created_at DESC
+	    LIMIT 10;
+	  </select>
 </mapper>
