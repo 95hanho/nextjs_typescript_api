@@ -92,11 +92,11 @@ public class AuthController {
 	}
 	// 아이디 중복확인 
 	@GetMapping("/id")
-	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("id") String id) {
+	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("user_id") String user_id) {
 		logger.info("idDuplcheck");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		boolean hasId = authService.getId(id);
+		boolean hasId = authService.getId(user_id);
 		
 		if(!hasId) {
 			result.put("msg", "success");
