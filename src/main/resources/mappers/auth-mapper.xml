@@ -40,8 +40,13 @@
 	        WHERE user_id = #{user_id}
 	    ) AS exists_flag
 	</select>
-	<insert id="joinMember">
+	<insert id="joinUser">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
 		VALUES(#{user_id}, #{password}, #{name}, #{zonecode}, #{address}, #{address_detail}, #{birthday}, #{phone}, #{email})
 	</insert>
+	<update id="userInfoUpdate">
+		UPDATE nextjs_shop_user
+		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{address_detail}, phone = #{phone}, email = #{email}
+		WHERE user_id = #{user_id}
+	</update>
 </mapper>

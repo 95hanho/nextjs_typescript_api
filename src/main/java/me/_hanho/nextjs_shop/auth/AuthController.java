@@ -1,6 +1,5 @@
-package me._hanho.nextjs_shop.controller;
+package me._hanho.nextjs_shop.auth;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +22,6 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
-import me._hanho.nextjs_shop.service.AuthService;
-import me._hanho.nextjs_shop.service.TokenService;
 
 @RestController
 @RequestMapping("/bapi/auth")
@@ -116,12 +114,23 @@ public class AuthController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원가입
-	@PostMapping("/member")
+	@PostMapping("/user")
 	public ResponseEntity<Map<String, Object>> join(@ModelAttribute User user) {
 		logger.info("join : " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		authService.joinMember(user);
+		authService.joinUser(user);
+		
+		result.put("msg", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 회원 정보 변경
+	@PutMapping("/user")
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user) {
+		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		authService.userInfoUpdate(user);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

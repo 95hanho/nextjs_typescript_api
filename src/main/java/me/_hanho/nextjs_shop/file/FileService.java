@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.service;
+package me._hanho.nextjs_shop.file;
 
 import java.io.File;
 
@@ -9,30 +9,28 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.io.IOException;
-import me._hanho.nextjs_shop.repository.FileRepository;
 
 @Service
-public class FileServiceImpl implements FileService {
+public class FileService {
 
 	@Value("${spring.servlet.multipart.location}")
     private String uploadDir;
 	
 	@Autowired
-	private FileRepository fileDAO;
+	private FileMapper fileMapper;
 	
-	@Override
+	
+	
 	public String getOriginalFile(String id) {
-		return fileDAO.getOriginalFile(id);
+		return fileMapper.getOriginalFile(id);
 	}
 	
 
-	@Override
 	public String getStoredFile(String id) {
-		return fileDAO.getStoredFile(id);
+		return fileMapper.getStoredFile(id);
 	}
 
 	
-	@Override
 	@Transactional
 	public void fileUpload(MultipartFile file, String id) {
 		// 파일명 설정
@@ -42,9 +40,9 @@ public class FileServiceImpl implements FileService {
 		String beforeFileName = getStoredFile(id);
 		if(beforeFileName != null) {
 			deleteFile(beforeFileName);
-			fileDAO.fileUpdate(originalFileName, storeFileName, id);
+			fileMapper.fileUpdate(originalFileName, storeFileName, id);
 		} else {
-			fileDAO.fileInsert(originalFileName, storeFileName, id);
+			fileMapper.fileInsert(originalFileName, storeFileName, id);
 		}
 		saveFile(file, storeFileName);
 	}

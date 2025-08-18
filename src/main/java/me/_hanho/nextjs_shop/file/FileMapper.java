@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.mapper;
+package me._hanho.nextjs_shop.file;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

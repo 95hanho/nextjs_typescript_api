@@ -9,7 +9,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import me._hanho.nextjs_shop.service.TokenService;
+import me._hanho.nextjs_shop.auth.TokenService;
 
 @Component
 public class JwtInterceptor implements HandlerInterceptor {

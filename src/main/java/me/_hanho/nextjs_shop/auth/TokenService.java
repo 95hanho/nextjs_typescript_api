@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.service;
+package me._hanho.nextjs_shop.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;

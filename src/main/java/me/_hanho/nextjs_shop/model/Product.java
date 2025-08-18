@@ -12,10 +12,10 @@ import java.util.Date;
 public class Product {
     private int product_id;
     private String name;
-    private Integer price;
+    private int price;
     private Date created_at;
-    private Integer view_count;
-    private Integer wish_count;
+    private int view_count;
+    private int wish_count;
     private String seller_id;
-    private Integer menu_sub_id;
+    private int menu_sub_id;
 }

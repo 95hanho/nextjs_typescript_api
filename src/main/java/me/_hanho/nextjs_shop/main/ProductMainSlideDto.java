@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.dto;
+package me._hanho.nextjs_shop.main;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 public class ProductMainSlideDto {
     private int productId;
     private String name;
-    private Integer price;
-    private Integer viewCount;
-    private Integer wishCount;
+    private int price;
+    private int viewCount;
+    private int wishCount;
 
     // 썸네일 정보
     private String img_path;

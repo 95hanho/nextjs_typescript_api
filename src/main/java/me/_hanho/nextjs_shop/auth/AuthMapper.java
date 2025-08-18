@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.mapper;
+package me._hanho.nextjs_shop.auth;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,14 +16,15 @@ public interface AuthMapper {
 	
 	void insertToken(Token token);
 	
+	void joinUser(User user);
+	
+	int userInfoUpdate(User user);
+	
 	int getToken_id(Token token);
 
-	void updateToken(Token token);
+	int updateToken(Token token);
 
 	int getId(String user_id);
-	
-	void joinMember(User user);
-
 	
 	
 }

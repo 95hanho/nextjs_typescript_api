@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.controller;
+package me._hanho.nextjs_shop.file;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import me._hanho.nextjs_shop.service.FileService;
 
 @RestController
 @RequestMapping("/file")
