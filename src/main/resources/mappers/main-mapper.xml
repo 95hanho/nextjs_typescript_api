@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
-<mapper namespace="me._hanho.nextjs_shop.mapper.MainMapper">
+<mapper namespace="me._hanho.nextjs_shop.main.MainMapper">
 	<resultMap id="MenuTopWithSubResultMap" type="menuTop">
 	    <id property="menu_top_id" column="menu_top_id"/>
 	    <result property="menu_name" column="menu_name"/>

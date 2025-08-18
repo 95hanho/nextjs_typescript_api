@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="me._hanho.nextjs_shop.mypage.MypageMapper">
+	
+	<select id="getUserCoupons">
+		SELECT c.*
+		FROM nextjs_shop_coupon c
+		WHERE c.user_id = #{user_id}
+		  AND NOT EXISTS (
+		    SELECT 1
+		    FROM nextjs_shop_coupon_used u
+		    WHERE u.coupon_id = c.coupon_id
+		  );
+	</select>
+
+</mapper>
