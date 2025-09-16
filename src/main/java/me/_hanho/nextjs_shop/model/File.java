@@ -1,10 +1,10 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -15,7 +15,7 @@ public class File {
     private String store_name;
     private String file_extension;
     private String file_path;
-    private Date created_at;
+    private Timestamp created_at;
     private String copyright;
     private String copyright_url;
 }

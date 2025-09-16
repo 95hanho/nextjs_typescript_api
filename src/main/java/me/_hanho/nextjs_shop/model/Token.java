@@ -1,6 +1,6 @@
 package me._hanho.nextjs_shop.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +16,6 @@ public class Token {
     private String connect_ip;
     private String connect_agent;
     private String refresh_token;
-    private Date created_at;
+    private Timestamp created_at;
     private String user_id;
 }

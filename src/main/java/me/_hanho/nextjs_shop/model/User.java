@@ -1,10 +1,10 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class User {
     private String birthday;
     private String phone;
     private String email;
-    private Date created_at;
+    private Timestamp created_at;
     private int mileage;
     private int tall;
     private int weight;

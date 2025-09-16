@@ -3,14 +3,102 @@
 <mapper namespace="me._hanho.nextjs_shop.mypage.MypageMapper">
 	
 	<select id="getUserCoupons">
-		SELECT c.*
-		FROM nextjs_shop_coupon c
-		WHERE c.user_id = #{user_id}
-		  AND NOT EXISTS (
-		    SELECT 1
-		    FROM nextjs_shop_coupon_used u
-		    WHERE u.coupon_id = c.coupon_id
-		  );
+		SELECT uc.usercoupon_id, uc.used, 
+			c.coupon_id, c.description, c.discount_type, c.discount_value,
+			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
+			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
+			c.seller_id, s.seller_name
+		FROM nextjs_shop_usercoupon uc
+		JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
+		LEFT JOIN nextjs_shop_seller s ON s.seller_id = c.seller_id
+		WHERE uc.user_id = #{user_id} AND uc.used = 0
 	</select>
+	
+	<select id="getMyOrderWithReview">
+		<!-- IN 절에 Step A 결과 바인딩 (MyBatis <foreach> 사용)  -->
+		SELECT
+		    og.order_id, og.order_date,
+		    og.total_price, og.shipping_fee, og.discount_price, og.payment_method,
+		    ol.order_list_id, ol.product_detail_id, ol.order_price, ol.status
+		    r.review_id,
+		    DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') AS review_created_at,
+		    CASE WHEN r.review_id IS NULL THEN 1 ELSE 0 END AS can_write
+		FROM nextjs_shop_order_group og
+		JOIN nextjs_shop_order_list ol
+		  ON ol.order_id = og.order_id
+		LEFT JOIN nextjs_shop_review r
+		  ON r.order_list_id = ol.order_list_id
+		WHERE og.order_id IN
+		  <foreach item="id" index="i" collection="orderIds" open="(" separator="," close=")">
+		    #{id}
+		  </foreach>
+		ORDER BY og.order_date DESC, og.order_id DESC, ol.order_list_id ASC
+	</select>
+	
+	<resultMap id="OrderWithItemsMap" type="me._hanho.nextjs_shop.mypage.MyOrderWithReviewDTO">
+		<id property="orderId" column="order_id"/>
+		<result property="orderDate" column="order_date"/>
+		<result property="totalPrice" column="total_price"/>
+		<result property="shippingFee" column="shipping_fee"/>
+		<result property="discountPrice" column="discount_price"/>
+		<result property="paymentMethod" column="payment_method"/>
+		<collection property="items" ofType="me._hanho.nextjs_shop.mypage.OrderLineWithReviewDTO">
+			<id     property="orderListId" column="order_list_id"/>
+			<result property="productDetailId" column="product_detail_id"/>
+			<result property="orderPrice" column="order_price"/>
+			<result property="status" column="status"/>
+			<result property="reviewId" column="review_id"/>
+			<result property="reviewCreatedAt" column="review_created_at"/>
+			<result property="canWrite" column="can_write"/>
+		 </collection>
+	</resultMap>
+	
+	<select id="getCartList">
+		SELECT c.cart_id, c.created_at, c.product_detail_id, pd.add_price, pd.stock, pd.size, p.product_id, 
+			p.name AS product_name, p.price,
+			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
+			s.seller_id, s.seller_name,
+			c.quantity, c.selected
+		FROM nextjs_shop_cart c
+		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = c.product_detail_id
+		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+		LEFT JOIN (
+		    SELECT pi.product_id, pi.file_id
+		    FROM nextjs_shop_product_image pi
+		    WHERE pi.thumbnail_status = 1
+		    GROUP BY pi.product_id
+		) pi ON pi.product_id = p.product_id
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
+		WHERE c.user_id = #{user_id}
+	</select>
+	<update id="updateCart">
+		UPDATE nextjs_shop_cart
+		SET quantity = #{quantity}, selected = #{selected}
+		WHERE cart_id = #{cart_id}
+	</update>
+	<delete id="deleteCart">
+		DELETE FROM nextjs_shop_cart
+		WHERE cart_id = #{cart_id}
+	</delete>
+	
+	<select id="getWishlistItems">
+		SELECT w.wish_id, w.created_at, w.user_id, 
+			p.product_id, p.name, p.price, p.view_count, p.wish_count,
+			pi.product_image_id, pi.file_id, 
+			f.file_name,  f.store_name, f.file_path, f.copyright, f.copyright_url,
+			s.seller_id, s.seller_name
+		FROM nextjs_shop_wish w
+		JOIN nextjs_shop_product p ON w.product_id = p.product_id
+		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+		LEFT JOIN nextjs_shop_product_image pi ON p.product_id = pi.product_id AND pi.thumbnail_status = 1
+		LEFT JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+		WHERE w.user_id = #{user_id}
+	</select>
+	<delete id="deleteWish">
+		DELETE FROM nextjs_shop_wish
+		WHERE wish_id = #{wish_id}
+	</delete>
+	
 
 </mapper>

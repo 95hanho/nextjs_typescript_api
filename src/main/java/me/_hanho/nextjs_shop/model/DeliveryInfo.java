@@ -1,10 +1,10 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +18,7 @@ public class DeliveryInfo {
     private String address;
     private String address_detail;
     private String memo;
-    private Date ordered_date;
-    private Date shipping_date;
-    private Date delivered_date;
+    private Timestamp ordered_date;
+    private Timestamp shipping_date;
+    private Timestamp delivered_date;
 }

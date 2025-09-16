@@ -23,7 +23,7 @@ public class AuthService {
     public AuthService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
 	}
-    
+    // 패스워드 확인
     public boolean passwordCheck(String password, String password2) {
 		return passwordEncoder.matches(password, password2);
 	}

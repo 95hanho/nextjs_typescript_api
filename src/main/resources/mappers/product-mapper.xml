@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="me._hanho.nextjs_shop.product.ProductMapper">
+	<select id="getProductList">
+	  SELECT
+	    p.product_id, p.name, p.color_name, p.price, p.created_at,
+	    p.view_count, p.wish_count, p.seller_id,
+	    s.seller_name,
+	    f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+	  FROM nextjs_shop_product p
+	  JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+	  LEFT JOIN (
+	    SELECT pi.product_id, MIN(pi.file_id) AS file_id
+	    FROM nextjs_shop_product_image pi
+	    WHERE pi.thumbnail_status = 1
+	    GROUP BY pi.product_id
+	  ) tpi ON tpi.product_id = p.product_id
+	  LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+	  WHERE p.sale_stop = 0
+	    AND p.menu_sub_id = #{menuSubId}
+	  <choose>
+	    <!-- 최신순 -->
+	    <when test="sort == 'latest'">
+	      <if test="lastCreatedAt != null and lastProductId != null">
+	        AND (p.created_at, p.product_id) &lt; (#{lastCreatedAt}, #{lastProductId})
+	      </if>
+	      ORDER BY p.created_at DESC, p.product_id DESC
+	    </when>
+	    <!-- 인기순 (view+wish) -->
+	    <when test="sort == 'popular'">
+	      <if test="lastPopularity != null and lastCreatedAt != null and lastProductId != null">
+	        AND (
+	          (p.view_count + p.wish_count) &lt; #{lastPopularity}
+	          OR (
+	            (p.view_count + p.wish_count) = #{lastPopularity}
+	            AND (p.created_at, p.product_id) &lt; (#{lastCreatedAt}, #{lastProductId})
+	          )
+	        )
+	      </if>
+	      ORDER BY (p.view_count + p.wish_count) DESC,
+	               p.created_at DESC,
+	               p.product_id DESC
+	    </when>
+	    <!-- 기본(안전망) -->
+	    <otherwise>
+	      ORDER BY p.product_id DESC
+	    </otherwise>
+	  </choose>
+	  LIMIT 30
+	</select>
+	<insert id="addToWishList">
+		INSERT INTO nextjs_shop_wish(product_id, user_id)
+		VALUES(#{product_id}, #{user_id})
+	</insert>
+	<delete id="deleteWish">
+		DELETE FROM nextjs_shop_wish
+		WHERE wish_id = #{wish_id}
+	</delete>
+	<select id="hasCart">
+		SELECT cart_id
+		FROM nextjs_shop_cart
+		WHERE product_detail_id = #{product_detail_id} AND user_id = #{user_id}
+		LIMIT 1
+	</select>
+	<insert id="putCart">
+		INSERT INTO nextjs_shop_cart(product_detail_id, user_id, quantity)
+		VALUES(#{product_detail_id}, #{user_id}, #{quantity})
+	</insert>
+	<update id="upQuantityCart">
+		UPDATE nextjs_shop_cart
+		SET quantity = quantity + 1
+		WHERE cart_id = #{cart_id}
+	</update>
+	
+</mapper>

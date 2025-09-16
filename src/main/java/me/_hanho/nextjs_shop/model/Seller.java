@@ -1,10 +1,10 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -16,5 +16,5 @@ public class Seller {
     private String extension_number;
     private String mobile_number;
     private String email;
-    private Date created_at;
+    private Timestamp created_at;
 }

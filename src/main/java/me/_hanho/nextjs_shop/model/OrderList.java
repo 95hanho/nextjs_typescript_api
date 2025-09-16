@@ -12,4 +12,5 @@ public class OrderList {
     private int product_detail_id;
     private int order_id;
     private int order_price;
+    private String status;
 }
