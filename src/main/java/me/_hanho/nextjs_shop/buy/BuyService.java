@@ -119,7 +119,6 @@ public class BuyService {
 		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		
-		// test2
 		// test3
 		// test4
 		
