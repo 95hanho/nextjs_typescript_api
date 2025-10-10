@@ -120,6 +120,7 @@ public class BuyService {
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		
 		// test1
+		// test2
 		
 		// nextjs_shop_usercoupon(유저쿠폰) used(사용여부) 변경
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경
