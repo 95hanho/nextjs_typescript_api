@@ -1,12 +1,259 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.buy.BuyMapper">
+
+	
+ <!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
+  <select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
+	  SELECT
+	    pd.product_detail_id AS productDetailId,
+	    GREATEST(
+	      pd.stock - IFNULL(SUM(
+	        CASE
+	          WHEN sh.status = 'HOLD'
+	           AND sh.active_hold = 1
+	           AND sh.expires_at > NOW()
+	          THEN sh.count
+	          ELSE 0
+	        END
+	      ), 0),
+	      0
+	    ) AS available
+	  FROM nextjs_shop_product_detail pd
+	  LEFT JOIN nextjs_shop_stock_hold sh
+	    ON sh.product_detail_id = pd.product_detail_id
+	  WHERE pd.product_detail_id IN
+	    <foreach collection="detailIds" item="id" open="(" separator="," close=")">
+	      #{id}
+	    </foreach>
+	  GROUP BY pd.product_detail_id
+  </select>
+
+  <!-- 본인 미만료 HOLD -->
+  <select id="selectExistingHolds" resultType="me._hanho.nextjs_shop.buy.ExistingHold">
+    SELECT hold_id AS holdId, product_detail_id AS productDetailId, count
+    FROM nextjs_shop_stock_hold
+    WHERE user_id = #{userId}
+      AND status = 'HOLD'
+      AND expires_at > NOW()
+      AND product_detail_id IN
+        <foreach collection="detailIds" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+  </select>
+
+  <!-- 멱등 업서트: 유니크(UQ_user_pd_status) 충돌 시 count/TTL 갱신 -->
+  <insert id="upsertHolds">
+	  INSERT INTO nextjs_shop_stock_hold
+	    (user_id, product_detail_id, count, status, active_hold, expires_at, created_at)
+	  VALUES
+	    <foreach collection="rows" item="r" separator=",">
+	      (#{r.userId}, #{r.productDetailId}, #{r.count},
+	       'HOLD', 1,
+	       DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
+	    </foreach>
+	  ON DUPLICATE KEY UPDATE
+	    count = VALUES(count),
+	    expires_at = DATE_ADD(NOW(), INTERVAL #{rows[0].ttlSeconds} SECOND),
+	    status = 'HOLD',
+	    active_hold = 1
+  </insert>
+
+  <!-- ↑ MySQL에서 VALUES(expires_at) 사용 불가 이슈 회피:
+       expires_at를 직접 다시 계산해서 갱신 -->
+  <insert id="upsertHolds" databaseId="mysql">
+    INSERT INTO nextjs_shop_stock_hold
+      (user_id, product_detail_id, count, status, expires_at, created_at)
+    VALUES
+      <foreach collection="rows" item="r" separator=",">
+        (#{r.userId}, #{r.productDetailId}, #{r.count}, 'HOLD',
+         DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
+      </foreach>
+    ON DUPLICATE KEY UPDATE
+      count = VALUES(count),
+      expires_at = DATE_ADD(NOW(), INTERVAL
+        <choose>
+          <when test="rows != null and rows.size() == 1">
+            #{rows[0].ttlSeconds}
+          </when>
+          <otherwise>
+            180
+          </otherwise>
+        </choose>
+        SECOND)
+  </insert>
+
+  <!-- 최신 HOLD (유저+pdId별 1건) -->
+  <select id="selectLatestHolds" resultType="me._hanho.nextjs_shop.buy.HoldBrief">
+    SELECT t.product_detail_id AS productDetailId, t.hold_id AS holdId
+    FROM nextjs_shop_stock_hold t
+    INNER JOIN (
+      SELECT product_detail_id, MAX(hold_id) AS max_id
+      FROM nextjs_shop_stock_hold
+      WHERE user_id = #{userId}
+        AND product_detail_id IN
+          <foreach collection="detailIds" item="id" open="(" separator="," close=")">
+            #{id}
+          </foreach>
+        AND status = 'HOLD'
+      GROUP BY product_detail_id
+    ) m ON m.max_id = t.hold_id
+  </select>
+  
+    <!-- 점유 연장: 활성(HOLD & active_hold=1) 인 것만 NOW()+TTL 로 갱신 -->
+  <update id="extendHolds">
+    UPDATE nextjs_shop_stock_hold
+    SET expires_at = DATE_ADD(NOW(), INTERVAL #{ttlSeconds} SECOND)
+    WHERE status = 'HOLD'
+      AND active_hold = 1
+      AND hold_id IN
+      <foreach collection="holdIds" item="id" open="(" separator="," close=")">
+        #{id}
+      </foreach>
+  </update>
+
+  <!-- 점유 해제: 활성(HOLD & active_hold=1) → RELEASED, active_hold=NULL -->
+  <update id="releaseHolds">
+    UPDATE nextjs_shop_stock_hold
+    SET status = 'RELEASED',
+        active_hold = NULL
+    WHERE status = 'HOLD'
+      AND active_hold = 1
+      AND hold_id IN
+      <foreach collection="holdIds" item="id" open="(" separator="," close=")">
+        #{id}
+      </foreach>
+  </update>
+  
+   <!-- 점유하고 있는 상품조회 -->
+  <select id="getOrderStock">
+  	SELECT sh.hold_id, sh.count, 
+  		 pd.product_detail_id, pd.add_price, pd.size,
+  		 p.product_id, p.name, p.color_name,
+  		 s.seller_id, s.seller_name,
+  		 f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+  	FROM nextjs_shop_stock_hold sh
+  	JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+  	JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+  	JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+  	LEFT JOIN (
+	    SELECT pi.product_id, MIN(pi.file_id) AS file_id
+	    FROM nextjs_shop_product_image pi
+	    WHERE pi.thumbnail_status = 1
+	    GROUP BY pi.product_id
+	  ) tpi ON tpi.product_id = p.product_id
+ 	LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+  	WHERE sh.user_id = #{user_id} 
+    AND sh.status = 'HOLD'
+    AND sh.active_hold = 1
+    AND sh.expires_at > NOW()
+    <!-- ORDER BY sh.created_at DESC -->
+  </select>
+  
+  <!-- 점유상품에 사용가능한 쿠폰조회 -->
+  <select id="getAvailableCoupon">
+  	SELECT *
+	FROM nextjs_shop_coupon c
+	LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
+	WHERE ca.product_id IN 
+		<foreach collection="productIds" item="id" open="(" separator="," close=")">
+	      #{id}
+	    </foreach>
+		OR seller_id is NULL
+  </select>
+  
+
+  
+   <select id="getProductWithCoupons">
+  	  SELECT
+      sh.hold_id                                        AS hold_id,
+      r.count                                           AS count,
+      pd.product_detail_id                              AS product_detail_id,
+      IFNULL(pd.add_price, 0)                           AS add_price,
+      p.product_id                                      AS product_id,
+      p.price                                           AS price,
+      c.coupon_id                                       AS coupon_id,
+      c.description                                     AS description,
+      c.discount_type                                   AS discount_type,
+      c.discount_value                                  AS discount_value,
+      c.max_discount                                    AS max_discount,
+      c.minimum_order_before_amount                     AS minimum_order_before_amount,
+      c.is_stackable                                    AS is_stackable,
+      c.is_product_restricted                           AS is_product_restricted
+  FROM
+      (
+        <foreach collection="products" item="p" separator=" UNION ALL ">
+          SELECT
+              #{p.hold_id}         AS hold_id,
+              #{p.product_detail_id} AS product_detail_id,
+              #{p.count}           AS count,
+              #{p.coupon_id}       AS coupon_id
+        </foreach>
+      ) AS r
+      JOIN nextjs_shop_stock_hold sh ON sh.hold_id = r.hold_id
+       AND sh.product_detail_id = r.product_detail_id
+       AND sh.user_id = #{user_id}
+       AND sh.status = 'HOLD'
+       AND sh.active_hold = 1
+      JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+      JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+      LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = r.coupon_id
+       AND c.status = 'Y'
+  </select>
+  
+  <insert id="insertOrderGroup" useGeneratedKeys="true" keyProperty="order_id">
+	INSERT INTO nextjs_shop_order_group
+ 	(user_id, total_price, shipping_fee, payment_method, status, discount_price)
+ 	VALUES
+ 	(#{user_id}, #{total_price}, #{shipping_fee}, #{payment_method}, #{status}, #{discount_price}
+  </insert>
+  
+  <insert id="insertOrderList">
+	INSERT INTO nextjs_shop_order_list
+	(product_detail_id, order_id, order_price, discount_price, final_price, usercoupon_id)
+	VALUES
+	<foreach collection="productList" item="item" separator=",">
+		(
+			#{item.product_detail_id},
+			#{order_id},
+			#{item.price} + #{item.add_price},
+			#{item.discountAmount},
+			#{item.finalPrice},
+			(
+				SELECT uc.usercoupon_id
+				FROM nextjs_shop_usercoupon uc
+				WHERE uc.user_id = #{user_id}
+				  AND uc.coupon_id = #{item.coupon_id}
+				LIMIT 1
+			)
+		)
+	</foreach>
+  </insert>
+  
+  <update id="updateCancelStockHold">
+  	UPDATE nextjs_shop_stock_hold
+  	SET status = 'PAY', active_hold = 0
+ 	WHERE hold_id IN
+	  <foreach collection="productList" item="item" open="(" separator="," close=")">
+        #{item.hold_id}
+	  </foreach>
+  </update>
+  
+
+
+
+
+
+
+
+
+
+
 	
 	<update id="updateProductDetailByBuy">
 		UPDATE nextjs_shop_product_detail
 		SET stock = stock - 1, sales_count = sales_count + 1
 		WHERE product_detail_id = #{product_detail_id}
 	</update>
-	
 
 </mapper>
