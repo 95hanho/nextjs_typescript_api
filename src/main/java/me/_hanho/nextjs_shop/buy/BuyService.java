@@ -119,6 +119,8 @@ public class BuyService {
 		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		
+		// 여기서 충돌이 날것이여~
+		
 		// nextjs_shop_usercoupon(유저쿠폰) used(사용여부) 변경
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경
 	}
