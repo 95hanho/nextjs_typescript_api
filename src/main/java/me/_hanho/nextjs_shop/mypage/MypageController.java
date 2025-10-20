@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Coupon;
+import me._hanho.nextjs_shop.model.UserAddress;
 
 @RestController
 @RequestMapping("/bapi/mypage")
@@ -120,15 +121,9 @@ public class MypageController {
 		result.put("wishlistItems", wishlistItems);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 위시리스트 삭제
-	@PostMapping("/wish")
-	public ResponseEntity<Map<String, Object>> addWish() {
-		logger.info("addWish : ");
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		result.put("msg", "success");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
+	
+	// 위시리스트 추가(실행 취소) => ProductController(/bapi/product/wish)에 있음.
+	
 	// 위시리스트 삭제
 	@DeleteMapping("/wish/{wish_id}")
 	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wish_id") int wish_id) {
@@ -141,6 +136,43 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	
+	// 유저배송지 조회
+	@GetMapping("/address")
+	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestParam("user_id") String user_id) {
+		logger.info("getUserAddress : " + user_id);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<UserAddress> userAddressList = mypageService.getUserAddressList(user_id);
+		
+		result.put("userAddressList", userAddressList);
+		result.put("msg", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 유저배송지 추가/수정
+	@PostMapping("/address")
+	public ResponseEntity<Map<String, Object>> setUserAddress(@ModelAttribute UserAddress userAddress) {
+		logger.info("setUserAddress : " + userAddress);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		if(userAddress.getAddress_id() == 0) {
+			mypageService.insertUserAddress(userAddress);
+		} else {
+			mypageService.updateUserAddress(userAddress);
+		}
+		
+		result.put("msg", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 유저배송지 삭제
+	@DeleteMapping("/address/{address_id}")
+	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("address_id") int address_id) {
+		logger.info("deleteUserAddress : " + address_id);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		mypageService.deleteUserAddress(address_id);
+		
+		result.put("msg", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	
 }

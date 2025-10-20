@@ -99,6 +99,33 @@
 		DELETE FROM nextjs_shop_wish
 		WHERE wish_id = #{wish_id}
 	</delete>
+	<select id="getUserAddressList">
+		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, default_address AS address_detail, created_at, usedate_at
+		FROM nextjs_shop_user_address
+		WHERE user_id = #{user_id}
+	</select>
+	<insert id="insertUserAddress">
+		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, is_default, user_id)
+		VALUES (
+			#{address_name}, #{address_phone}, #{zonecode}, #{address}, #{address_detail}, #{memo}, #{default_address}, #{user_id}
+		)
+	</insert>
+	<update id="updateUserAddress">
+		UPDATE nextjs_shop_user_address
+		SET address_name = #{address_name}, 
+		address_phone = #{address_phone}, 
+		zonecode = #{zonecode},
+		address = #{address},
+		address_detail = #{address_detail},
+		memo = #{memo},
+		is_default = #{default_address}
+		WHERE address_id = #{address_id} AND user_id = #{user_id}
+	</update>
+	<delete id="deleteUserAddress">
+		UPDATE nextjs_shop_user_address
+		SET deleted = 1
+		WHERE address_id = #{address_id}
+	</delete>
 	
 
 </mapper>

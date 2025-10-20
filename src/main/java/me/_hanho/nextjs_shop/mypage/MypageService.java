@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Coupon;
+import me._hanho.nextjs_shop.model.UserAddress;
 
 @Service
 public class MypageService {
@@ -45,6 +46,29 @@ public class MypageService {
 	public void deleteWish(int wish_id) {
 		mypageMapper.deleteWish(wish_id);
 	}
+	public List<UserAddress> getUserAddressList(String user_id) {
+		return mypageMapper.getUserAddressList(user_id);
+	}
+	public void insertUserAddress(UserAddress userAddress) {
+		mypageMapper.insertUserAddress(userAddress);
+	}
+
+	public void updateUserAddress(UserAddress userAddress) {
+		int updated = mypageMapper.updateUserAddress(userAddress);
+		if (updated == 0) {
+			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddress_id());
+	    }
+		
+	}
+
+	public void deleteUserAddress(int address_id) {
+		int updated = mypageMapper.deleteUserAddress(address_id);
+		if(updated == 0) {
+			throw new UserNotFoundException("deleteUserAddress not found: " + address_id);
+		}
+		
+	}
+
 
 
 

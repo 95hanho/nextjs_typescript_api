@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Coupon;
+import me._hanho.nextjs_shop.model.UserAddress;
 
 @Mapper
 public interface MypageMapper {
@@ -30,6 +31,16 @@ public interface MypageMapper {
 	List<WishlistItemDTO> getWishlistItems(String user_id);
 
 	void deleteWish(int wish_id);
+	
+	List<UserAddress> getUserAddressList(String user_id);
+
+	void insertUserAddress(UserAddress userAddress);
+
+	int updateUserAddress(UserAddress userAddress);
+
+	int deleteUserAddress(int address_id);
+
+	
 	
 	
 }

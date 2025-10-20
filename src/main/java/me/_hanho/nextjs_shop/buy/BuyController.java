@@ -54,6 +54,7 @@ public class BuyController {
         logger.info("extendStockHold {}", req);
         int updated = buyService.extendHolds(req.getHoldIds());
         Map<String, Object> body = new HashMap<>();
+        body.put("requestedIds", req.getHoldIds());
         body.put("updatedCount", updated);
         body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
         body.put("msg", "success");
@@ -67,6 +68,7 @@ public class BuyController {
         logger.info("release holds: {}", req);
         int released = buyService.releaseHolds(req.getHoldIds());
         Map<String, Object> body = new HashMap<>();
+        body.put("requestedIds", req.getHoldIds());
         body.put("releasedCount", released);
         body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
         body.put("msg", "success");
