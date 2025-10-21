@@ -100,9 +100,10 @@
 		WHERE wish_id = #{wish_id}
 	</delete>
 	<select id="getUserAddressList">
-		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, default_address AS address_detail, created_at, usedate_at
+		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, is_default AS default_address, created_at, usedate_at
 		FROM nextjs_shop_user_address
 		WHERE user_id = #{user_id}
+		AND deleted = 0
 	</select>
 	<insert id="insertUserAddress">
 		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, is_default, user_id)
