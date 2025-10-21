@@ -15,10 +15,12 @@ public class PayRequest {
 	
 	private List<ProductWithCouponsDTO> items;
 	private String user_id;
-	private UserAddress deliveryAddress; // 주문주소
+	private int address_id;
+	private int usercoupon_id;
 	private int useMileage; // 사용마일리지
 	private int shipping_fee; // 배송비
 	private String payment_method; // 결제 방식
+	
 	
 	private BigDecimal deliveryFee; // 배송비
 	private BigDecimal totalDiscount; // 총할인 가격

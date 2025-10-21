@@ -203,9 +203,9 @@
   
   <insert id="insertOrderGroup" useGeneratedKeys="true" keyProperty="order_id">
 	INSERT INTO nextjs_shop_order_group
- 	(user_id, total_price, shipping_fee, payment_method, status, discount_price)
+ 	(user_id, total_price, shipping_fee, payment_method, status, discount_price, usercoupon_id, #{address_id})
  	VALUES
- 	(#{user_id}, #{total_price}, #{shipping_fee}, #{payment_method}, #{status}, #{discount_price}
+ 	(#{user_id}, #{total_price}, #{shipping_fee}, #{payment_method}, 'ORDERED', #{discount_price}, #{usercoupon_id}, #{address_id})
   </insert>
   
   <insert id="insertOrderList">
@@ -230,30 +230,60 @@
 	</foreach>
   </insert>
   
-  <update id="updateCancelStockHold">
-  	UPDATE nextjs_shop_stock_hold
-  	SET status = 'PAY', active_hold = 0
- 	WHERE hold_id IN
-	  <foreach collection="productList" item="item" open="(" separator="," close=")">
-        #{item.hold_id}
-	  </foreach>
-  </update>
-  
-
-
-
-
-
-
-
-
-
-
+	<update id="updateCancelStockHold">
+		UPDATE nextjs_shop_stock_hold
+		SET status = 'PAY', active_hold = 0
+		WHERE hold_id IN
+		 <foreach collection="productList" item="item" open="(" separator="," close=")">
+		      #{item.hold_id}
+		 </foreach>
+	</update>
 	
 	<update id="updateProductDetailByBuy">
 		UPDATE nextjs_shop_product_detail
-		SET stock = stock - 1, sales_count = sales_count + 1
-		WHERE product_detail_id = #{product_detail_id}
+	  	SET
+	    stock = stock - CASE product_detail_id
+    	<foreach collection="productList" item="item">
+      		WHEN #{item.product_detail_id} THEN #{item.count}
+	    </foreach>
+    	ELSE 0 END,
+	    sales_count = sales_count + CASE product_detail_id
+	    <foreach collection="productList" item="item">
+	      WHEN #{item.product_detail_id} THEN #{item.count}
+	    </foreach>
+		ELSE 0 END
+	  	WHERE product_detail_id IN
+	  	<foreach collection="productList" item="item" open="(" separator="," close=")">
+   		  #{item.product_detail_id}
+	  	</foreach>
+	</update>
+	
+	<update id="updateUserCouponUsed">
+		UPDATE nextjs_shop_usercoupon
+		SET used = 1
+		WHERE usercoupon_id = #{usercoupon_id}
+		OR usercoupon_id IN
+			<foreach collection="productList" item="item" open="(" separator="," close=")">
+			      #{item.usercoupon_id}
+			 </foreach>
+	</update>
+	
+	<update id="updateCommonCouponByBuy">
+		UPDATE nextjs_shop_coupon c
+		JOIN nextjs_shop_usercoupon uc ON c.coupon_id = uc.coupon_id
+		SET c.amount = c.amount - 1
+		WHERE uc.usercoupon_id = #{usercoupon_id}
+		AND c.amount > 0
+	</update>
+	<update id="updateEachCouponByBuy">
+	  UPDATE nextjs_shop_coupon c
+	  JOIN (
+	    <foreach collection="productList" item="item" separator=" UNION ALL ">
+	      SELECT #{item.coupon_id} AS coupon_id, #{item.count} AS cnt
+	    </foreach>
+	  ) t ON t.coupon_id = c.coupon_id
+	  SET c.amount = c.amount - t.cnt
+	  WHERE c.amount >= t.cnt;
 	</update>
 
 </mapper>

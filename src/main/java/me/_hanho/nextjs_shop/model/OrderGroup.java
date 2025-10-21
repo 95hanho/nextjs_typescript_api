@@ -22,4 +22,9 @@ public class OrderGroup {
     private String payment_code;
     private BigDecimal discount_price;
     private String status;
+    private int usercoupon_id;
+    private Timestamp shipping_date;
+    private Timestamp delivered_date;
+    private Timestamp return_date;
+    private int address_id;
 }

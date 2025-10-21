@@ -96,8 +96,8 @@ public class BuyService {
 		return orderStock;
 	}
 	
-	public List<Coupon> getAvailableCoupon(List<Integer> productIds) {
-		return buyMapper.getAvailableCoupon(productIds);
+	public List<Coupon> getAvailableCoupon(List<Integer> productIds, String user_id) {
+		return buyMapper.getAvailableCoupon(productIds, user_id);
 	}
 	
 	public List<ProductWithCouponsDTO> getProductWithCoupons(List<BuyProduct> products, String user_id) {
@@ -106,34 +106,24 @@ public class BuyService {
 	
 	@Transactional
 	public void pay(PayRequest payRequest) {
-		// 할 일
+		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_group(주문프로세스) INSERT
 		OrderGroup orderGroup = OrderGroup.builder().user_id(payRequest.getUser_id()).total_price(payRequest.getTotalFinalBeforeDelivery())
 				.shipping_fee(payRequest.getDeliveryFee()).payment_method(payRequest.getPayment_method()).discount_price(payRequest.getTotalDiscount())
 				.status("PAID").build();
 		int order_id = buyMapper.insertOrderGroup(orderGroup);
 		// nextjs_shop_order_list(주문목록) INSERT
-		buyMapper.insertOrderList(payRequest.getItems(), order_id, payRequest.getUser_id());
+		buyMapper.insertOrderList(productWithCouponList, order_id, payRequest.getUser_id());
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
-		buyMapper.updateCancelStockHold(payRequest.getItems());
+		buyMapper.updateCancelStockHold(productWithCouponList);
 		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
-		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
-		
-		// 여기서 충돌이 날것이여~
-		
+		buyMapper.updateProductDetailByBuy(productWithCouponList);
 		// nextjs_shop_usercoupon(유저쿠폰) used(사용여부) 변경
+		buyMapper.updateUserCouponUsed(productWithCouponList, payRequest.getUsercoupon_id());
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경
+		buyMapper.updateCommonCouponByBuy(payRequest.getUsercoupon_id());
+		buyMapper.updateEachCouponByBuy(productWithCouponList);
 	}
-
-	public void updateProductDetailByBuy(ProductDetail productDetail) {
-		// 재고 - 1, 판매량 + 1
-		buyMapper.updateProductDetailByBuy(productDetail);
-	}
-
-
-
-
-
 
 
 
