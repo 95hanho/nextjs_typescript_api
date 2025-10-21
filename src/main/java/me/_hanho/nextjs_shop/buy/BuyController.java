@@ -32,7 +32,7 @@ public class BuyController {
 	@Autowired
 	private BuyService buyService;
 	
-	// 상품 확인 및 점유
+	// 상품 확인 및 점유(구매페이지이동)
 	// FE : 10분 안에 아무 동작도 없고 결제도 안하고 하면 알람
 	@PostMapping("/status")
 	public ResponseEntity<Map<String, Object>> saleStatusCheck(@RequestBody BuyCheckRequest buyCheck) {
@@ -89,7 +89,7 @@ public class BuyController {
                 .collect(Collectors.toList());
         
         if(productIds.size() > 0) {
-        	couponList = buyService.getAvailableCoupon(productIds);
+        	couponList = buyService.getAvailableCoupon(productIds, user_id);
         }
         
         body.put("orderStock", orderStock);
@@ -154,7 +154,6 @@ public class BuyController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		buyService.pay(payRequest);
-//		buyService.updateProductDetailByBuy(productDetail);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

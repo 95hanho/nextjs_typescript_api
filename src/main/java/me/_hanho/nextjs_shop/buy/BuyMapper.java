@@ -34,7 +34,7 @@ public interface BuyMapper {
     
 	List<OrderStockDTO> getOrderStock(String user_id);
 	
-	List<Coupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds);
+	List<Coupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("user_id") String user_id);
 	
 	List<ProductWithCouponsDTO> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("user_id") String user_id);
     
@@ -45,25 +45,13 @@ public interface BuyMapper {
 	
 	void updateCancelStockHold(@Param("productList") List<ProductWithCouponsDTO> items);
 
-	
-	
-    
-    
-    
-    
-    
-    
-	void updateProductDetailByBuy(ProductDetail productDetail);
+	void updateProductDetailByBuy(@Param("productList") List<ProductWithCouponsDTO> items);
 
-	
+	void updateUserCouponUsed(@Param("productList") List<ProductWithCouponsDTO> items, @Param("usercoupon_id") int usercoupon_id);
 
+	void updateCommonCouponByBuy(@Param("usercoupon_id") int usercoupon_id);
 
-
-	
-	
-
-
-	
+	void updateEachCouponByBuy(@Param("productList") List<ProductWithCouponsDTO> items);
 	
 
 }

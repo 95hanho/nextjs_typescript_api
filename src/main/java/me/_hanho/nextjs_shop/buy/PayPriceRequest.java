@@ -14,6 +14,7 @@ public class PayPriceRequest {
 	private List<BuyProduct> products;
 	private String user_id;
 	private int useMileage; // 사용마일리지
+	private Integer coupon_id; // 공통 쿠폰
 	
 }
  
