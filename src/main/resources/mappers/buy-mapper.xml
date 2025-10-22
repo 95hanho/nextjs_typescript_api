@@ -152,17 +152,24 @@
   
   <!-- 점유상품에 사용가능한 쿠폰조회 -->
   <select id="getAvailableCoupon">
-  	SELECT *
+  	SELECT c.*,
+  		uc.usercoupon_id, 
+		uc.used, 
+		uc.user_id
 	FROM nextjs_shop_coupon c
+	JOIN nextjs_shop_usercoupon uc ON uc.coupon_id = c.coupon_id
 	LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
-	WHERE ca.product_id IN 
+	WHERE uc.user_id = #{user_id} 
+	AND uc.used = 0
+	AND (
+		ca.product_id IN 
 		<foreach collection="productIds" item="id" open="(" separator="," close=")">
 	      #{id}
 	    </foreach>
+	    OR ca.product_id IS NULL
 		OR seller_id is NULL
+	)
   </select>
-  
-
   
    <select id="getProductWithCoupons">
   	  SELECT

@@ -96,7 +96,7 @@ public class BuyService {
 		return orderStock;
 	}
 	
-	public List<Coupon> getAvailableCoupon(List<Integer> productIds, String user_id) {
+	public List<AvailableCoupon> getAvailableCoupon(List<Integer> productIds, String user_id) {
 		return buyMapper.getAvailableCoupon(productIds, user_id);
 	}
 	

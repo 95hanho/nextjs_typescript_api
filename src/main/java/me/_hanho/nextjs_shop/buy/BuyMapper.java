@@ -34,7 +34,7 @@ public interface BuyMapper {
     
 	List<OrderStockDTO> getOrderStock(String user_id);
 	
-	List<Coupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("user_id") String user_id);
+	List<AvailableCoupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("user_id") String user_id);
 	
 	List<ProductWithCouponsDTO> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("user_id") String user_id);
     

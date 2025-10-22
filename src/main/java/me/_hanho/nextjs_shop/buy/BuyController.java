@@ -81,7 +81,7 @@ public class BuyController {
         logger.info("getPayBefore : " + user_id);
         Map<String, Object> body = new HashMap<>();
         
-        List<Coupon> couponList = null;
+        List<AvailableCoupon> availableCouponList = null;
         List<OrderStockDTO> orderStock = buyService.getOrderStock(user_id);
         List<Integer> productIds = orderStock.stream()
                 .map(OrderStockDTO::getProduct_id)
@@ -89,11 +89,11 @@ public class BuyController {
                 .collect(Collectors.toList());
         
         if(productIds.size() > 0) {
-        	couponList = buyService.getAvailableCoupon(productIds, user_id);
+        	availableCouponList = buyService.getAvailableCoupon(productIds, user_id);
         }
         
         body.put("orderStock", orderStock);
-        body.put("couponList", couponList);
+        body.put("availableCouponList", availableCouponList);
         body.put("msg", "success");
         return ResponseEntity.ok(body);
     }
@@ -103,7 +103,7 @@ public class BuyController {
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest) {
 	    logger.info("pay-price : {}", payPriceRequest);
 	    Map<String, Object> result = new HashMap<>();
-
+	    
 	    List<ProductWithCouponsDTO> items =
 	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUser_id());
 	    PriceCalculatorService.applyDiscounts(items);
@@ -119,8 +119,8 @@ public class BuyController {
 	            .filter(Objects::nonNull)
 	            .reduce(zero, BigDecimal::add);
 
-	    BigDecimal requestedMileage = BigDecimal.valueOf(Math.max(0, payPriceRequest.getUseMileage()));
-	    BigDecimal mileageApplied = requestedMileage.min(couponFinalTotal);
+	    BigDecimal requestedMileage = BigDecimal.valueOf(Math.max(0, payPriceRequest.getUseMileage())); // 요청된 마일리지
+	    BigDecimal mileageApplied = requestedMileage.min(couponFinalTotal); // 적용된 마일리지
 
 	    // 마일리지 적용 후
 	    BigDecimal totalFinalBeforeDelivery = couponFinalTotal.subtract(mileageApplied);
@@ -135,15 +135,14 @@ public class BuyController {
 
 	    // 응답
 	    result.put("items", items);
-	    result.put("couponOnlyDiscountTotal", couponDiscountTotal);
-	    result.put("couponOnlyFinalTotal",   couponFinalTotal);
-	    result.put("mileageRequested", requestedMileage);
-	    result.put("mileageApplied",  mileageApplied);
-	    result.put("deliveryFee",     deliveryFee);
-	    result.put("totalDiscount",   totalDiscount);
-	    result.put("totalFinal",      totalFinal);
+	    result.put("onlyEachCouponDiscountTotal", couponDiscountTotal); // 각각 상품 쿠폰으로만 할인된 가격 
+	    result.put("onlyEachCouponFinalTotal",   couponFinalTotal); // 각각 상품 쿠폰으로만 할인받은 최종가격  
+	    result.put("mileageRequested", requestedMileage); // 요청된 마일리지
+	    result.put("mileageApplied",  mileageApplied); // 적용된 마일리지
+	    result.put("deliveryFee",     deliveryFee); // 배송비
+	    result.put("totalDiscount",   totalDiscount); // 총 할인비(쿠폰할인 + 마일리지)
+	    result.put("totalFinal",      totalFinal); // 총 금액
 	    result.put("msg", "success");
-
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
