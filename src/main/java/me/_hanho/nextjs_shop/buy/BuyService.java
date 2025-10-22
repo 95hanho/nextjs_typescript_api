@@ -106,14 +106,27 @@ public class BuyService {
 	
 	@Transactional
 	public void pay(PayRequest payRequest) {
-		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
+		
+		// nextjs_shop_user UPDATE 마일리지 사용한거 없애고, 빠진 마일리지 조회
+		buyMapper.updateUserMileageByBuy(payRequest);
+		int remaining_mileage = buyMapper.getUserMileage(payRequest.getUser_id());
+		
+		System.out.println("remaining_mileage : " + remaining_mileage);
+		
 		// nextjs_shop_order_group(주문프로세스) INSERT
-		OrderGroup orderGroup = OrderGroup.builder().user_id(payRequest.getUser_id()).total_price(payRequest.getTotalFinalBeforeDelivery())
-				.shipping_fee(payRequest.getDeliveryFee()).payment_method(payRequest.getPayment_method()).discount_price(payRequest.getTotalDiscount())
-				.status("PAID").build();
-		int order_id = buyMapper.insertOrderGroup(orderGroup);
+		OrderGroup orderGroup = OrderGroup.builder().user_id(payRequest.getUser_id()).eachcoupon_discount_total(payRequest.getEachcoupon_discount_total())
+				.commoncoupon_discount_total(payRequest.getCommoncoupon_discount_total()).shipping_fee(payRequest.getShipping_fee())
+				.used_mileage(payRequest.getUsed_Mileage()).remaining_mileage(remaining_mileage)
+				.total_price(payRequest.getTotalFinal()).payment_method(payRequest.getPayment_method())
+				.usercoupon_id(payRequest.getUsercoupon_id()).address_id(payRequest.getAddress_id())
+				.payment_code("0000").status("PAID").build();
+		buyMapper.insertOrderGroup(orderGroup);
+		int order_id = buyMapper.getOrderId(payRequest.getUser_id());
+		// 
+		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_list(주문목록) INSERT
 		buyMapper.insertOrderList(productWithCouponList, order_id, payRequest.getUser_id());
+		/*
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
 		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
@@ -123,9 +136,7 @@ public class BuyService {
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경
 		buyMapper.updateCommonCouponByBuy(payRequest.getUsercoupon_id());
 		buyMapper.updateEachCouponByBuy(productWithCouponList);
+		*/
 	}
-
-
-
 
 }

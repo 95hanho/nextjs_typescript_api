@@ -37,8 +37,15 @@ public interface BuyMapper {
 	List<AvailableCoupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("user_id") String user_id);
 	
 	List<ProductWithCouponsDTO> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("user_id") String user_id);
+	
+	// --------------------------
+	void updateUserMileageByBuy(PayRequest payRequest);
+	
+	int getUserMileage(String user_id);
     
-	int insertOrderGroup(OrderGroup orderGroup);
+	void insertOrderGroup(OrderGroup orderGroup);
+	
+	int getOrderId(String user_id);
 
 	void insertOrderList(@Param("productList") List<ProductWithCouponsDTO> items, @Param("order_id") int order_id,
 			@Param("user_id") String user_id);
@@ -52,6 +59,12 @@ public interface BuyMapper {
 	void updateCommonCouponByBuy(@Param("usercoupon_id") int usercoupon_id);
 
 	void updateEachCouponByBuy(@Param("productList") List<ProductWithCouponsDTO> items);
+
+	
+
+	
+
+	
 	
 
 }
