@@ -177,6 +177,7 @@
       r.count                                           AS count,
       pd.product_detail_id                              AS product_detail_id,
       IFNULL(pd.add_price, 0)                           AS add_price,
+      uc.usercoupon_id									AS usercoupon_id,
       p.product_id                                      AS product_id,
       p.price                                           AS price,
       c.coupon_id                                       AS coupon_id,
@@ -206,6 +207,7 @@
       JOIN nextjs_shop_product p ON p.product_id = pd.product_id
       LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = r.coupon_id
        AND c.status = 'Y'
+      LEFT JOIN  nextjs_shop_usercoupon uc ON c.coupon_id = uc.coupon_id AND uc.used = 0
   </select>
   
   <!-- <================================================================================> -->
