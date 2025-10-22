@@ -81,7 +81,7 @@ public class BuyController {
         logger.info("getPayBefore : " + user_id);
         Map<String, Object> body = new HashMap<>();
         
-        List<Coupon> couponList = null;
+        List<AvailableCoupon> availableCouponList = null;
         List<OrderStockDTO> orderStock = buyService.getOrderStock(user_id);
         List<Integer> productIds = orderStock.stream()
                 .map(OrderStockDTO::getProduct_id)
@@ -89,11 +89,11 @@ public class BuyController {
                 .collect(Collectors.toList());
         
         if(productIds.size() > 0) {
-        	couponList = buyService.getAvailableCoupon(productIds, user_id);
+        	availableCouponList = buyService.getAvailableCoupon(productIds, user_id);
         }
         
         body.put("orderStock", orderStock);
-        body.put("couponList", couponList);
+        body.put("availableCouponList", availableCouponList);
         body.put("msg", "success");
         return ResponseEntity.ok(body);
     }
@@ -103,47 +103,60 @@ public class BuyController {
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest) {
 	    logger.info("pay-price : {}", payPriceRequest);
 	    Map<String, Object> result = new HashMap<>();
-
+	    
 	    List<ProductWithCouponsDTO> items =
 	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUser_id());
+	    
+	    // 1) 각 상품 쿠폰 먼저 적용
 	    PriceCalculatorService.applyDiscounts(items);
 
 	    BigDecimal zero = BigDecimal.ZERO;
+	    
 	    BigDecimal couponDiscountTotal = items.stream()
 	            .map(ProductWithCouponsDTO::getDiscountAmount)
 	            .filter(Objects::nonNull)
-	            .reduce(zero, BigDecimal::add);
+	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인된 가격 
 
 	    BigDecimal couponFinalTotal = items.stream()
 	            .map(ProductWithCouponsDTO::getFinalPrice)
 	            .filter(Objects::nonNull)
-	            .reduce(zero, BigDecimal::add);
+	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인받은 최종가격  
+	    
+	    // 2) 공용 쿠폰(mainCoupon) 적용 (상품쿠폰 이후, 마일리지 이전)
+	    AvailableCoupon mainCoupon = payPriceRequest.getCommonCoupon();
+	    BigDecimal mainCouponDiscount = PriceCalculatorService.calcCommonCouponDiscount(couponFinalTotal, mainCoupon);
 
-	    BigDecimal requestedMileage = BigDecimal.valueOf(Math.max(0, payPriceRequest.getUseMileage()));
-	    BigDecimal mileageApplied = requestedMileage.min(couponFinalTotal);
+	    BigDecimal afterMainCouponTotal = couponFinalTotal.subtract(mainCouponDiscount);
+	    
+	    // 3) 마일리지 적용
+	    BigDecimal requestedMileage = BigDecimal.valueOf(Math.max(0, payPriceRequest.getUseMileage())); // 요청된 마일리지
+	    BigDecimal mileageApplied = requestedMileage.min(afterMainCouponTotal); // 적용된 마일리지
 
-	    // 마일리지 적용 후
-	    BigDecimal totalFinalBeforeDelivery = couponFinalTotal.subtract(mileageApplied);
-	    BigDecimal totalDiscount = couponDiscountTotal.add(mileageApplied);
+	    // 4) 배송비 판단(마일리지까지 적용한 금액 기준)
+	    BigDecimal totalFinalBeforeDelivery = afterMainCouponTotal.subtract(mileageApplied);
 
 	    // 🚚 배송비 계산
 	    BigDecimal deliveryFee = totalFinalBeforeDelivery.compareTo(new BigDecimal("20000")) >= 0
 	            ? zero
 	            : new BigDecimal("3000");
 
-	    BigDecimal totalFinal = totalFinalBeforeDelivery.add(deliveryFee);
+	    BigDecimal totalFinal = totalFinalBeforeDelivery.add(deliveryFee);  // 총 금액
+	    
+	    // 총 할인 = (각 상품쿠폰 합) + (공용쿠폰 할인) + (마일리지)
+	    BigDecimal totalDiscount = couponDiscountTotal.add(mainCouponDiscount).add(mileageApplied);
 
 	    // 응답
 	    result.put("items", items);
-	    result.put("couponOnlyDiscountTotal", couponDiscountTotal);
-	    result.put("couponOnlyFinalTotal",   couponFinalTotal);
-	    result.put("mileageRequested", requestedMileage);
-	    result.put("mileageApplied",  mileageApplied);
-	    result.put("deliveryFee",     deliveryFee);
-	    result.put("totalDiscount",   totalDiscount);
-	    result.put("totalFinal",      totalFinal);
+	    result.put("onlyEachCouponDiscountTotal", couponDiscountTotal); // 각각 상품 쿠폰으로만 할인된 가격 
+	    result.put("onlyEachCouponFinalTotal",   couponFinalTotal); // 각각 상품 쿠폰으로만 할인받은 최종가격
+	    result.put("mainCouponDiscount",         mainCouponDiscount);     // 공용쿠폰 할인
+	    result.put("afterMainCouponTotal",       afterMainCouponTotal);   // 공용쿠폰 적용 후 합계
+	    result.put("mileageRequested", requestedMileage); // 요청된 마일리지
+	    result.put("mileageApplied",  mileageApplied); // 적용된 마일리지
+	    result.put("deliveryFee",     deliveryFee); // 배송비
+	    result.put("totalDiscount",   totalDiscount); // 총 할인비(쿠폰할인 + 마일리지)
+	    result.put("totalFinal",      totalFinal); // 총 금액
 	    result.put("msg", "success");
-
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

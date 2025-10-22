@@ -2,6 +2,7 @@ package me._hanho.nextjs_shop.buy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class PriceCalculatorService {
@@ -59,6 +60,71 @@ public class PriceCalculatorService {
         dto.setFinalPrice(finalPrice);
     }
 
+    /**
+     * 공용(메인) 쿠폰을 합계 금액(base)에 적용하여 "할인액"을 반환.
+     * - percentage: max_discount 상한 적용
+     * - fixed_amount: 그대로 차감
+     * - minimum_order_before_amount 이상일 때만 적용
+     * - 음수/초과 방지
+     */
+    public static BigDecimal calcCommonCouponDiscount(BigDecimal base, AvailableCoupon coupon) {
+        if (base == null) base = ZERO;
+        base = base.setScale(KRW_SCALE, KRW_ROUND);
+        
+        System.out.println("coupon : " + coupon);
+
+        if (!isUsableCommonCoupon(coupon)) return ZERO;
+
+        BigDecimal minOrder = nvl(coupon.getMinimum_order_before_amount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
+        if (base.compareTo(minOrder) < 0) return ZERO;
+
+        String discountType = safe(coupon.getDiscount_type());
+        BigDecimal discountValue = nvl(coupon.getDiscount_value(), ZERO);
+
+        BigDecimal discount = ZERO;
+        if ("percentage".equalsIgnoreCase(discountType)) {
+            BigDecimal raw = base.multiply(discountValue)
+                    .divide(HUNDRED, KRW_SCALE, KRW_ROUND);
+
+            BigDecimal maxDiscount = coupon.getMax_discount();
+            if (maxDiscount != null) {
+                maxDiscount = maxDiscount.setScale(KRW_SCALE, KRW_ROUND);
+                raw = raw.min(maxDiscount);
+            }
+            discount = raw;
+
+        } else if ("fixed_amount".equalsIgnoreCase(discountType)) {
+            discount = discountValue.setScale(KRW_SCALE, KRW_ROUND);
+        }
+
+        if (discount.compareTo(ZERO) < 0) discount = ZERO;
+        if (discount.compareTo(base) > 0) discount = base;
+
+        return discount;
+    }
+
+    // 공용쿠폰 사용 가능성 체크(필요에 따라 느슨/엄격 조정)
+    private static boolean isUsableCommonCoupon(AvailableCoupon c) {
+        if (c == null) return false;
+
+        // (선택) 스택 규칙 → 상품쿠폰과의 중복 허용만 필요하면 주석 해제
+        // if (Boolean.FALSE.equals(c.getIs_stackable())) return false;
+
+        // (선택) 상태/수량/사용 여부
+        if (c.getAmount() <= 0) return false;
+        if (c.isUsed()) return false;
+        if (c.getStatus() != null && !"Y".equalsIgnoreCase(c.getStatus())) return false;
+
+        // (선택) 유효기간
+        long now = System.currentTimeMillis();
+        Timestamp start = c.getStart_date();
+        Timestamp end = c.getEnd_date();
+        if (start != null && now < start.getTime()) return false;
+        if (end != null && now > end.getTime()) return false;
+
+        return true;
+    }
+    
     // --- helpers ---
     private static BigDecimal bd(int v) { return new BigDecimal(v).setScale(KRW_SCALE, KRW_ROUND); }
     private static BigDecimal nvl(BigDecimal v, BigDecimal d) { return v == null ? d : v; }

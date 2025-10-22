@@ -13,18 +13,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderGroup {
-    private int order_id;
-    private Timestamp order_date;
-    private String user_id;
-    private BigDecimal total_price;
-    private BigDecimal shipping_fee;
-    private String payment_method;
-    private String payment_code;
-    private BigDecimal discount_price;
-    private String status;
+    private int order_id; // 
+    private Timestamp order_date; // 주문일자
+    private String user_id; // 유저아이디
+    private BigDecimal eachcoupon_discount_total; // 각 상품쿠폰 할인값 총합
+    private BigDecimal commoncoupon_discount_total; // 공용쿠폰 할인값 총합
+    private int shipping_fee; // 배송비
+    private int used_mileage; // 사용된 마일리지
+    private int remaining_mileage; // 남은 마일리지
+    private BigDecimal total_price; // 총합 금액
+    private String payment_method; // 결제 방식
+    private String payment_code; // 결제 코드
+    private String status; // 상태값
+    private Timestamp shipping_date; // 발송일지
+    private Timestamp delivered_date; // 배송완료일자
+    private Timestamp return_date; // 반송일자
+    
     private int usercoupon_id;
-    private Timestamp shipping_date;
-    private Timestamp delivered_date;
-    private Timestamp return_date;
     private int address_id;
 }

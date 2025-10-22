@@ -11,10 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderList {
     private int order_list_id;
-    private int product_detail_id;
     private int order_id;
+    private int count;
     private BigDecimal order_price;
     private BigDecimal discount_price;
     private BigDecimal final_price;
+    
     private int usercoupon_id;
+    private int hold_id;
 }
