@@ -249,22 +249,17 @@
   
 	 <insert id="insertOrderList">
 		INSERT INTO nextjs_shop_order_list
-		(product_detail_id, order_id, order_price, discount_price, final_price, usercoupon_id)
+		(order_id, count, order_price, discount_price, final_price, usercoupon_id, hold_id)
 		VALUES
 		<foreach collection="productList" item="item" separator=",">
 			(
-				#{item.product_detail_id},
 				#{order_id},
+				#{item.count},
 				#{item.price} + #{item.add_price},
 				#{item.discountAmount},
 				#{item.finalPrice},
-				(
-					SELECT uc.usercoupon_id
-					FROM nextjs_shop_usercoupon uc
-					WHERE uc.user_id = #{user_id}
-					  AND uc.coupon_id = #{item.coupon_id}
-					LIMIT 1
-				)
+				#{item.usercoupon_id},
+				#{item.hold_id}
 			)
 		</foreach>
 	 </insert>

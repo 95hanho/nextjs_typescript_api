@@ -16,7 +16,7 @@ public class ProductWithCouponsDTO {
 	private int product_detail_id;
 	private int add_price;
 	
-	private int usercoupon_id;
+	private Integer usercoupon_id;
 	
 	private int product_id;
 	private int price;
