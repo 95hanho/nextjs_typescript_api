@@ -106,7 +106,6 @@ public class BuyService {
 	
 	@Transactional
 	public void pay(PayRequest payRequest) {
-		
 		// nextjs_shop_user UPDATE 마일리지 사용한거 없애고, 빠진 마일리지 조회
 		buyMapper.updateUserMileageByBuy(payRequest);
 		int remaining_mileage = buyMapper.getUserMileage(payRequest.getUser_id());
@@ -126,7 +125,6 @@ public class BuyService {
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_list(주문목록) INSERT
 		buyMapper.insertOrderList(productWithCouponList, order_id, payRequest.getUser_id());
-		/*
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
 		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
@@ -136,7 +134,6 @@ public class BuyService {
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경
 		buyMapper.updateCommonCouponByBuy(payRequest.getUsercoupon_id());
 		buyMapper.updateEachCouponByBuy(productWithCouponList);
-		*/
 	}
 
 }
