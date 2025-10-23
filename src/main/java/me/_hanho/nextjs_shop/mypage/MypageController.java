@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @RestController
@@ -47,11 +46,12 @@ public class MypageController {
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
 	public ResponseEntity<Map<String, Object>> getMyReviews(@RequestParam("user_id") String user_id) {
-		logger.info("getMyReviews : user_id");
+		logger.info("getMyReviews : " + user_id);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MyOrderWithReviewDTO> myOrderWithReview = mypageService.getMyOrderWithReview(user_id);
+		List<MyOrderGroupDTO> myOrderWithReview = mypageService.getMyOrderListWithReview(user_id);
 
+		result.put("myOrderWithReview", myOrderWithReview);
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -60,8 +60,6 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getReviews(@RequestParam("user_id") String user_id) {
 		logger.info("getMyReviews : " + user_id);
 		Map<String, Object> result = new HashMap<String, Object>();
-		
-		List<MyOrderWithReviewDTO> myOrderWithReview = mypageService.getMyOrderWithReview(user_id);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

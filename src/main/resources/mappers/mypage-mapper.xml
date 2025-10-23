@@ -14,44 +14,41 @@
 		WHERE uc.user_id = #{user_id} AND uc.used = 0
 	</select>
 	
-	<select id="getMyOrderWithReview">
+	<select id="getMyOrderListGroupList">
 		<!-- IN 절에 Step A 결과 바인딩 (MyBatis <foreach> 사용)  -->
 		SELECT
-		    og.order_id, og.order_date,
-		    og.total_price, og.shipping_fee, og.discount_price, og.payment_method,
-		    ol.order_list_id, ol.product_detail_id, ol.order_price, ol.status
-		    r.review_id,
-		    DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') AS review_created_at,
-		    CASE WHEN r.review_id IS NULL THEN 1 ELSE 0 END AS can_write
+		    og.order_id, og.order_date, og.user_id,
+		    og.eachcoupon_discount_total, og.commoncoupon_discount_total,
+		    og.shipping_fee, og.used_mileage, 
+		    og.address_id, og.total_price, og.payment_method, og.status,
+		    og.shipping_date, og.return_date
 		FROM nextjs_shop_order_group og
-		JOIN nextjs_shop_order_list ol
-		  ON ol.order_id = og.order_id
-		LEFT JOIN nextjs_shop_review r
-		  ON r.order_list_id = ol.order_list_id
-		WHERE og.order_id IN
-		  <foreach item="id" index="i" collection="orderIds" open="(" separator="," close=")">
-		    #{id}
-		  </foreach>
-		ORDER BY og.order_date DESC, og.order_id DESC, ol.order_list_id ASC
+		WHERE og.user_id = #{user_id}
+		ORDER BY og.order_date DESC, og.order_id DESC
 	</select>
-	
-	<resultMap id="OrderWithItemsMap" type="me._hanho.nextjs_shop.mypage.MyOrderWithReviewDTO">
-		<id property="orderId" column="order_id"/>
-		<result property="orderDate" column="order_date"/>
-		<result property="totalPrice" column="total_price"/>
-		<result property="shippingFee" column="shipping_fee"/>
-		<result property="discountPrice" column="discount_price"/>
-		<result property="paymentMethod" column="payment_method"/>
-		<collection property="items" ofType="me._hanho.nextjs_shop.mypage.OrderLineWithReviewDTO">
-			<id     property="orderListId" column="order_list_id"/>
-			<result property="productDetailId" column="product_detail_id"/>
-			<result property="orderPrice" column="order_price"/>
-			<result property="status" column="status"/>
-			<result property="reviewId" column="review_id"/>
-			<result property="reviewCreatedAt" column="review_created_at"/>
-			<result property="canWrite" column="can_write"/>
-		 </collection>
-	</resultMap>
+	<select id="getMyOrderListProductWithReview">
+		SELECT ol.order_list_id AS orderListId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice,
+			ol.final_price AS finalPrice,
+			sh.hold_id AS holdId,
+			pd.product_detail_id, pd.add_price, pd.size,
+			p.product_id, p.name AS productName, p.color_name, p.price,
+			s.seller_id, s.seller_name,
+			ms.menu_sub_id, ms.menu_name AS sub_menu_name, mt.menu_top_id, mt.menu_name AS top_menu_name,
+			pi.product_image_id,
+			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
+			r.review_id, r.content, r.created_at AS reviewDate, r.rating
+		FROM nextjs_shop_order_list ol
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
+		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
+		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
+		LEFT JOIN nextjs_shop_product_image pi ON pi.product_id = p.product_id
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id AND thumbnail_status = 1
+		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
+		WHERE ol.order_id = #{order_id}
+	</select>
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_detail_id, pd.add_price, pd.stock, pd.size, p.product_id, 
