@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderList {
-    private int order_list_id;
-    private int order_id;
+    private int orderListId;
+    private int orderId;
     private int count;
-    private BigDecimal order_price;
-    private BigDecimal discount_price;
-    private BigDecimal final_price;
+    private BigDecimal orderPrice;
+    private BigDecimal discountPrice;
+    private BigDecimal finalPrice;
     
-    private int usercoupon_id;
-    private int hold_id;
+    private int usercouponId;
+    private int holdId;
 }
