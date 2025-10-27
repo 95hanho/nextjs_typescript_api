@@ -45,16 +45,29 @@ public class MypageController {
 	
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
-	public ResponseEntity<Map<String, Object>> getMyReviews(@RequestParam("user_id") String user_id) {
+	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestParam("user_id") String user_id) {
 		logger.info("getMyReviews : " + user_id);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MyOrderGroupDTO> myOrderWithReview = mypageService.getMyOrderListWithReview(user_id);
+		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(user_id);
 
-		result.put("myOrderWithReview", myOrderWithReview);
+		result.put("myOrderList", myOrderList);
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 주문배송정보 상세조회
+	@GetMapping("/my-order/{orderId}")
+	public ResponseEntity<Map<String, Object>> getMyOrderDetail(@PathVariable("orderId") String orderId) {
+		logger.info("getMyReviews : " + orderId);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		MyOrderDetailDTO myOrderDetail = mypageService.getMyOrderDetail(orderId);
+
+		result.put("myOrderDetail", myOrderDetail);
+		result.put("msg", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	// 작성가능한 리뷰와 작성했던 리뷰
 	@GetMapping("/review")
 	public ResponseEntity<Map<String, Object>> getReviews(@RequestParam("user_id") String user_id) {
