@@ -28,6 +28,11 @@ public class MypageService {
 		
 		return myOrderList;
 	}
+	public MyOrderDetailDTO getMyOrderDetail(String orderId) {
+		MyOrderDetailDTO myOrderDetail = mypageMapper.getMyOrderDetail(orderId);
+		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId));
+		return myOrderDetail;
+	}
 	public List<CartProductDTO> getCartList(String user_id) {
 		return mypageMapper.getCartList(user_id);
 	}
@@ -72,6 +77,7 @@ public class MypageService {
 		}
 		
 	}
+
 
 
 

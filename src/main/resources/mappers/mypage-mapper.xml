@@ -49,6 +49,46 @@
 		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
 		WHERE ol.order_id = #{order_id}
 	</select>
+	<select id="getMyOrderDetail">
+		SELECT og.order_id AS orderId, og.order_date AS orderDate, og.user_id AS userId, og.eachcoupon_discount_total AS eachcouponDiscountTotal, 
+		og.commoncoupon_discount_total AS commoncouponDiscountTotal, og.shipping_fee AS shippingFee, og.used_mileage AS usedMileague, 
+		og.remaining_mileage AS remainingMileage, og.total_price AS totalPrice, og.payment_method AS paymentMethod, 
+		og.payment_code AS paymentCode, og.status, og.shipping_date AS shippingDate, og.delivered_date AS deliveredDate, og.return_date AS returnDate,
+		og.usercoupon_id AS usercouponId, c.coupon_id AS couponId, c.description AS description, c.coupon_code AS couponCode, c.discount_type AS discountType,
+		c.discount_value AS discountValue, c.max_discount AS maxDiscount, c.minimum_order_before_amount AS minimumOrderBeforeAmount, c.is_stackable AS isStackable,
+		og.address_id AS addressId, ua.address_name AS addressName, ua.address_phone AS addressPhone, ua.zonecode AS zonecode,
+		ua.address, ua.address_detail AS addressDetail, ua.memo, ua.is_default AS isDefault
+		FROM nextjs_shop_order_group og
+		LEFT JOIN nextjs_shop_usercoupon uc ON uc.usercoupon_id = og.usercoupon_id AND uc.used = 1
+		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
+		JOIN nextjs_shop_user_address ua ON ua.address_id = og.address_id
+		WHERE og.order_id = #{orderId}
+	</select>
+	<select id="getMyOrderDetailItems">
+		SELECT ol.order_list_id AS orderListId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice, ol.final_price AS finalPrice,
+			ol.usercoupon_id AS usercouponId, c.coupon_id AS couponId, c.description AS description, c.coupon_code AS couponCode, c.discount_type AS discountType,
+			c.discount_value AS discountValue, c.max_discount AS maxDiscount, c.minimum_order_before_amount AS minimumOrderBeforeAmount, c.is_stackable AS isStackable,
+			sh.hold_id AS holdId, pd.product_detail_id, pd.add_price, pd.size,
+			p.product_id, p.name AS productName, p.color_name, p.price,
+			s.seller_id, s.seller_name,
+			ms.menu_sub_id, ms.menu_name AS sub_menu_name, mt.menu_top_id, mt.menu_name AS top_menu_name,
+			pi.product_image_id,
+			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
+			r.review_id, r.content, r.created_at AS reviewDate, r.rating
+		FROM nextjs_shop_order_list ol
+		LEFT JOIN nextjs_shop_usercoupon uc ON uc.usercoupon_id = ol.usercoupon_id AND uc.used = 1
+		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
+		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
+		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
+		LEFT JOIN nextjs_shop_product_image pi ON pi.product_id = p.product_id
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id AND thumbnail_status = 1
+		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
+		WHERE ol.order_id = #{order_id}
+	</select>
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_detail_id, pd.add_price, pd.stock, pd.size, p.product_id, 

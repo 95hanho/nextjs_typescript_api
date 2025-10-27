@@ -16,6 +16,10 @@ public interface MypageMapper {
 	
 	List<OrderListWithReviewDTO> getMyOrderListProductWithReview(int order_id);
 	
+	MyOrderDetailDTO getMyOrderDetail(String orderId);
+	
+	List<MyOrderDetailItemDTO> getMyOrderDetailItems(String orderId);
+	
 	List<CartProductDTO> getCartList(String user_id);
 	
 	int updateCart(Cart cart);
@@ -40,6 +44,9 @@ public interface MypageMapper {
 	int updateUserAddress(UserAddress userAddress);
 
 	int deleteUserAddress(int address_id);
+
+	
+
 
 	
 
