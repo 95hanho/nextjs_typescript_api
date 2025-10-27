@@ -57,7 +57,6 @@ public class FileController {
 		logger.info("fileUpload");
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		
 		fileService.fileUpload(file, id);
 		
 		result.put("msg", "success");

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @RestController
@@ -67,21 +68,13 @@ public class MypageController {
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
-	// 작성가능한 리뷰와 작성했던 리뷰
-	@GetMapping("/review")
-	public ResponseEntity<Map<String, Object>> getReviews(@RequestParam("user_id") String user_id) {
-		logger.info("getMyReviews : " + user_id);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		result.put("msg", "success");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
 	// 리뷰 작성
 	@PostMapping("/review")
-	public ResponseEntity<Map<String, Object>> writeReview() {
+	public ResponseEntity<Map<String, Object>> writeReview(@ModelAttribute Review review) {
 		logger.info("writeReview : ");
 		Map<String, Object> result = new HashMap<String, Object>();
+		
+		mypageService.insertReview(review);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

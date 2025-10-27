@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @Mapper
@@ -19,6 +20,8 @@ public interface MypageMapper {
 	MyOrderDetailDTO getMyOrderDetail(String orderId);
 	
 	List<MyOrderDetailItemDTO> getMyOrderDetailItems(String orderId);
+	
+	void insertReview(Review review);
 	
 	List<CartProductDTO> getCartList(String user_id);
 	
@@ -44,6 +47,8 @@ public interface MypageMapper {
 	int updateUserAddress(UserAddress userAddress);
 
 	int deleteUserAddress(int address_id);
+
+	
 
 	
 
