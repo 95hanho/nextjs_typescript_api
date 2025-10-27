@@ -89,6 +89,10 @@
 		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
 		WHERE ol.order_id = #{order_id}
 	</select>
+	<insert id="insertReview">
+		INSERT INTO nextjs_shop_review(content, rating, order_list_id)
+		VALUES (#{content}, #{rating}, #{order_list_id})
+	</insert>
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_detail_id, pd.add_price, pd.stock, pd.size, p.product_id, 

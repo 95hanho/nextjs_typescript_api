@@ -19,17 +19,13 @@ public class FileService {
 	@Autowired
 	private FileMapper fileMapper;
 	
-	
-	
 	public String getOriginalFile(String id) {
 		return fileMapper.getOriginalFile(id);
 	}
-	
 
 	public String getStoredFile(String id) {
 		return fileMapper.getStoredFile(id);
 	}
-
 	
 	@Transactional
 	public void fileUpload(MultipartFile file, String id) {

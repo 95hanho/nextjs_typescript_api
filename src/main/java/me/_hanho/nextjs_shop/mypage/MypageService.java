@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @Service
@@ -32,6 +33,9 @@ public class MypageService {
 		MyOrderDetailDTO myOrderDetail = mypageMapper.getMyOrderDetail(orderId);
 		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId));
 		return myOrderDetail;
+	}
+	public void insertReview(Review review) {
+		mypageMapper.insertReview(review);
 	}
 	public List<CartProductDTO> getCartList(String user_id) {
 		return mypageMapper.getCartList(user_id);
