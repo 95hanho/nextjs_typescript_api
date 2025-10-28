@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.io.IOException;
+import me._hanho.nextjs_shop.model.FileInfo;
 
 @Service
 public class FileService {
@@ -19,12 +20,9 @@ public class FileService {
 	@Autowired
 	private FileMapper fileMapper;
 	
-	public String getOriginalFile(String id) {
-		return fileMapper.getOriginalFile(id);
-	}
 
-	public String getStoredFile(String id) {
-		return fileMapper.getStoredFile(id);
+	public FileInfo getStoredFile(String id) {
+		return fileMapper.getFile(id);
 	}
 	
 	@Transactional
@@ -33,14 +31,16 @@ public class FileService {
 		String originalFileName = file.getOriginalFilename();
 		String storeFileName = System.currentTimeMillis() + "_" + originalFileName;
 		
-		String beforeFileName = getStoredFile(id);
-		if(beforeFileName != null) {
-			deleteFile(beforeFileName);
-			fileMapper.fileUpdate(originalFileName, storeFileName, id);
-		} else {
-			fileMapper.fileInsert(originalFileName, storeFileName, id);
-		}
-		saveFile(file, storeFileName);
+//		FileInfo fileInfo = getStoredFile(fileId);
+//		
+//		String beforeFileName = fileInfo.getStore_name();
+//		if(beforeFileName != null) {
+//			deleteFile(beforeFileName);
+//			fileMapper.fileUpdate(originalFileName, storeFileName, id);
+//		} else {
+//			fileMapper.fileInsert(originalFileName, storeFileName, id);
+//		}
+//		saveFile(file, storeFileName);
 	}
 	
 	public boolean saveFile(MultipartFile file, String fileName) throws IOException {
