@@ -1,21 +1,13 @@
 package me._hanho.nextjs_shop.file;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+
+import me._hanho.nextjs_shop.model.FileInfo;
 
 @Mapper
 public interface FileMapper {
-	
-	String getStoredFile(String id);
-	
-	String getOriginalFile(String id);
 
-	void fileUpdate(@Param("fileName") String originalFileName, @Param("storeName") String storedFileName, 
-			@Param("id") String id);
-
-	void fileInsert(@Param("fileName") String originalFileName, @Param("storeName") String storedFileName, 
-			@Param("id") String id);
-
+	FileInfo getFile(String fileId);
 	
 
 }
