@@ -8,23 +8,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderStockDTO {
-	private int hold_id;
+	private int holdId;
 	private int count;
 	
-	private int product_detail_id;
-	private int add_price;
+	private int productDetailId;
+	private int addPrice;
 	private String size;
 	
-	private int product_id;
+	private int productId;
 	private String name;
-	private String color_name;
+	private String colorName;
 	
-	private String seller_id;
-	private String seller_name;
+	private String sellerId;
+	private String sellerName;
 	
-	private String file_name;
-	private String store_name;
-	private String file_path;
+	private String fileName;
+	private String storeName;
+	private String filePath;
 	private String copyright;
-	private String copyright_url;
+	private String copyrightUrl;
 }

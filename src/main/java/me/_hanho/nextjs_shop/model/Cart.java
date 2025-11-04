@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor // 전체 필드 생성자
 public class Cart {
 
-	private int cart_id;
-	private Timestamp created_at;
-	private int product_detail_id;
-	private String user_id;
+	private int cartId;
+	private Timestamp createdAt;
+	private int productDetailId;
+	private String userId;
 	private int quantity;
 	private boolean selected;
 }

@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class BuyProduct {
 	
-	private int hold_id;
-	private int product_detail_id;
+	private int holdId;
+	private int productDetailId;
 	private int count;
-	private int coupon_id;
+	private int couponId;
 }

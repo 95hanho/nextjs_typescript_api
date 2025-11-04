@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CouponAllowed {
-    private int coupon_allowed_id;
-    private int coupon_id;
-    private int product_id;
+    private int couponAllowedId;
+    private int couponId;
+    private int productId;
 }

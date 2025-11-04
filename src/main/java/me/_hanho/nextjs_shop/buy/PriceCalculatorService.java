@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.List;
 
+// 할인 가격 계산을 위한
 public class PriceCalculatorService {
 
     private static final BigDecimal HUNDRED = new BigDecimal("100");
@@ -19,12 +20,12 @@ public class PriceCalculatorService {
 
     public static void applyDiscountToOne(ProductWithCouponsDTO dto) {
         // null-safe 값 준비
-        BigDecimal minOrder = nvl(dto.getMinimum_order_before_amount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
-        BigDecimal discountValue = nvl(dto.getDiscount_value(), ZERO);
-        String discountType = safe(dto.getDiscount_type());
+        BigDecimal minOrder = nvl(dto.getMinimumOrderBeforeAmount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
+        BigDecimal discountValue = nvl(dto.getDiscountValue(), ZERO);
+        String discountType = safe(dto.getDiscountType());
 
         // 소계 계산: (price + add_price) * count
-        BigDecimal unitBase = bd(dto.getPrice()).add(bd(dto.getAdd_price())).setScale(KRW_SCALE, KRW_ROUND);
+        BigDecimal unitBase = bd(dto.getPrice()).add(bd(dto.getAddPrice())).setScale(KRW_SCALE, KRW_ROUND);
         BigDecimal subtotalBefore = unitBase.multiply(new BigDecimal(dto.getCount())).setScale(KRW_SCALE, KRW_ROUND);
 
         boolean eligible = subtotalBefore.compareTo(minOrder) >= 0;
@@ -38,7 +39,7 @@ public class PriceCalculatorService {
                         .divide(HUNDRED, KRW_SCALE, KRW_ROUND);
 
                 // 퍼센트 타입에만 max_discount 적용 (null이면 상한 없음)
-                BigDecimal maxDiscount = dto.getMax_discount();
+                BigDecimal maxDiscount = dto.getMaxDiscount();
                 if (maxDiscount != null) {
                     maxDiscount = maxDiscount.setScale(KRW_SCALE, KRW_ROUND);
                     raw = raw.min(maxDiscount);
@@ -75,18 +76,18 @@ public class PriceCalculatorService {
 
         if (!isUsableCommonCoupon(coupon)) return ZERO;
 
-        BigDecimal minOrder = nvl(coupon.getMinimum_order_before_amount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
+        BigDecimal minOrder = nvl(coupon.getMinimumOrderBeforeAmount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
         if (base.compareTo(minOrder) < 0) return ZERO;
 
-        String discountType = safe(coupon.getDiscount_type());
-        BigDecimal discountValue = nvl(coupon.getDiscount_value(), ZERO);
+        String discountType = safe(coupon.getDiscountType());
+        BigDecimal discountValue = nvl(coupon.getDiscountValue(), ZERO);
 
         BigDecimal discount = ZERO;
         if ("percentage".equalsIgnoreCase(discountType)) {
             BigDecimal raw = base.multiply(discountValue)
                     .divide(HUNDRED, KRW_SCALE, KRW_ROUND);
 
-            BigDecimal maxDiscount = coupon.getMax_discount();
+            BigDecimal maxDiscount = coupon.getMaxDiscount();
             if (maxDiscount != null) {
                 maxDiscount = maxDiscount.setScale(KRW_SCALE, KRW_ROUND);
                 raw = raw.min(maxDiscount);
@@ -117,8 +118,8 @@ public class PriceCalculatorService {
 
         // (선택) 유효기간
         long now = System.currentTimeMillis();
-        Timestamp start = c.getStart_date();
-        Timestamp end = c.getEnd_date();
+        Timestamp start = c.getStartDate();
+        Timestamp end = c.getEndDate();
         if (start != null && now < start.getTime()) return false;
         if (end != null && now > end.getTime()) return false;
 

@@ -17,14 +17,14 @@ public class MypageService {
 	@Autowired
 	private MypageMapper mypageMapper;
 
-	public List<UserCouponDTO> getUserCoupons(String user_id) {
-		return mypageMapper.getUserCoupons(user_id);
+	public List<UserCouponDTO> getUserCoupons(String userId) {
+		return mypageMapper.getUserCoupons(userId);
 	}
-	public List<MyOrderGroupDTO> getMyOrderListWithReview(String user_id) {
-		List<MyOrderGroupDTO> myOrderList = mypageMapper.getMyOrderListGroupList(user_id);
+	public List<MyOrderGroupDTO> getMyOrderListWithReview(String userId) {
+		List<MyOrderGroupDTO> myOrderList = mypageMapper.getMyOrderListGroupList(userId);
 		//
 		myOrderList.forEach(v ->
-			v.setItems(mypageMapper.getMyOrderListProductWithReview(v.getOrder_id()))
+			v.setItems(mypageMapper.getMyOrderListProductWithReview(v.getOrderId()))
 		);
 		
 		return myOrderList;
@@ -37,30 +37,30 @@ public class MypageService {
 	public void insertReview(Review review) {
 		mypageMapper.insertReview(review);
 	}
-	public List<CartProductDTO> getCartList(String user_id) {
-		return mypageMapper.getCartList(user_id);
+	public List<CartProductDTO> getCartList(String userId) {
+		return mypageMapper.getCartList(userId);
 	}
 	public void updateCart(Cart cart) {
 		int updated = mypageMapper.updateCart(cart);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("updateCart not found: " + cart.getCart_id());
+	        throw new UserNotFoundException("updateCart not found: " + cart.getCartId());
 	    }
 	}
-	public void deleteCart(int cart_id) {
-		int updated = mypageMapper.deleteCart(cart_id);
+	public void deleteCart(int cartId) {
+		int updated = mypageMapper.deleteCart(cartId);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("deleteCart not found: " + cart_id);
+	        throw new UserNotFoundException("deleteCart not found: " + cartId);
 	    }
 	}
-	public List<WishlistItemDTO> getWishlistItems(String user_id) {
-		return mypageMapper.getWishlistItems(user_id);
+	public List<WishlistItemDTO> getWishlistItems(String userId) {
+		return mypageMapper.getWishlistItems(userId);
 	}
 
-	public void deleteWish(int wish_id) {
-		mypageMapper.deleteWish(wish_id);
+	public void deleteWish(int wishId) {
+		mypageMapper.deleteWish(wishId);
 	}
-	public List<UserAddress> getUserAddressList(String user_id) {
-		return mypageMapper.getUserAddressList(user_id);
+	public List<UserAddress> getUserAddressList(String userId) {
+		return mypageMapper.getUserAddressList(userId);
 	}
 	public void insertUserAddress(UserAddress userAddress) {
 		mypageMapper.insertUserAddress(userAddress);
@@ -69,15 +69,15 @@ public class MypageService {
 	public void updateUserAddress(UserAddress userAddress) {
 		int updated = mypageMapper.updateUserAddress(userAddress);
 		if (updated == 0) {
-			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddress_id());
+			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddressId());
 	    }
 		
 	}
 
-	public void deleteUserAddress(int address_id) {
-		int updated = mypageMapper.deleteUserAddress(address_id);
+	public void deleteUserAddress(int addressId) {
+		int updated = mypageMapper.deleteUserAddress(addressId);
 		if(updated == 0) {
-			throw new UserNotFoundException("deleteUserAddress not found: " + address_id);
+			throw new UserNotFoundException("deleteUserAddress not found: " + addressId);
 		}
 		
 	}

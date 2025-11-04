@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
-import me._hanho.nextjs_shop.model.Coupon;
 
 @RestController
 @RequestMapping("/bapi/buy")
@@ -32,9 +31,9 @@ public class BuyController {
 	@Autowired
 	private BuyService buyService;
 	
-	// 상품 확인 및 점유(구매페이지이동)
+	// 상품 확인 및 점유 => 이후 (구매페이지이동)
 	// FE : 10분 안에 아무 동작도 없고 결제도 안하고 하면 알람
-	@PostMapping("/status")
+	@PostMapping("/stock-hold")
 	public ResponseEntity<Map<String, Object>> saleStatusCheck(@RequestBody BuyCheckRequest buyCheck) {
 		logger.info("saleStatusCheck {}", buyCheck);
 	    Map<String, Object> result = new HashMap<>();
@@ -43,7 +42,7 @@ public class BuyController {
 	    HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck);
 
 	    result.put("ok", res.isOk());
-	    result.put("holds", res.getHolds()); // [{product_detail_id, hold_id}]
+	    result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
 	    result.put("msg", "success");
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -77,19 +76,19 @@ public class BuyController {
     
 	// 결제 바로 전 상품 및 필요정보들 조회 점유하고 있는 상품조회
 	@GetMapping("/pay")
-    public ResponseEntity<Map<String, Object>> getPayBefore(@RequestParam("user_id") String user_id) {
-        logger.info("getPayBefore : " + user_id);
+    public ResponseEntity<Map<String, Object>> getPayBefore(@RequestParam("userId") String userId) {
+        logger.info("getPayBefore : " + userId);
         Map<String, Object> body = new HashMap<>();
         
         List<AvailableCoupon> availableCouponList = null;
-        List<OrderStockDTO> orderStock = buyService.getOrderStock(user_id);
+        List<OrderStockDTO> orderStock = buyService.getOrderStock(userId);
         List<Integer> productIds = orderStock.stream()
-                .map(OrderStockDTO::getProduct_id)
+                .map(OrderStockDTO::getProductId)
                 .distinct()
                 .collect(Collectors.toList());
         
         if(productIds.size() > 0) {
-        	availableCouponList = buyService.getAvailableCoupon(productIds, user_id);
+        	availableCouponList = buyService.getAvailableCoupon(productIds, userId);
         }
         
         body.put("orderStock", orderStock);
@@ -105,7 +104,7 @@ public class BuyController {
 	    Map<String, Object> result = new HashMap<>();
 	    
 	    List<ProductWithCouponsDTO> items =
-	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUser_id());
+	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUserId());
 	    
 	    // 1) 각 상품 쿠폰 먼저 적용
 	    PriceCalculatorService.applyDiscounts(items);

@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
-    private int product_id;
+    private int productId;
     private String name;
-    private String color_name;
+    private String colorName;
     private int price;
-    private Timestamp created_at;
-    private int view_count;
-    private int wish_count;
-    private boolean sale_stop;
-    private String seller_id;
-    private int menu_sub_id;
+    private Timestamp createdAt;
+    private int viewCount;
+    private int wishCount;
+    private boolean saleStop;
+    private String sellerId;
+    private int menuSubId;
 }

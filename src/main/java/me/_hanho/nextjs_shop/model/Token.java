@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Token {
-    private int token_id;
-    private String connect_ip;
-    private String connect_agent;
-    private String refresh_token;
-    private Timestamp created_at;
-    private String user_id;
+    private int tokenId;
+    private String connectIp;
+    private String connectAgent;
+    private String refreshToken;
+    private Timestamp createdAt;
+    private String userId;
 }

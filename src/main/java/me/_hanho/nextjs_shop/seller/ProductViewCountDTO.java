@@ -10,13 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductViewCountDTO {
-
-	private String user_id;
-	private String user_name;
+	private String userId;
+	private String userName;
 	
-	private int product_id;
-	private String product_name;
+	private int productId;
+	private String productName;
 	
-	private int view_count;
-	private Timestamp latest_date;
+	private int viewCount;
+	private Timestamp latestDate;
 }

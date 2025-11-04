@@ -17,16 +17,7 @@ public interface ProductMapper {
 	
 	void addToWishList(Wish wish);
 
-	void deleteWish(String wish_id);
+	void deleteWish(String wishId);
 
-	Integer hasCart(Cart cart);
-	
 	void putCart(Cart cart);
-
-	void upQuantityCart(Integer cart_id);
-
-	
-
-
-
 }

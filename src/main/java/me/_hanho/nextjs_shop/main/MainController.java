@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import me._hanho.nextjs_shop.model.MenuTop;
-
 @RestController
 @RequestMapping("/bapi/main")
 public class MainController {
@@ -26,26 +24,26 @@ public class MainController {
 	
 	// 메뉴 가져오기
 	@GetMapping("/menu")
-	public ResponseEntity<Map<String, Object>> getMenus() {
-		logger.info("getMenus");
+	public ResponseEntity<Map<String, Object>> getMenuList() {
+		logger.info("getMenuList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MenuTop> menu_list = mainService.getMenusWithSubs();
+		List<MenuDTO> menuList = mainService.getMenuList();
 		
-		result.put("menu_list", menu_list);
+		result.put("menuList", menuList);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	// 메인 슬라이드 제품 가져오기
+	// 메인 슬라이드 제품 가져오기 - 지금은 가장 오래된거 10개 그냥 가져오지만 나중에 규칙만들어서 뽑기
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProducts() {
 		logger.info("getProducts");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductMainSlideDto> product_list = mainService.getMainSlideProducts();
+		List<ProductMainSlideDto> productList = mainService.getMainSlideProducts();
 		
 		result.put("msg", "success");
-		result.put("productList", product_list);
+		result.put("productList", productList);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

@@ -23,24 +23,25 @@ public class JwtInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 		String authorizationHeader = request.getHeader("Authorization");
-		String access_token = null;
+		logger.info(authorizationHeader);
+		String accessToken = null;
 		 
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			access_token = authorizationHeader.substring(7); // "Bearer " 이후의 문자열만 추출
+			accessToken = authorizationHeader.substring(7); // "Bearer " 이후의 문자열만 추출
 	    }
-//		logger.info("preHandle ===> access_token : " + access_token);
+//		logger.info("preHandle ===> accessToken : " + accessToken);
 		
-		if (access_token != null && !access_token.isEmpty()) {
-			logger.info("access_token : " + access_token);
+		if (accessToken != null && !accessToken.isEmpty()) {
+			logger.info("accessToken : " + accessToken);
             try {
                 // JWT 파싱 및 복호화
-                Claims claims = tokenService.parseJwtToken(access_token);
+                Claims claims = tokenService.parseJwtToken(accessToken);
 
-                // login_id 추출
-                String user_id = claims.get("user_id", String.class);
+                // userId 추출
+                String userId = claims.get("userId", String.class);
 
-                // HttpServletRequest에 login_id 추가
-                request.setAttribute("user_id", user_id);
+                // HttpServletRequest에 userId 추가
+                request.setAttribute("userId", userId);
             } catch (Exception e) {
                 // 토큰이 유효하지 않으면 요청을 거부
             	logger.error("token UNAUTHORIZED");

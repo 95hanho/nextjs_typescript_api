@@ -10,18 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    private String user_id;
+    private String userId;
     private String password;
     private String name;
     private String zonecode;
     private String address;
-    private String address_detail;
+    private String addressDetail;
     private String birthday;
     private String phone;
     private String email;
-    private Timestamp created_at;
+    private Timestamp createdAt;
     private int mileage;
     private int tall;
     private int weight;
-    private int withdrawal_status;
+    private int withdrawalStatus;
 }

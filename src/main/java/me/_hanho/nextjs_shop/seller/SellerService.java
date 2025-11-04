@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
-import me._hanho.nextjs_shop.model.BrandBookmark;
-import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductDetail;
@@ -22,12 +20,12 @@ public class SellerService {
 	@Autowired
 	private SellerMapper sellerMapper;
 	
-	public List<SellerProductDTO> getSellerProductList(String seller_id) {
-		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(seller_id);
+	public List<SellerProductDTO> getSellerProductList(String sellerId) {
+		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
 		
 		// 2) ID 수집
         List<Integer> ids = sellerProductList.stream()
-                .map(SellerProductDTO::getProduct_id)
+                .map(SellerProductDTO::getProductId)
                 .toList();
         
         // 3) 상세 일괄 조회 (IN (...))
@@ -35,11 +33,11 @@ public class SellerService {
         
         // 4) productId -> details 그룹핑
         Map<Integer, List<ProductDetail>> byProductId = details.stream()
-                .collect(Collectors.groupingBy(ProductDetail::getProduct_id));
+                .collect(Collectors.groupingBy(ProductDetail::getProductId));
 
         // 5) 각 상품 DTO에 붙이기
         for (SellerProductDTO p : sellerProductList) {
-            List<ProductDetail> list = byProductId.getOrDefault(p.getProduct_id(), Collections.emptyList());
+            List<ProductDetail> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
             p.setDetailList(list);
         }
         
@@ -51,7 +49,7 @@ public class SellerService {
 	public void updateProduct(Product product) {
 		int updated = sellerMapper.updateProduct(product);
 	 if (updated == 0) {
-	        throw new UserNotFoundException("product not found: " + product.getProduct_id());
+	        throw new UserNotFoundException("product not found: " + product.getProductId());
 	    }
 	}
 	public void addProductDetail(ProductDetail productDetail) {
@@ -60,11 +58,11 @@ public class SellerService {
 	public void updateProductDetail(ProductDetail productDetail) {
 		int updated = sellerMapper.updateProductDetail(productDetail);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("productDetail not found: " + productDetail.getProduct_detail_id());
+	        throw new UserNotFoundException("productDetail not found: " + productDetail.getProductDetailId());
 	    }
 	}
-	public List<Coupon> getSellerCouponList(String seller_id) {
-		return sellerMapper.getSellerCouponList(seller_id);
+	public List<Coupon> getSellerCouponList(String sellerId) {
+		return sellerMapper.getSellerCouponList(sellerId);
 	}
 	public void addCoupon(Coupon coupon) {
 		sellerMapper.addCoupon(coupon);
@@ -72,29 +70,31 @@ public class SellerService {
 	public void updateCouponStatus(Coupon coupon) {
 		sellerMapper.updateCouponStatus(coupon);
 	}
-	public List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String coupon_id) {
-		return sellerMapper.getSellerCouponAllow(coupon_id);
+	public List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String couponId) {
+		return sellerMapper.getSellerCouponAllow(couponId);
 	}
 	@Transactional
-	public void setSellerCouponAllow(String coupon_id, List<Integer> productIds) {
-		sellerMapper.deleteAllsellerCouponAllow(coupon_id);
-		sellerMapper.insertSellerCouponAllowList(coupon_id, productIds);
+	public void setSellerCouponAllow(String couponId, List<Integer> productIds) {
+		sellerMapper.deleteAllsellerCouponAllow(couponId);
+		sellerMapper.insertSellerCouponAllowList(couponId, productIds);
 	}
-	public void issueCouponsToUsers(String coupon_id, List<String> userIds) {
-		sellerMapper.issueCouponsToUsers(coupon_id, userIds);
+	public void issueCouponsToUsers(String couponId, List<String> userIds) {
+		sellerMapper.issueCouponsToUsers(couponId, userIds);
 	}
-	public List<ProductViewCountDTO> getProductViewCountList(String seller_id) {
-		return sellerMapper.getProductViewCountList(seller_id);
+	// 
+	public List<ProductViewCountDTO> getProductViewCountList(String sellerId) {
+		return sellerMapper.getProductViewCountList(sellerId);
 	}
-	public List<ProductWishCountDTO> getProductWishCountList(String seller_id) {
-		return sellerMapper.getProductWishCountList(seller_id);
+	public List<ProductWishCountDTO> getProductWishCountList(String sellerId) {
+		return sellerMapper.getProductWishCountList(sellerId);
 	}
-	public List<userInBookmarkDTO> getBrandBookmarkList(String seller_id) {
-		return sellerMapper.getBrandBookmarkList(seller_id);
+	public List<userInBookmarkDTO> getBrandBookmarkList(String sellerId) {
+		return sellerMapper.getBrandBookmarkList(sellerId);
 	}
-	public List<UserInCartCountDTO> getUserInCartCountList(String seller_id) {
-		return sellerMapper.getUserInCartCountList(seller_id);
+	public List<UserInCartCountDTO> getUserInCartCountList(String sellerId) {
+		return sellerMapper.getUserInCartCountList(sellerId);
 	}
+	//
 
 
 

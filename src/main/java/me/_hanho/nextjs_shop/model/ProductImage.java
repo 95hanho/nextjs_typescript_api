@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductImage {
-    private int product_image_id;
-    private int product_id;
-    private int file_id;
-    private BigDecimal sort_key;
-    private Timestamp created_at;
+    private int productImageId;
+    private int productId;
+    private int fileId;
+    private BigDecimal sortKey;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 }

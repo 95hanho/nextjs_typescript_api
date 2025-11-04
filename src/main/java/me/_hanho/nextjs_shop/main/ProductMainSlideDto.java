@@ -15,7 +15,7 @@ public class ProductMainSlideDto {
     private int wishCount;
 
     // 썸네일 정보
-    private String img_path;
+    private String imgPath;
     private String copyright;
-    private String copyright_url;
+    private String copyrightUrl;
 }

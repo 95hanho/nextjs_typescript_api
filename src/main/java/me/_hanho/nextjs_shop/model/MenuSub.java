@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuSub {
-    private int menu_sub_id;
-    private String menu_name;
-    private int menu_top_id;
+    private int menuSubId;
+    private String menuName;
+    private int menuTopId;
 }

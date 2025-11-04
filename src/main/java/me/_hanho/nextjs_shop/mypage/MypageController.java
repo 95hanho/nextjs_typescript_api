@@ -32,25 +32,25 @@ public class MypageController {
 	private MypageService mypageService;
 	
 	// 유저 쿠폰 조회
-	@GetMapping("/usercoupon")
-	public ResponseEntity<Map<String, Object>> getUserCoupons(@RequestParam("user_id") String user_id) {
-		logger.info("getUserCoupons : " + user_id);
+	@GetMapping("/user-coupon")
+	public ResponseEntity<Map<String, Object>> getUserCoupons(@RequestParam("userId") String userId) {
+		logger.info("getUserCoupons : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<UserCouponDTO> coupon_list = mypageService.getUserCoupons(user_id);
+		List<UserCouponDTO> couponList = mypageService.getUserCoupons(userId);
 		
-		result.put("coupon_list", coupon_list);
+		result.put("couponList", couponList);
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
-	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestParam("user_id") String user_id) {
-		logger.info("getMyReviews : " + user_id);
+	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestParam("userId") String userId) {
+		logger.info("getMyReviews : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(user_id);
+		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(userId);
 
 		result.put("myOrderList", myOrderList);
 		result.put("msg", "success");
@@ -82,11 +82,11 @@ public class MypageController {
 	
 	// 장바구니 조회
 	@GetMapping("/cart")
-	public ResponseEntity<Map<String, Object>> selectCart(@RequestParam("user_id") String user_id) {
-		logger.info("selectCart : " + user_id);
+	public ResponseEntity<Map<String, Object>> selectCart(@RequestParam("userId") String userId) {
+		logger.info("selectCart : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartProductDTO> CartList = mypageService.getCartList(user_id);
+		List<CartProductDTO> CartList = mypageService.getCartList(userId);
 		
 		result.put("CartList", CartList);
 		result.put("msg", "success");
@@ -95,7 +95,7 @@ public class MypageController {
 	// 장바구니 제품 수량/선택여부 변경
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute Cart cart) {
-		logger.info("updateCart : " + cart.getCart_id());
+		logger.info("updateCart : " + cart.getCartId());
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		mypageService.updateCart(cart);
@@ -104,23 +104,23 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 제품 삭제
-	@DeleteMapping("/cart/{cart_id}")
-	public ResponseEntity<Map<String, Object>> deleteCart(@PathVariable("cart_id") int cart_id) {
-		logger.info("deleteCart : " + cart_id);
+	@DeleteMapping("/cart/{cartId}")
+	public ResponseEntity<Map<String, Object>> deleteCart(@PathVariable("cartId") int cartId) {
+		logger.info("deleteCart : " + cartId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteCart(cart_id);
+		mypageService.deleteCart(cartId);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시리스트 조회
 	@GetMapping("/wish")
-	public ResponseEntity<Map<String, Object>> getWishList(@RequestParam("user_id") String user_id) {
-		logger.info("getWishList : " + user_id);
+	public ResponseEntity<Map<String, Object>> getWishList(@RequestParam("userId") String userId) {
+		logger.info("getWishList : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<WishlistItemDTO> wishlistItems = mypageService.getWishlistItems(user_id);
+		List<WishlistItemDTO> wishlistItems = mypageService.getWishlistItems(userId);
 		
 		result.put("wishlistItems", wishlistItems);
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -129,12 +129,12 @@ public class MypageController {
 	// 위시리스트 추가(실행 취소) => ProductController(/bapi/product/wish)에 있음.
 	
 	// 위시리스트 삭제
-	@DeleteMapping("/wish/{wish_id}")
-	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wish_id") int wish_id) {
-		logger.info("deleteWish : " + wish_id);
+	@DeleteMapping("/wish/{wishId}")
+	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wishId") int wishId) {
+		logger.info("deleteWish : " + wishId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteWish(wish_id);
+		mypageService.deleteWish(wishId);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -142,11 +142,11 @@ public class MypageController {
 	
 	// 유저배송지 조회
 	@GetMapping("/address")
-	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestParam("user_id") String user_id) {
-		logger.info("getUserAddress : " + user_id);
+	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestParam("userId") String userId) {
+		logger.info("getUserAddress : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<UserAddress> userAddressList = mypageService.getUserAddressList(user_id);
+		List<UserAddress> userAddressList = mypageService.getUserAddressList(userId);
 		
 		result.put("userAddressList", userAddressList);
 		result.put("msg", "success");
@@ -158,7 +158,7 @@ public class MypageController {
 		logger.info("setUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		if(userAddress.getAddress_id() == 0) {
+		if(userAddress.getAddressId() == 0) {
 			mypageService.insertUserAddress(userAddress);
 		} else {
 			mypageService.updateUserAddress(userAddress);
@@ -168,12 +168,12 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 유저배송지 삭제
-	@DeleteMapping("/address/{address_id}")
-	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("address_id") int address_id) {
-		logger.info("deleteUserAddress : " + address_id);
+	@DeleteMapping("/address/{addressId}")
+	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("addressId") int addressId) {
+		logger.info("deleteUserAddress : " + addressId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteUserAddress(address_id);
+		mypageService.deleteUserAddress(addressId);
 		
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

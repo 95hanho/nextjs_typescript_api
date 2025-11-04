@@ -22,6 +22,7 @@ public class AdminService {
     public boolean passwordCheck(String password, String password2) {
 		return passwordEncoder.matches(password, password2);
 	}
+    
 	public void addSeller(Seller seller) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
 		adminMapper.addSeller(seller);

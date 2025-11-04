@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class userInBookmarkDTO {
 	
-	private Timestamp created_at;
-	private String user_id;
-	private String user_Name;
+	private Timestamp createdAt;
+	private String userId;
+	private String userName;
 }

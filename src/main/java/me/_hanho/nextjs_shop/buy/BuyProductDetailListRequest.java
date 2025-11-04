@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BuyProductDetailListRequest {
-	private int product_detail_id;
-	private int add_price;
-	private Integer usercoupon_id;
+	private int productDetailId;
+	private int addPrice;
 	private int count;
-	
 	
 }

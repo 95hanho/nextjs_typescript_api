@@ -1,46 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.main.MainMapper">
-	<resultMap id="MenuTopWithSubResultMap" type="menuTop">
-	    <id property="menu_top_id" column="menu_top_id"/>
-	    <result property="menu_name" column="menu_name"/>
-	    <result property="gender" column="gender"/>
-	    
-	    <collection property="subMenus" ofType="menuSub">
-	        <id property="menu_sub_id" column="menu_sub_id"/>
-	        <result property="menu_name" column="sub_menu_name"/>
-	        <result property="menu_top_id" column="menu_top_id"/>
-	    </collection>
-	</resultMap>
-	<select id="getMenusWithSubs" resultMap="MenuTopWithSubResultMap">
-	    SELECT 
-	        t.menu_top_id, t.menu_name, t.gender,
-	        s.menu_sub_id, s.menu_name AS sub_menu_name, s.menu_top_id
-	    FROM nextjs_shop_menu_top t
-	    LEFT JOIN nextjs_shop_menu_sub s ON t.menu_top_id = s.menu_top_id
+
+	<select id="getMenuList">
+	    SELECT menu_top_id, menu_name, gender
+	    FROM nextjs_shop_menu_top
+	</select>
+	<select id="getMenuSubList">
+		SELECT menu_sub_id, menu_name
+		FROM nextjs_shop_menu_sub
+		WHERE menu_top_id = #{menuTopId}
 	</select>
 	<select id="getMainImages">
 		select *
 		from nextjs_shop_product
 	</select>
 	<select id="getMainSlideProducts" resultType="ProductMainSlideDto">
-		SELECT
-	      p.product_id AS productId,
-	      p.name,
-	      p.price,
-	      p.view_count AS viewCount,
-	      p.wish_count AS wishCount,
-	      f.file_path AS img_path,
-	      f.copyright,
-	      f.copyright_url
-	    FROM
-	      nextjs_shop_product p
-	    LEFT JOIN nextjs_shop_product_image pi ON p.product_id = pi.product_id
-	    LEFT JOIN nextjs_shop_file f ON pi.file_id = f.file_id
-	    WHERE
-	      pi.thumbnail_status = 'Y'
-	    ORDER BY
-	      p.created_at DESC
-	    LIMIT 10;
-	  </select>
+	    SELECT
+	        p.product_id,
+	        p.name,
+	        p.price,
+	        p.view_count,
+	        p.wish_count,
+	        f.file_path AS imgPath,
+	        f.copyright,
+	        f.copyright_url
+	    FROM nextjs_shop_product p
+	    LEFT JOIN (
+	        SELECT 
+	            pi.product_id,
+	            pi.file_id
+	        FROM nextjs_shop_product_image pi
+	        INNER JOIN (
+	            SELECT 
+	                product_id, 
+	                MIN(sort_key) AS min_sort_key
+	            FROM nextjs_shop_product_image
+	            GROUP BY product_id
+	        ) min_pi 
+	        ON pi.product_id = min_pi.product_id 
+	        AND pi.sort_key = min_pi.min_sort_key
+	    ) tpi ON tpi.product_id = p.product_id
+	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+	    <!-- ORDER BY p.created_at DESC  -->
+	    LIMIT 10
+	</select>
 </mapper>

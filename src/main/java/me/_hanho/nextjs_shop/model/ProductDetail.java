@@ -1,20 +1,20 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetail {
-    private int product_detail_id;
-    private int product_id;
-    private int add_price;
+    private int productDetailId;
+    private int productId;
+    private int addPrice;
     private int stock;
-    private Date created_at;
+    private Timestamp createdAt;
     private String size;
-    private int sales_count;
+    private int salesCount;
 }

@@ -28,22 +28,12 @@ public class ProductService {
 		productMapper.addToWishList(wish);
 	}
 
-	public void deleteWish(String wish_id) {
-		productMapper.deleteWish(wish_id);
+	public void deleteWish(String wishId) {
+		productMapper.deleteWish(wishId);
 	}
 
 	public void putCart(Cart cart) {
-		Integer cart_id = productMapper.hasCart(cart);
-		
-		if(cart_id == null) {
-			logger.info("putCart");
-			productMapper.putCart(cart);
-		} else {
-			logger.info("upQuantityCart");
-			productMapper.upQuantityCart(cart_id);
-		}
+		productMapper.putCart(cart);
 	}
-
-	
 
 }

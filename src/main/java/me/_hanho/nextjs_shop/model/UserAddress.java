@@ -10,15 +10,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAddress {
-	private int address_id;
-	private String address_name;
-	private String address_phone;
+	private int addressId;
+	private String addressName;
+	private String addressPhone;
 	private String zonecode;
 	private String address;
-	private String address_detail;
+	private String addressDetail;
 	private String memo;
-	private boolean default_address;
-	private Timestamp created_at;
-	private Timestamp usedate_at;
-	private String user_id;
+	private boolean isDefault;
+	private Timestamp createdAt;
+	private Timestamp usedateAt;
+	private String userId;
+	private boolean deleted;
 }
