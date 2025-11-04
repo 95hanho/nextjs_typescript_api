@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Seller {
-    private String seller_id;
+    private String sellerId;
     private String password;
-    private String business_registration_number;
-    private String extension_number;
-    private String mobile_number;
+    private String sellerName;
+    private String businessRegistrationNumber;
+    private String extensionNumber;
+    private String mobileNumber;
     private String email;
-    private Timestamp created_at;
+    private Timestamp createdAt;
 }

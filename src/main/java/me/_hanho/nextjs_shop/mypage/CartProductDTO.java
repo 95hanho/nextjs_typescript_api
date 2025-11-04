@@ -1,7 +1,6 @@
 package me._hanho.nextjs_shop.mypage;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,28 +11,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CartProductDTO {
 
-	private int cart_id;
-	private Timestamp created_at;
+	private int cartId;
+	private Timestamp createdAt;
 	
-	private int product_detail_id;
-	private int add_price;
+	private int productDetailId;
+	private int addPrice;
     private int stock;
     private String size;
     
-    private int product_id;
-    private String product_name;
+    private int productId;
+    private String productName;
     private int price;
-//    private boolean sale_stop;
     
-    private int file_id;
-    private String file_name;
-    private String store_name;
-    private String file_path;
+    private int fileId;
+    private String fileName;
+    private String storeName;
+    private String filePath;
     private String copyright;
-    private String copyright_url;
+    private String copyrightUrl;
     
-    private String seller_id;
-    private String seller_name;
+    private String sellerId;
+    private String sellerName;
 	
 	private int quantity;
 	private boolean selected;

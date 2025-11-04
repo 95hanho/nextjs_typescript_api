@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Review {
-    private int review_id;
+    private int reviewId;
     private String content;
-    private Timestamp created_at;
+    private Timestamp createdAt;
     private int rating;
-    private int order_list_id;
+    private int orderListId;
 }

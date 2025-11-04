@@ -60,12 +60,12 @@ public class ProductController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록해제
-	@DeleteMapping("/wish/{wish_id}")
-	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wish_id") String wish_id) {
-		logger.info("deleteWish.wish_id : " + wish_id);
+	@DeleteMapping("/wish/{wishId}")
+	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wishId") String wishId) {
+		logger.info("deleteWish.wishId : " + wishId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.deleteWish(wish_id);
+		productService.deleteWish(wishId);
 
 		result.put("msg", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

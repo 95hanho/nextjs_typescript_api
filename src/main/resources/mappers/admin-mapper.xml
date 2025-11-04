@@ -3,6 +3,6 @@
 <mapper namespace="me._hanho.nextjs_shop.admin.AdminMapper">
 	<insert id="addSeller">
 		INSERT INTO nextjs_shop_seller(seller_id, password, business_registration_number, extension_number, mobile_number, email)
-		VALUES(#{seller_id}, #{password}, #{business_registration_number}, #{extension_number}, #{mobile_number}, #{email})
+		VALUES(#{sellerId}, #{password}, #{businessRegistrationNumber}, #{extensionNumber}, #{mobileNumber}, #{email})
 	</insert>
 </mapper>

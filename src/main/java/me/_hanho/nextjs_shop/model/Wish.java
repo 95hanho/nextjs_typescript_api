@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Wish {
-    private int wish_id;
-    private Timestamp created_at;
-    private int product_id;
-    private String user_id;
+    private int wishId;
+    private Timestamp createdAt;
+    private int productId;
+    private String userId;
 }

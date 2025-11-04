@@ -28,12 +28,12 @@ public class AuthService {
 		return passwordEncoder.matches(password, password2);
 	}
 	
-	public User getUser(String user_id) {
-		return authMapper.getUser(user_id);
+	public User getUser(String userId) {
+		return authMapper.getUser(userId);
 	}
 	
-	public User getUserExceptPassword(String user_id) {
-		return authMapper.getUserExceptPassword(user_id);
+	public User getUserExceptPassword(String userId) {
+		return authMapper.getUserExceptPassword(userId);
 	}
 	
 	public User getUserByToken(Token token) {
@@ -53,21 +53,21 @@ public class AuthService {
 	public void userInfoUpdate(User user) {
 		int updated = authMapper.userInfoUpdate(user);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("User not found: " + user.getUser_id());
+	        throw new UserNotFoundException("User not found: " + user.getUserId());
 	    }
 	}
 
 	public void updateToken(Token token) {
-		int token_id = authMapper.getToken_id(token);
-		token.setToken_id(token_id);
+		int tokenId = authMapper.getTokenId(token);
+		token.setTokenId(tokenId);
 		int updated = authMapper.updateToken(token);
 		if (updated == 0) {
-	        throw new UserNotFoundException("Token not found: " + token.getToken_id());
+	        throw new UserNotFoundException("Token not found: " + token.getTokenId());
 	    }
 	}
 
-	public boolean getId(String user_id) {
-		return authMapper.getId(user_id) == 1;
+	public boolean getId(String userId) {
+		return authMapper.getId(userId) == 1;
 	}
 	
 	

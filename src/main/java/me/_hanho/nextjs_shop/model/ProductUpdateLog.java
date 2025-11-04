@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductUpdateLog {
-    private int product_update_log_id;
-    private int product_id;
-    private String seller_id;
-    private Timestamp updated_at;
-    private String updated_detail;
+    private int productUpdateLogId;
+    private int productId;
+    private String sellerId;
+    private Timestamp updatedAt;
+    private String updatedDetail;
 }

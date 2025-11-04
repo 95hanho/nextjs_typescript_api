@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductQna {
-    private int product_qna_id;
+    private int productQnaId;
     private String question;
+    private Timestamp createdAt;
     private String answer;
-    private Timestamp created_at;
-    private Timestamp res_created_at;
-    private int product_qna_type_id;
-    private int product_id;
+    private Timestamp resCreatedAt;
+    private Timestamp secret;
+    private int productQnaTypeId;
+    private int productId;
 }

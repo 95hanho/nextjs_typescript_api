@@ -20,35 +20,35 @@ public class OrderListWithReviewDTO {
     private BigDecimal finalPrice;
 
     private int holdId;
-    private int product_detail_id;
-    private int add_price;
+    private int productDetailId;
+    private int addPrice;
     private String size;
     
-    private int product_id;
+    private int productId;
     private String productName;
-    private String color_name;
+    private String colorName;
     private int price;
     
-    private String seller_id;
-    private String seller_name;
+    private String sellerId;
+    private String sellerName;
     
-    private int review_id;
+    private int reviewId;
     private String content;
     private Timestamp reviewDate;
     private int rating;
     
-    private int menu_sub_id;
-    private String sub_menu_name;
-    private int menu_top_id;
-    private String top_menu_name;
+    private int menuSubId;
+    private String subMenuName;
+    private int menuTopId;
+    private String topMenuName;
     
-    private int product_image_id;
-    private int file_id;
-    private String file_name;
-    private String store_name;
-    private String file_extension;
-    private String file_path;
+    private int productImageId;
+    private int fileId;
+    private String fileName;
+    private String storeName;
+    private String fileExtension;
+    private String filePath;
     private String copyright;
-    private String copyright_url;
+    private String copyrightUrl;
 
 }

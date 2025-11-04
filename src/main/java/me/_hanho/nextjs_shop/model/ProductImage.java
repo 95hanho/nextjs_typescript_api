@@ -1,5 +1,8 @@
 package me._hanho.nextjs_shop.model;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,8 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductImage {
-    private int product_image_id;
-    private int product_id;
-    private int file_id;
-    private String thumbnail_status;
+    private int productImageId;
+    private int productId;
+    private int fileId;
+    private BigDecimal sortKey;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 }

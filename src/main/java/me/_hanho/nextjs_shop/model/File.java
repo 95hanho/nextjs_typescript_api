@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class File {
-    private int file_id;
-    private String file_name;
-    private String store_name;
-    private String file_extension;
-    private String file_path;
-    private Timestamp created_at;
+    private int fileId;
+    private String fileName;
+    private String storeName;
+    private String fileExtension;
+    private String filePath;
+    private Timestamp createdAt;
     private String copyright;
-    private String copyright_url;
+    private String copyrightUrl;
 }

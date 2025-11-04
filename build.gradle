@@ -33,6 +33,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // 로그인토큰
 	implementation 'org.slf4j:slf4j-api:2.0.9' // SLF4J API
 	implementation 'ch.qos.logback:logback-classic:1.4.11' // Logback Classic (SLF4J 기본 구현체)
+	runtimeOnly 'p6spy:p6spy:3.9.1' // p6spy 파라미터까지 예쁘게 보여주기
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client' // maria DB
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // 로그인토큰
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // 로그인토큰

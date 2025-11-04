@@ -12,21 +12,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor // 전체 필드 생성자
 public class Coupon {
 	
-    private int coupon_id;
+    private int couponId;
     private String description;
-    private String coupon_code;
-    private String discount_type;
-    private BigDecimal discount_value;
-    private BigDecimal max_discount;
-    private BigDecimal minimum_order_before_amount;
+    private String couponCode;
+    private String discountType;
+    private BigDecimal discountValue;
+    private BigDecimal maxDiscount;
+    private BigDecimal minimumOrderBeforeAmount;
     private String status;
-    private Boolean is_stackable;
-    private Boolean is_product_restricted;
+    private Boolean isStackable;
+    private Boolean isProductRestricted;
     private int amount;
-    private Timestamp start_date;
-    private Timestamp end_date;
-    private Timestamp created_at;
-    private Timestamp updated_at;
-    private String seller_id;
+    private Timestamp startDate;
+    private Timestamp endDate;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+    private String sellerId;
     
 }

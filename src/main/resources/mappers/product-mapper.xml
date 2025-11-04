@@ -10,10 +10,19 @@
 	  FROM nextjs_shop_product p
 	  JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
 	  LEFT JOIN (
-	    SELECT pi.product_id, MIN(pi.file_id) AS file_id
-	    FROM nextjs_shop_product_image pi
-	    WHERE pi.thumbnail_status = 1
-	    GROUP BY pi.product_id
+		SELECT 
+		    pi_inner.product_id,
+		    pi_inner.file_id
+		FROM nextjs_shop_product_image pi_inner
+		INNER JOIN (
+		    SELECT 
+		        product_id,
+		        MIN(sort_key) AS min_sort_key
+		    FROM nextjs_shop_product_image
+		    GROUP BY product_id
+		) first_img
+		    ON pi_inner.product_id = first_img.product_id
+		   AND pi_inner.sort_key   = first_img.min_sort_key
 	  ) tpi ON tpi.product_id = p.product_id
 	  LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 	  WHERE p.sale_stop = 0
@@ -50,26 +59,15 @@
 	</select>
 	<insert id="addToWishList">
 		INSERT INTO nextjs_shop_wish(product_id, user_id)
-		VALUES(#{product_id}, #{user_id})
+		VALUES(#{productId}, #{userId})
 	</insert>
 	<delete id="deleteWish">
 		DELETE FROM nextjs_shop_wish
-		WHERE wish_id = #{wish_id}
+		WHERE wish_id = #{wishId}
 	</delete>
-	<select id="hasCart">
-		SELECT cart_id
-		FROM nextjs_shop_cart
-		WHERE product_detail_id = #{product_detail_id} AND user_id = #{user_id}
-		LIMIT 1
-	</select>
 	<insert id="putCart">
 		INSERT INTO nextjs_shop_cart(product_detail_id, user_id, quantity)
-		VALUES(#{product_detail_id}, #{user_id}, #{quantity})
+		VALUES(#{productDetailId}, #{userId}, #{quantity})
 	</insert>
-	<update id="upQuantityCart">
-		UPDATE nextjs_shop_cart
-		SET quantity = quantity + 1
-		WHERE cart_id = #{cart_id}
-	</update>
 	
 </mapper>

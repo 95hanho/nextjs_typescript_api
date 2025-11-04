@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.model.BrandBookmark;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductDetail;
@@ -13,7 +12,7 @@ import me._hanho.nextjs_shop.model.ProductDetail;
 @Mapper
 public interface SellerMapper {
 
-	List<SellerProductDTO> getSellerProductList(String seller_id);
+	List<SellerProductDTO> getSellerProductList(String sellerId);
 	
 	List<ProductDetail> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
 	
@@ -25,27 +24,27 @@ public interface SellerMapper {
 
 	int updateProductDetail(ProductDetail productDetail);
 	
-	List<Coupon> getSellerCouponList(String seller_id);
+	List<Coupon> getSellerCouponList(String sellerId);
 	
 	void addCoupon(Coupon coupon);
 
 	void updateCouponStatus(Coupon coupon);
 
-	List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String coupon_id);
+	List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String couponId);
 	
-	void deleteAllsellerCouponAllow(String coupon_id);
+	void deleteAllsellerCouponAllow(String couponId);
 	
-	void insertSellerCouponAllowList(@Param("coupon_id") String coupon_id, @Param("productIds") List<Integer> productIds);
+	void insertSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds);
 	
-	void issueCouponsToUsers(@Param("coupon_id") String coupon_id, @Param("userIds") List<String> userIds);
+	void issueCouponsToUsers(@Param("couponId") String couponId, @Param("userIds") List<String> userIds);
 	
-	List<ProductViewCountDTO> getProductViewCountList(String seller_id);
+	List<ProductViewCountDTO> getProductViewCountList(String sellerId);
 	
-	List<ProductWishCountDTO> getProductWishCountList(String seller_id);
+	List<ProductWishCountDTO> getProductWishCountList(String sellerId);
 	
-	List<userInBookmarkDTO> getBrandBookmarkList(String seller_id);
+	List<userInBookmarkDTO> getBrandBookmarkList(String sellerId);
 
-	List<UserInCartCountDTO> getUserInCartCountList(String seller_id);
+	List<UserInCartCountDTO> getUserInCartCountList(String sellerId);
 
 	
 

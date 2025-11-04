@@ -12,19 +12,18 @@ import me._hanho.nextjs_shop.model.ProductDetail;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SellerProductDTO {
-	private int product_id;
+	private int productId;
 	private String name;
-	private String color_name;
+	private String colorName;
 	private int price;
-	private Timestamp created_at;
-	private int view_count;
-	private int wish_count;
+	private Timestamp createdAt;
+	private int viewCount;
+	private int wishCount;
 	
-	private String seller_id;
+	private String sellerId;
 	
-	private int menu_sub_id;
-	private String sub_menu_name;
-	private String top_menu_name;
+	private String subMenuName;
+	private String topMenuName;
 	private String gender;
 	
 	private List<ProductDetail> detailList;

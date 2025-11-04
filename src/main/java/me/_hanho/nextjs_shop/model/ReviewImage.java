@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewImage {
-    private int review_image_id;
-    private int review_id;
-    private int file_id;
+    private int reviewImageId;
+    private int reviewId;
+    private int fileId;
 }

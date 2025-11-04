@@ -3,38 +3,38 @@
 <mapper namespace="me._hanho.nextjs_shop.mypage.MypageMapper">
 	
 	<select id="getUserCoupons">
-		SELECT uc.usercoupon_id, uc.used, 
+		SELECT uc.user_coupon_id, uc.used, 
 			c.coupon_id, c.description, c.discount_type, c.discount_value,
 			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
 			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
 			c.seller_id, s.seller_name
-		FROM nextjs_shop_usercoupon uc
+		FROM nextjs_shop_user_coupon uc
 		JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		LEFT JOIN nextjs_shop_seller s ON s.seller_id = c.seller_id
-		WHERE uc.user_id = #{user_id} AND uc.used = 0
+		WHERE uc.user_id = #{userId} AND uc.used = 0
 	</select>
 	
 	<select id="getMyOrderListGroupList">
 		<!-- IN 절에 Step A 결과 바인딩 (MyBatis <foreach> 사용)  -->
 		SELECT
 		    og.order_id, og.order_date, og.user_id,
-		    og.eachcoupon_discount_total, og.commoncoupon_discount_total,
+		    og.each_coupon_discount_total, og.common_coupon_discount_total,
 		    og.shipping_fee, og.used_mileage, 
 		    og.address_id, og.total_price, og.payment_method, og.status,
 		    og.shipping_date, og.return_date
 		FROM nextjs_shop_order_group og
-		WHERE og.user_id = #{user_id}
+		WHERE og.user_id = #{userId}
 		ORDER BY og.order_date DESC, og.order_id DESC
 	</select>
 	<select id="getMyOrderListProductWithReview">
-		SELECT ol.order_list_id AS orderListId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice,
-			ol.final_price AS finalPrice,
-			sh.hold_id AS holdId,
+		SELECT ol.order_list_id, ol.order_id, ol.count, ol.order_price, ol.discount_price,
+			ol.final_price,
+			sh.hold_id,
 			pd.product_detail_id, pd.add_price, pd.size,
 			p.product_id, p.name AS productName, p.color_name, p.price,
 			s.seller_id, s.seller_name,
-			ms.menu_sub_id, ms.menu_name AS sub_menu_name, mt.menu_top_id, mt.menu_name AS top_menu_name,
-			pi.product_image_id,
+			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName,
+			tpi.product_image_id,
 			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
 			r.review_id, r.content, r.created_at AS reviewDate, r.rating
 		FROM nextjs_shop_order_list ol
@@ -44,39 +44,54 @@
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
-		LEFT JOIN nextjs_shop_product_image pi ON pi.product_id = p.product_id
-		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id AND thumbnail_status = 1
+		LEFT JOIN (
+	        SELECT 
+	            pi_inner.product_image_id,
+	            pi_inner.product_id,
+	            pi_inner.file_id
+	        FROM nextjs_shop_product_image pi_inner
+	        INNER JOIN (
+	            SELECT 
+	                product_id,
+	                MIN(sort_key) AS min_sort_key
+	            FROM nextjs_shop_product_image
+	            GROUP BY product_id
+	        ) first_img
+	        ON pi_inner.product_id = first_img.product_id
+	        AND pi_inner.sort_key = first_img.min_sort_key
+	    ) tpi ON tpi.product_id = p.product_id
+	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
-		WHERE ol.order_id = #{order_id}
+		WHERE ol.order_id = #{orderId}
 	</select>
 	<select id="getMyOrderDetail">
-		SELECT og.order_id AS orderId, og.order_date AS orderDate, og.user_id AS userId, og.eachcoupon_discount_total AS eachcouponDiscountTotal, 
-		og.commoncoupon_discount_total AS commoncouponDiscountTotal, og.shipping_fee AS shippingFee, og.used_mileage AS usedMileague, 
-		og.remaining_mileage AS remainingMileage, og.total_price AS totalPrice, og.payment_method AS paymentMethod, 
-		og.payment_code AS paymentCode, og.status, og.shipping_date AS shippingDate, og.delivered_date AS deliveredDate, og.return_date AS returnDate,
-		og.usercoupon_id AS usercouponId, c.coupon_id AS couponId, c.description AS description, c.coupon_code AS couponCode, c.discount_type AS discountType,
-		c.discount_value AS discountValue, c.max_discount AS maxDiscount, c.minimum_order_before_amount AS minimumOrderBeforeAmount, c.is_stackable AS isStackable,
-		og.address_id AS addressId, ua.address_name AS addressName, ua.address_phone AS addressPhone, ua.zonecode AS zonecode,
-		ua.address, ua.address_detail AS addressDetail, ua.memo, ua.is_default AS isDefault
+		SELECT og.order_id, og.order_date, og.user_id, og.each_coupon_discount_total, 
+		og.common_coupon_discount_total, og.shipping_fee, og.used_mileage, 
+		og.remaining_mileage, og.total_price, og.payment_method, 
+		og.payment_code, og.status, og.shipping_date, og.delivered_date, og.return_date,
+		og.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
+		c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
+		og.address_id, ua.address_name, ua.address_phone, ua.zonecode,
+		ua.address, ua.address_detail, ua.memo, ua.is_default
 		FROM nextjs_shop_order_group og
-		LEFT JOIN nextjs_shop_usercoupon uc ON uc.usercoupon_id = og.usercoupon_id AND uc.used = 1
+		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = og.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_user_address ua ON ua.address_id = og.address_id
 		WHERE og.order_id = #{orderId}
 	</select>
 	<select id="getMyOrderDetailItems">
-		SELECT ol.order_list_id AS orderListId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice, ol.final_price AS finalPrice,
-			ol.usercoupon_id AS usercouponId, c.coupon_id AS couponId, c.description AS description, c.coupon_code AS couponCode, c.discount_type AS discountType,
-			c.discount_value AS discountValue, c.max_discount AS maxDiscount, c.minimum_order_before_amount AS minimumOrderBeforeAmount, c.is_stackable AS isStackable,
-			sh.hold_id AS holdId, pd.product_detail_id, pd.add_price, pd.size,
+		SELECT ol.order_list_id, ol.order_id , ol.count, ol.order_price, ol.discount_price, ol.final_price,
+			ol.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
+			c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
+			sh.hold_id, pd.product_detail_id, pd.add_price, pd.size,
 			p.product_id, p.name AS productName, p.color_name, p.price,
 			s.seller_id, s.seller_name,
-			ms.menu_sub_id, ms.menu_name AS sub_menu_name, mt.menu_top_id, mt.menu_name AS top_menu_name,
-			pi.product_image_id,
+			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName,
+			tpi.product_image_id,
 			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
 			r.review_id, r.content, r.created_at AS reviewDate, r.rating
 		FROM nextjs_shop_order_list ol
-		LEFT JOIN nextjs_shop_usercoupon uc ON uc.usercoupon_id = ol.usercoupon_id AND uc.used = 1
+		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = ol.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
 		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
@@ -84,19 +99,34 @@
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
-		LEFT JOIN nextjs_shop_product_image pi ON pi.product_id = p.product_id
-		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id AND thumbnail_status = 1
+		LEFT JOIN (
+	        SELECT 
+	            pi_inner.product_image_id,
+	            pi_inner.product_id,
+	            pi_inner.file_id
+	        FROM nextjs_shop_product_image pi_inner
+	        INNER JOIN (
+	            SELECT 
+	                product_id,
+	                MIN(sort_key) AS min_sort_key
+	            FROM nextjs_shop_product_image
+	            GROUP BY product_id
+	        ) first_img
+	        ON pi_inner.product_id = first_img.product_id
+	        AND pi_inner.sort_key = first_img.min_sort_key
+	    ) tpi ON tpi.product_id = p.product_id
+	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
-		WHERE ol.order_id = #{order_id}
+		WHERE ol.order_id = #{orderId}
 	</select>
 	<insert id="insertReview">
 		INSERT INTO nextjs_shop_review(content, rating, order_list_id)
-		VALUES (#{content}, #{rating}, #{order_list_id})
+		VALUES (#{content}, #{rating}, #{orderListId})
 	</insert>
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_detail_id, pd.add_price, pd.stock, pd.size, p.product_id, 
-			p.name AS product_name, p.price,
+			p.name AS productName, p.price,
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
 			s.seller_id, s.seller_name,
 			c.quantity, c.selected
@@ -105,69 +135,92 @@
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
 		LEFT JOIN (
-		    SELECT pi.product_id, pi.file_id
-		    FROM nextjs_shop_product_image pi
-		    WHERE pi.thumbnail_status = 1
-		    GROUP BY pi.product_id
-		) pi ON pi.product_id = p.product_id
-		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
-		WHERE c.user_id = #{user_id}
+	        SELECT 
+	            pi_inner.product_id,
+	            pi_inner.file_id
+	        FROM nextjs_shop_product_image pi_inner
+	        INNER JOIN (
+	            SELECT 
+	                product_id,
+	                MIN(sort_key) AS min_sort_key
+	            FROM nextjs_shop_product_image
+	            GROUP BY product_id
+	        ) first_img
+	            ON pi_inner.product_id = first_img.product_id
+	           AND pi_inner.sort_key   = first_img.min_sort_key
+	    ) tpi ON tpi.product_id = p.product_id
+	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+		WHERE c.user_id = #{userId}
 	</select>
 	<update id="updateCart">
 		UPDATE nextjs_shop_cart
 		SET quantity = #{quantity}, selected = #{selected}
-		WHERE cart_id = #{cart_id}
+		WHERE cart_id = #{cartId}
 	</update>
 	<delete id="deleteCart">
 		DELETE FROM nextjs_shop_cart
-		WHERE cart_id = #{cart_id}
+		WHERE cart_id = #{cartId}
 	</delete>
 	
 	<select id="getWishlistItems">
 		SELECT w.wish_id, w.created_at, w.user_id, 
 			p.product_id, p.name, p.price, p.view_count, p.wish_count,
-			pi.product_image_id, pi.file_id, 
+			tpi.product_image_id, f.file_id, 
 			f.file_name,  f.store_name, f.file_path, f.copyright, f.copyright_url,
 			s.seller_id, s.seller_name
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON w.product_id = p.product_id
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
-		LEFT JOIN nextjs_shop_product_image pi ON p.product_id = pi.product_id AND pi.thumbnail_status = 1
-		LEFT JOIN nextjs_shop_file f ON pi.file_id = f.file_id
-		WHERE w.user_id = #{user_id}
+		LEFT JOIN (
+	        SELECT 
+	            pi_inner.product_image_id,
+	            pi_inner.product_id,
+	            pi_inner.file_id
+	        FROM nextjs_shop_product_image pi_inner
+	        INNER JOIN (
+	            SELECT 
+	                product_id,
+	                MIN(sort_key) AS min_sort_key
+	            FROM nextjs_shop_product_image
+	            GROUP BY product_id
+	        ) first_img
+	        ON pi_inner.product_id = first_img.product_id
+	        AND pi_inner.sort_key = first_img.min_sort_key
+	    ) tpi ON tpi.product_id = p.product_id
+	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+		WHERE w.user_id = #{userId}
 	</select>
 	<delete id="deleteWish">
 		DELETE FROM nextjs_shop_wish
-		WHERE wish_id = #{wish_id}
+		WHERE wish_id = #{wishId}
 	</delete>
 	<select id="getUserAddressList">
-		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, is_default AS default_address, created_at, usedate_at
+		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, is_default, created_at, usedate_at
 		FROM nextjs_shop_user_address
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{userId}
 		AND deleted = 0
 	</select>
 	<insert id="insertUserAddress">
 		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, is_default, user_id)
 		VALUES (
-			#{address_name}, #{address_phone}, #{zonecode}, #{address}, #{address_detail}, #{memo}, #{default_address}, #{user_id}
+			#{addressName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{isDefault}, #{userId}
 		)
 	</insert>
 	<update id="updateUserAddress">
 		UPDATE nextjs_shop_user_address
-		SET address_name = #{address_name}, 
-		address_phone = #{address_phone}, 
+		SET address_name = #{addressName}, 
+		address_phone = #{addressPhone}, 
 		zonecode = #{zonecode},
 		address = #{address},
-		address_detail = #{address_detail},
+		address_detail = #{addressDetail},
 		memo = #{memo},
-		is_default = #{default_address}
-		WHERE address_id = #{address_id} AND user_id = #{user_id}
+		is_default = #{isDefault}
+		WHERE address_id = #{addressId} AND user_id = #{userId}
 	</update>
 	<delete id="deleteUserAddress">
 		UPDATE nextjs_shop_user_address
 		SET deleted = 1
-		WHERE address_id = #{address_id}
+		WHERE address_id = #{addressId}
 	</delete>
-	
 
 </mapper>

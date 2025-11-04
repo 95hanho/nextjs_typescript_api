@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockHold {
-	private int hold_id;
-	private String user_id;
-	private int product_detail_id;
+	private int holdId;
+	private String userId;
+	private int productDetailId;
 	private int count;
 	private String status;
-	private boolean active_hold;
-	private Timestamp expires_at;
-	private Timestamp created_at;
+	private boolean activeHold;
+	private Timestamp expiresAt;
+	private Timestamp createdAt;
 }

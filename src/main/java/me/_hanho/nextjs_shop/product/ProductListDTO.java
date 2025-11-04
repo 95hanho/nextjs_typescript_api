@@ -10,21 +10,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductListDTO {
-	private int product_id;
+	private int productId;
 	private String name;
-	private String color_name;
+	private String colorName;
 	private int price;
-	private Timestamp created_At;
-	private int view_count;
-	private int wish_count;
+	private Timestamp createdAt;
+	private int viewCount;
+	private int wishCount;
 	
-	private String seller_id;
-	private String seller_name;
+	private String sellerId;
+	private String sellerName;
 	
-	private int file_id;
-	private String file_name;
-	private String store_name;
-	private String file_path;
+	private int fileId;
+	private String fileName;
+	private String storeName;
+	private String filePath;
 	private String copyright;
-	private String copyright_url;
+	private String copyrightUrl;
 }

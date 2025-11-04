@@ -4,49 +4,49 @@
 	<select id="getUser">
 		SELECT *
 		FROM nextjs_shop_user
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{userId}
 	</select>
 	<select id="getUserExceptPassword">
 		SELECT user_id, name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight, withdrawal_status
 		FROM nextjs_shop_user
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{userId}
 	</select>
 	<select id="getUserByToken">
 		SELECT *
 		FROM nextjs_shop_user u
 		JOIN nextjs_shop_token t ON u.user_id = t.user_id
-		WHERE connect_ip = #{connect_ip} AND connect_agent = #{connect_agent} 
-			AND refresh_token = #{refresh_token}
+		WHERE connect_ip = #{connectIp} AND connect_agent = #{connectAgent} 
+			AND refresh_token = #{refreshToken}
 	</select>
 	<insert id="insertToken">
 		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_id)
-		VALUES(#{connect_ip}, #{connect_agent}, #{refresh_token}, #{user_id})
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userId})
 	</insert>
-	<select id="getToken_id">
+	<select id="getTokenId">
 		SELECT token_id
 		FROM nextjs_shop_token
-		WHERE connect_agent = #{connect_agent} AND connect_ip = #{connect_ip} AND user_id = #{user_id}
+		WHERE connect_agent = #{connectAgent} AND connect_ip = #{connectIp} AND user_id = #{userId}
 		ORDER BY created_at DESC
 		LIMIT 1
 	</select>
 	<update id="updateToken">
 		UPDATE nextjs_shop_token
-		SET refresh_token = #{refresh_token}
-		WHERE token_id = #{token_id}
+		SET refresh_token = #{refreshToken}
+		WHERE token_id = #{tokenId}
 	</update>
 	<select id="getId" resultType="int">
 	    SELECT EXISTS (
 	        SELECT 1 FROM nextjs_shop_user
-	        WHERE user_id = #{user_id}
+	        WHERE user_id = #{userId}
 	    ) AS exists_flag
 	</select>
 	<insert id="joinUser">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
-		VALUES(#{user_id}, #{password}, #{name}, #{zonecode}, #{address}, #{address_detail}, #{birthday}, #{phone}, #{email})
+		VALUES(#{userId}, #{password}, #{name}, #{zonecode}, #{address}, #{addressDetail}, #{birthday}, #{phone}, #{email})
 	</insert>
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
-		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{address_detail}, phone = #{phone}, email = #{email}
-		WHERE user_id = #{user_id}
+		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{addressDetail}, phone = #{phone}, email = #{email}
+		WHERE user_id = #{userId}
 	</update>
 </mapper>

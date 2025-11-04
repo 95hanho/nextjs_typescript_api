@@ -17,6 +17,6 @@ public class OrderList {
     private BigDecimal discountPrice;
     private BigDecimal finalPrice;
     
-    private int usercouponId;
+    private int userCouponId;
     private int holdId;
 }

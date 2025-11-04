@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserInCartCountDTO {
 	
-	private Timestamp latest_date; // 가장 최근 장바구니에 넣은 날짜
+	private Timestamp latestDate; // 가장 최근 장바구니에 넣은 날짜
 	
 	private int inCartCount;
 	
-	private String user_id;
-	private String user_name;
+	private String userId;
+	private String userName;
 	
 	private String productNames; // 카트에 들어있는 상품(product.name)들 이름 문자배열(,)
 	

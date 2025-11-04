@@ -11,11 +11,11 @@ import me._hanho.nextjs_shop.model.UserAddress;
 @Mapper
 public interface MypageMapper {
 
-	List<UserCouponDTO> getUserCoupons(String user_id);
+	List<UserCouponDTO> getUserCoupons(String userId);
 
-	List<MyOrderGroupDTO> getMyOrderListGroupList(String user_id);
+	List<MyOrderGroupDTO> getMyOrderListGroupList(String userId);
 	
-	List<OrderListWithReviewDTO> getMyOrderListProductWithReview(int order_id);
+	List<OrderListWithReviewDTO> getMyOrderListProductWithReview(int orderId);
 	
 	MyOrderDetailDTO getMyOrderDetail(String orderId);
 	
@@ -23,30 +23,23 @@ public interface MypageMapper {
 	
 	void insertReview(Review review);
 	
-	List<CartProductDTO> getCartList(String user_id);
+	List<CartProductDTO> getCartList(String userId);
 	
 	int updateCart(Cart cart);
 	
-	int deleteCart(int cart_id);
+	int deleteCart(int cartId);
 	
-	
-	
-	
-	
-	
-	
+	List<WishlistItemDTO> getWishlistItems(String userId);
 
-	List<WishlistItemDTO> getWishlistItems(String user_id);
-
-	void deleteWish(int wish_id);
+	void deleteWish(int wishId);
 	
-	List<UserAddress> getUserAddressList(String user_id);
+	List<UserAddress> getUserAddressList(String userId);
 
 	void insertUserAddress(UserAddress userAddress);
 
 	int updateUserAddress(UserAddress userAddress);
 
-	int deleteUserAddress(int address_id);
+	int deleteUserAddress(int addressId);
 
 	
 
