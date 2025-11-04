@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class File {
+public class FileInfo {
     private int fileId;
     private String fileName;
     private String storeName;
