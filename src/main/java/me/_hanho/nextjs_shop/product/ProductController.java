@@ -45,7 +45,7 @@ public class ProductController {
 		List<ProductListDTO> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 		result.put("productList", productList);
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록
@@ -56,7 +56,7 @@ public class ProductController {
 		
 		productService.addToWishList(wish);
 
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록해제
@@ -67,7 +67,7 @@ public class ProductController {
 		
 		productService.deleteWish(wishId);
 
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 넣기/수량증가
@@ -78,7 +78,7 @@ public class ProductController {
 		
 		productService.putCart(cart);
 
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상세보기 조회

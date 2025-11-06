@@ -44,10 +44,10 @@ public class AuthController {
 		if(userId != null) {
 			User user = authService.getUserExceptPassword(userId);
 			result.put("user", user);
-			result.put("msg", "success");
+			result.put("message", "success");
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		} else {
-			result.put("msg", "token제대로 안됨");
+			result.put("message", "token제대로 안됨");
 			logger.error("token 제대로 안온듯");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
@@ -61,13 +61,12 @@ public class AuthController {
 		
 		User checkUser = authService.getUser(user.getUserId());
 		if (checkUser == null || !authService.passwordCheck(user.getPassword(), checkUser.getPassword())) {
-			result.put("msg", "USER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
-			result.put("code", 430);
+			result.put("message", "USER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
 			
 			return new ResponseEntity<>(
 					result
-					, HttpStatus.BAD_REQUEST);
+					, HttpStatus.UNAUTHORIZED);
 		} else {
 			User onlyId = new User();
 			onlyId.setUserId(checkUser.getUserId());
@@ -77,7 +76,7 @@ public class AuthController {
 			Token token = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(refreshToken).userId(checkUser.getUserId()).build();
 			authService.insertToken(token);
 			
-			result.put("msg", "success");
+			result.put("message", "success");
 			result.put("code", 200);
 			result.put("accessToken", accessToken);
 			result.put("refreshToken", refreshToken);
@@ -95,10 +94,10 @@ public class AuthController {
 		boolean hasId = authService.getId(userId);
 		
 		if(!hasId) {
-			result.put("msg", "success");
+			result.put("message", "success");
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		} else {
-			result.put("msg", "fail");
+			result.put("message", "fail");
 			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
 		}
 	}
@@ -108,7 +107,7 @@ public class AuthController {
 		logger.info("phoneAuth");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원가입
@@ -119,7 +118,7 @@ public class AuthController {
 		
 		authService.joinUser(user);
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원 정보 변경
@@ -130,7 +129,7 @@ public class AuthController {
 		
 		authService.userInfoUpdate(user);
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 토큰 재생성
@@ -144,7 +143,7 @@ public class AuthController {
 		try {
 			claims = tokenService.parseJwtToken(refreshToken);
 		} catch (Exception e) {
-			result.put("msg", "token제대로 안됨");
+			result.put("message", "token제대로 안됨");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
 		
@@ -161,18 +160,18 @@ public class AuthController {
 				Token token2 = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(updatedRefreshToken).userId(checkUser.getUserId()).build();
 				authService.updateToken(token2);
 				
-				result.put("msg", "access 토큰 재발급 성공");
+				result.put("message", "access 토큰 재발급 성공");
 				result.put("accessToken", updatedAccessToken);
 				result.put("refreshToken", updatedRefreshToken);
 				result.put("code", 200);
 				result.put("status", "success");
 				return new ResponseEntity<>(result, HttpStatus.OK);
 			} else {
-				result.put("msg", "token제대로 안됨");
+				result.put("message", "token제대로 안됨");
 				return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 			}
 		} else {
-			result.put("msg", "token제대로 안됨");
+			result.put("message", "token제대로 안됨");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
 	}
