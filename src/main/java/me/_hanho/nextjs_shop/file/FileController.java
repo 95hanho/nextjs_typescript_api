@@ -44,7 +44,7 @@ public class FileController {
 		
 //		fileService.fileUpload(files, "");
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -57,7 +57,7 @@ public class FileController {
 
 		fileService.fileUpload(file, id);
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

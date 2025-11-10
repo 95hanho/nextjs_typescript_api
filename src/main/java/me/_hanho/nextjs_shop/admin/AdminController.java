@@ -33,7 +33,7 @@ public class AdminController {
 		// 예시 비번 : pass1234!
 		adminService.addSeller(seller);
 
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 }

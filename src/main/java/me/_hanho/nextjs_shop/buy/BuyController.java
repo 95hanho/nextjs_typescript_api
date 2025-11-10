@@ -43,7 +43,7 @@ public class BuyController {
 
 	    result.put("ok", res.isOk());
 	    result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
-	    result.put("msg", "success");
+	    result.put("message", "success");
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -56,7 +56,7 @@ public class BuyController {
         body.put("requestedIds", req.getHoldIds());
         body.put("updatedCount", updated);
         body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
-        body.put("msg", "success");
+        body.put("message", "success");
         return ResponseEntity.ok(body);
     }
     
@@ -70,7 +70,7 @@ public class BuyController {
         body.put("requestedIds", req.getHoldIds());
         body.put("releasedCount", released);
         body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
-        body.put("msg", "success");
+        body.put("message", "success");
         return ResponseEntity.ok(body);
     }
     
@@ -93,7 +93,7 @@ public class BuyController {
         
         body.put("orderStock", orderStock);
         body.put("availableCouponList", availableCouponList);
-        body.put("msg", "success");
+        body.put("message", "success");
         return ResponseEntity.ok(body);
     }
 	
@@ -155,7 +155,7 @@ public class BuyController {
 	    result.put("deliveryFee",     deliveryFee); // 배송비
 	    result.put("totalDiscount",   totalDiscount); // 총 할인비(쿠폰할인 + 마일리지)
 	    result.put("totalFinal",      totalFinal); // 총 금액
-	    result.put("msg", "success");
+	    result.put("message", "success");
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -167,7 +167,7 @@ public class BuyController {
 		
 		buyService.pay(payRequest);
 		
-		result.put("msg", "success");
+		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
