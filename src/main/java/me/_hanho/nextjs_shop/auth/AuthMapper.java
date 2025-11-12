@@ -8,23 +8,20 @@ import me._hanho.nextjs_shop.model.User;
 @Mapper
 public interface AuthMapper {
 
+	User getUserExceptPassword(String userId);
+	
 	User getUser(String userId);
 	
-	User getUserExceptPassword(String userId);
+	int getId(String userId);
 
-	User getUserByToken(Token token);
-	
-	void insertToken(Token token);
-	
 	void joinUser(User user);
 	
 	int userInfoUpdate(User user);
 	
-	int getTokenId(Token token);
-
-	int updateToken(Token token);
-
-	int getId(String userId);
+	void insertToken(Token token);
 	
+	int updateToken(TokenDTO token);
+
+	String getUserIdByToken(TokenDTO token);
 	
 }

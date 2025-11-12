@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
@@ -32,8 +31,8 @@ public class AuthController {
 	@Autowired
 	private AuthService authService;
 	
-	@Autowired
-	private TokenService tokenService;
+//	@Autowired
+//	private TokenService tokenService;
 	
 	// 유저정보가져오기
 	@GetMapping
@@ -41,16 +40,24 @@ public class AuthController {
 		logger.info("getUserInfo : userId=" + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		if(userId != null) {
+		try {
 			User user = authService.getUserExceptPassword(userId);
-			result.put("user", user);
-			result.put("message", "success");
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			result.put("message", "token제대로 안됨");
+			if(user == null) {
+				result.put("message", "USER_NOT_FOUND"); // 존재하지 않는 사용자 (로그인 실패 때와 동일)
+				return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+			} else {
+				result.put("user", user);
+				result.put("message", "USER_FETCH_SUCCESS");
+				return new ResponseEntity<>(result, HttpStatus.OK);
+			}
+		} catch(Exception e) {
+			logger.error(e.getMessage());
 			logger.error("token 제대로 안온듯");
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+			result.put("message", "UNAUTHORIZED_USER"); // 인증 실패로 조회 불가
+			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED); 
 		}
+			
+			
 	}
 	// 로그인
 	@PostMapping
@@ -68,37 +75,41 @@ public class AuthController {
 					result
 					, HttpStatus.UNAUTHORIZED);
 		} else {
-			User onlyId = new User();
-			onlyId.setUserId(checkUser.getUserId());
-			String accessToken = tokenService.makeJwtToken(600, onlyId);
-			String refreshToken = tokenService.makeJwtToken(1800);
-			String ipAddress = request.getRemoteAddr();
-			Token token = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(refreshToken).userId(checkUser.getUserId()).build();
-			authService.insertToken(token);
+			 // bbf로 변경하면서 필요없음
+//			User onlyId = new User();
+//			onlyId.setUserId(checkUser.getUserId());
+//			String accessToken = tokenService.makeJwtToken(600, onlyId);
+//			String refreshToken = tokenService.makeJwtToken(1800);
+//			String ipAddress = request.getRemoteAddr();
+//			Token token = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(refreshToken).userId(checkUser.getUserId()).build();
+//			authService.insertToken(token);
 			
-			result.put("message", "success");
-			result.put("code", 200);
-			result.put("accessToken", accessToken);
-			result.put("refreshToken", refreshToken);
+			
+//			result.put("accessToken", accessToken);
+//			result.put("refreshToken", refreshToken);
+			
+			result.put("message", "LOGIN_SUCCESS");
 			return new ResponseEntity<>(
 					result
 					, HttpStatus.OK);
 		}
 	}
+	
 	// 아이디 중복확인 
 	@GetMapping("/id")
 	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("userId") String userId) {
-		logger.info("idDuplcheck");
+		logger.info("idDuplcheck userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		boolean hasId = authService.getId(userId);
+		logger.info("hasId : " + hasId);
 		
 		if(!hasId) {
-			result.put("message", "success");
+			result.put("message", "ID_AVAILABLE");
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		} else {
-			result.put("message", "fail");
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+			result.put("message", "ID_DUPLICATED");
+			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
 		}
 	}
 	// 휴대폰인증
@@ -107,7 +118,11 @@ public class AuthController {
 		logger.info("phoneAuth");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		result.put("message", "success");
+		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
+		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
+		// "VERIFICATION_SENT" 인증번호 전송 완료
+		
+		result.put("message", "PHONE_VERIFIED");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원가입
@@ -116,9 +131,9 @@ public class AuthController {
 		logger.info("join : " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		authService.joinUser(user);
+//		authService.joinUser(user);
 		
-		result.put("message", "success");
+		result.put("message", "JOIN_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원 정보 변경
@@ -129,53 +144,47 @@ public class AuthController {
 		
 		authService.userInfoUpdate(user);
 		
-		result.put("message", "success");
+//		"USER_UPDATE_FAILED" : 변경 중 오류 발생 (DB 문제 등)
+//		"UNAUTHORIZED_USER" : 권한이 없음.
+		
+		result.put("message", "USER_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 토큰 재생성
+
+	// 로그인 토큰 저장
 	@PostMapping("/token")
-	public ResponseEntity<Map<String, Object>> reToken(@RequestParam("refreshToken") String refreshToken,
-			HttpServletRequest request, @RequestHeader("user-agent") String agent) {
-		logger.info("reToken " + refreshToken);
+	public ResponseEntity<Map<String, Object>> insertToken(
+			@RequestParam("refreshToken") String refreshToken, @RequestParam("userId") String userId,
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		logger.info("insertToken refreshToken : " + refreshToken + ", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		Claims claims = null;
-		try {
-			claims = tokenService.parseJwtToken(refreshToken);
-		} catch (Exception e) {
-			result.put("message", "token제대로 안됨");
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-		}
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		Token token = Token.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userId(userId).build(); 
+		authService.insertToken(token);
 		
-		if(claims != null) {
-			String ipAddress = request.getRemoteAddr();
-			Token token = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(refreshToken).build();
-			User checkUser = authService.getUserByToken(token);
-			
-			if(checkUser != null) {
-				User onlyId = new User();
-				onlyId.setUserId(checkUser.getUserId());
-				String updatedAccessToken = tokenService.makeJwtToken(600, onlyId);
-				String updatedRefreshToken = tokenService.makeJwtToken(1800);
-				Token token2 = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(updatedRefreshToken).userId(checkUser.getUserId()).build();
-				authService.updateToken(token2);
-				
-				result.put("message", "access 토큰 재발급 성공");
-				result.put("accessToken", updatedAccessToken);
-				result.put("refreshToken", updatedRefreshToken);
-				result.put("code", 200);
-				result.put("status", "success");
-				return new ResponseEntity<>(result, HttpStatus.OK);
-			} else {
-				result.put("message", "token제대로 안됨");
-				return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-			}
-		} else {
-			result.put("message", "token제대로 안됨");
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-		}
+		result.put("message", "TOKEN_INSERT_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	// 로그인 토큰 수정(재저장)
+	@PutMapping("/token")
+	public ResponseEntity<Map<String, Object>> updateToken(
+			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		logger.info("updateToken refreshToken : " + refreshToken + ", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(beforeToken).beforeToken(beforeToken).build(); 
+		authService.updateToken(token);
+		
+		String userId = authService.getUserIdByToken(token);
+		
+		result.put("userId", userId);
+		result.put("message", "TOKEN_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 
 	
 }

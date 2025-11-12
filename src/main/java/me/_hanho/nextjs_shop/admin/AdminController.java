@@ -32,8 +32,15 @@ public class AdminController {
 
 		// 예시 비번 : pass1234!
 		adminService.addSeller(seller);
+		
+		/*
+		 *
+			판매자 추가 실패	SELLER_ADD_FAILED	등록 중 오류 발생
+			판매자 중복 (이미 존재)	SELLER_DUPLICATED	동일 판매자 존재로 추가 불가
+			권한 부족 (관리자만 가능)	UNAUTHORIZED_ADMIN	관리자 권한 없음
+		 */
 
-		result.put("message", "success");
+		result.put("message", "SELLER_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 }

@@ -45,7 +45,7 @@ public class ProductController {
 		List<ProductListDTO> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 		result.put("productList", productList);
-		result.put("message", "success");
+		result.put("message", "PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록

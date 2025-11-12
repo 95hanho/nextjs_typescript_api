@@ -30,7 +30,7 @@ public class MainController {
 		
 		List<MenuDTO> menuList = mainService.getMenuList();
 		
-		result.put("message", "SUCCESS");
+		result.put("message", "MENU_FETCH_SUCCESS");
 		result.put("menuList", menuList);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -43,7 +43,7 @@ public class MainController {
 		
 		List<ProductMainSlideDto> productList = mainService.getMainSlideProducts();
 		
-		result.put("message", "SUCCESS");
+		result.put("message", "MAIN_SLIDE_FETCH_SUCCESS");
 		result.put("productList", productList);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

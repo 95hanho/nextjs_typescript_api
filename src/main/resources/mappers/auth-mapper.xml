@@ -1,52 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.auth.AuthMapper">
-	<select id="getUser">
-		SELECT *
-		FROM nextjs_shop_user
-		WHERE user_id = #{userId}
-	</select>
 	<select id="getUserExceptPassword">
 		SELECT user_id, name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight, withdrawal_status
 		FROM nextjs_shop_user
 		WHERE user_id = #{userId}
 	</select>
-	<select id="getUserByToken">
+	
+	<select id="getUser">
 		SELECT *
-		FROM nextjs_shop_user u
-		JOIN nextjs_shop_token t ON u.user_id = t.user_id
-		WHERE connect_ip = #{connectIp} AND connect_agent = #{connectAgent} 
-			AND refresh_token = #{refreshToken}
+		FROM nextjs_shop_user
+		WHERE user_id = #{userId}
 	</select>
-	<insert id="insertToken">
-		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_id)
-		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userId})
-	</insert>
-	<select id="getTokenId">
-		SELECT token_id
-		FROM nextjs_shop_token
-		WHERE connect_agent = #{connectAgent} AND connect_ip = #{connectIp} AND user_id = #{userId}
-		ORDER BY created_at DESC
-		LIMIT 1
-	</select>
-	<update id="updateToken">
-		UPDATE nextjs_shop_token
-		SET refresh_token = #{refreshToken}
-		WHERE token_id = #{tokenId}
-	</update>
+	
 	<select id="getId" resultType="int">
 	    SELECT EXISTS (
 	        SELECT 1 FROM nextjs_shop_user
 	        WHERE user_id = #{userId}
 	    ) AS exists_flag
 	</select>
+	
 	<insert id="joinUser">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
 		VALUES(#{userId}, #{password}, #{name}, #{zonecode}, #{address}, #{addressDetail}, #{birthday}, #{phone}, #{email})
 	</insert>
+	
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
 		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{addressDetail}, phone = #{phone}, email = #{email}
 		WHERE user_id = #{userId}
 	</update>
+	
+	<insert id="insertToken">
+		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_id)
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userId})
+	</insert>
+	
+	<update id="updateToken">
+		UPDATE nextjs_shop_token
+		SET refresh_token = #{refreshToken}
+		WHERE refresh_token = #{beforeToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+	</update>
+	
+	<select id="getUserIdByToken">
+		SELECT user_id
+		FROM nextjs_shop_token
+		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+	</select>
+	
 </mapper>
