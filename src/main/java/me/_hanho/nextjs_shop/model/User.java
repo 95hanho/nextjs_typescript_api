@@ -23,5 +23,5 @@ public class User {
     private int mileage;
     private int tall;
     private int weight;
-    private int withdrawalStatus;
+    private boolean withdrawalStatus;
 }

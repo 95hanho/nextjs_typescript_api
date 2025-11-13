@@ -22,6 +22,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
+		// 어차피 안쓸듯 = 'Authorization'만 안보내면 상관없음.
 		String authorizationHeader = request.getHeader("Authorization");
 		logger.info(authorizationHeader);
 		String accessToken = null;

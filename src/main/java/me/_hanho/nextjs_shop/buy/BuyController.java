@@ -40,11 +40,16 @@ public class BuyController {
 
 //	    HoldTryResult res = buyService.tryHoldAllOrNothing(buyCheck); // 전부 가능 시 홀드 생성
 	    HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck);
-
-	    result.put("ok", res.isOk());
-	    result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
-	    result.put("message", "success");
-	    return new ResponseEntity<>(result, HttpStatus.OK);
+	    
+	    if(!res.isOk()) {
+	    	result.put("message", "STOCK_HOLD_FAILED");
+	    	return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+	    	
+	    } else {
+	    	result.put("message", "STOCK_HOLD_SUCCESS");
+//	    	result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
+	    	return new ResponseEntity<>(result, HttpStatus.OK);
+	    }
 	}
 	
 	// 점유 연장 (여러 holdId 배치)
