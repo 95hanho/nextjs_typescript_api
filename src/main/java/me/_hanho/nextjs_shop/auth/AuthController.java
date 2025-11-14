@@ -36,7 +36,7 @@ public class AuthController {
 	
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestParam("userId") String userId) {
 		logger.info("getUserInfo : userId=" + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
