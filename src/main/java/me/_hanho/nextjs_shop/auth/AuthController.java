@@ -156,7 +156,8 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> insertToken(
 			@RequestParam("refreshToken") String refreshToken, @RequestParam("userId") String userId,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("insertToken refreshToken : " + refreshToken + ", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userId : " + userId + 
+				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
@@ -172,11 +173,13 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> updateToken(
 			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("updateToken refreshToken : " + refreshToken + ", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
+				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
+				", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(beforeToken).beforeToken(beforeToken).build(); 
+		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		authService.updateToken(token);
 		
 		String userId = authService.getUserIdByToken(token);
