@@ -262,7 +262,7 @@
 	 </select>
   
 	 <insert id="insertOrderList">
-		INSERT INTO nextjs_shop_order_list
+		INSERT INTO nextjs_shop_order_item
 		(order_id, count, order_price, discount_price, final_price, user_coupon_id, hold_id)
 		VALUES
 		<foreach collection="productList" item="item" separator=",">

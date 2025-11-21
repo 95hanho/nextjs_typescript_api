@@ -28,5 +28,5 @@ public class MyOrderGroupDTO {
     private Timestamp deliveredDate; // 배송완료일자
     private Timestamp returnDate; // 반송일자
     
-    private List<OrderListWithReviewDTO> items;
+    private List<OrderItemWithReviewDTO> items;
 }

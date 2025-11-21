@@ -39,10 +39,10 @@ public class SellerController {
 		List<SellerProductDTO> sellerProductList = sellerService.getSellerProductList(sellerId);
 		
 		result.put("sellerProductList", sellerProductList);
-		result.put("message", "success");
+		result.put("message", "SELLER_PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 제품 추가 / 수정
+	// 판매자 제품 추가 / 수정
 	@PostMapping("/product")
 	public ResponseEntity<Map<String, Object>> addProduct(@ModelAttribute Product product) {
 		logger.info("sellerAddProduct " + product);
@@ -54,7 +54,7 @@ public class SellerController {
 			sellerService.updateProduct(product);
 		}
 
-		result.put("message", "success");
+		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 제품 상세보기
@@ -69,7 +69,7 @@ public class SellerController {
 		// 판매자 제품에 적용 가능한 쿠폰조회 getProductAvailableCoupons
 
 //		result.put("sellerProductList", sellerProductList);
-		result.put("message", "success");
+		result.put("message", "SELLER_PRODUCT_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -85,7 +85,7 @@ public class SellerController {
 			sellerService.updateProductDetail(productDetail);
 		}
 
-		result.put("message", "success");
+		result.put("message", "SELLER_PRODUCT_DETAIL_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 쿠폰 조회
@@ -97,7 +97,7 @@ public class SellerController {
 		List<Coupon> couponList = sellerService.getSellerCouponList(sellerId);
 		
 		result.put("couponList", couponList);
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 쿠폰 등록
@@ -108,7 +108,7 @@ public class SellerController {
 		
 		sellerService.addCoupon(coupon);
 		
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_CREATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 쿠폰 상태변경
@@ -119,7 +119,7 @@ public class SellerController {
 		
 		sellerService.updateCouponStatus(coupon);
 		
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_STATUS_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 해당 쿠폰 허용제품 조회
@@ -131,7 +131,7 @@ public class SellerController {
 		List<SellerCouponAllowedProductDTO> CouponAllowedProductList = sellerService.getSellerCouponAllow(couponId);
 		
 		result.put("CouponAllowedProductList", CouponAllowedProductList);
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_ALLOWED_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 해당 쿠폰 허용제품 변경
@@ -142,7 +142,7 @@ public class SellerController {
 		
 		sellerService.setSellerCouponAllow(couponId, productIds);
 		
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_ALLOWED_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 해당 쿠폰을 유저에게 발행하기
@@ -153,7 +153,7 @@ public class SellerController {
 		
 		sellerService.issueCouponsToUsers(couponId, userIds);
 		
-		result.put("message", "success");
+		result.put("message", "SELLER_COUPON_ISSUE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자와 관련된 회원 조회(내 상품을 보거나 위시하거나 장바구니에 넣거나 즐겨찾기한) 
@@ -176,7 +176,7 @@ public class SellerController {
 		result.put("productWishCountList", productWishCountList);
 		result.put("brandBookmarkList", brandBookmarkList);
 		result.put("userInCartCountList", userInCartCountList);
-		result.put("message", "success");
+		result.put("message", "SELLER_INTERESTING_USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 유저쿠폰사용내역 조회
@@ -185,7 +185,7 @@ public class SellerController {
 		logger.info("getSellerUsercouponUsed "+ sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		result.put("message", "success");
+		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 유저쿠폰사용내역 상세조회 - 어느주문에 사용했는지

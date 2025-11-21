@@ -40,7 +40,7 @@ public class MypageController {
 		List<UserCouponDTO> couponList = mypageService.getUserCoupons(userId);
 		
 		result.put("couponList", couponList);
-		result.put("message", "success");
+		result.put("message", "USER_COUPON_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -53,7 +53,7 @@ public class MypageController {
 		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(userId);
 
 		result.put("myOrderList", myOrderList);
-		result.put("message", "success");
+		result.put("message", "MY_ORDER_LIST_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 주문배송정보 상세조회
@@ -65,7 +65,7 @@ public class MypageController {
 		MyOrderDetailDTO myOrderDetail = mypageService.getMyOrderDetail(orderId);
 
 		result.put("myOrderDetail", myOrderDetail);
-		result.put("message", "success");
+		result.put("message", "MY_ORDER_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 리뷰 작성
@@ -76,7 +76,7 @@ public class MypageController {
 		
 		mypageService.insertReview(review);
 		
-		result.put("message", "success");
+		result.put("message", "REVIEW_WRITE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -88,8 +88,8 @@ public class MypageController {
 		
 		List<CartProductDTO> CartList = mypageService.getCartList(userId);
 		
-		result.put("CartList", CartList);
-		result.put("message", "success");
+		result.put("cartList", CartList);
+		result.put("message", "CART_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 제품 수량/선택여부 변경
@@ -100,7 +100,7 @@ public class MypageController {
 
 		mypageService.updateCart(cart);
 		
-		result.put("message", "success");
+		result.put("message", "CART_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 제품 삭제
@@ -111,7 +111,7 @@ public class MypageController {
 		
 		mypageService.deleteCart(cartId);
 		
-		result.put("message", "success");
+		result.put("message", "CART_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시리스트 조회
@@ -123,6 +123,7 @@ public class MypageController {
 		List<WishlistItemDTO> wishlistItems = mypageService.getWishlistItems(userId);
 		
 		result.put("wishlistItems", wishlistItems);
+		result.put("message", "WISH_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -136,7 +137,7 @@ public class MypageController {
 		
 		mypageService.deleteWish(wishId);
 		
-		result.put("message", "success");
+		result.put("message", "WISH_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -149,7 +150,7 @@ public class MypageController {
 		List<UserAddress> userAddressList = mypageService.getUserAddressList(userId);
 		
 		result.put("userAddressList", userAddressList);
-		result.put("message", "success");
+		result.put("message", "ADDRESS_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 유저배송지 추가/수정
@@ -164,7 +165,7 @@ public class MypageController {
 			mypageService.updateUserAddress(userAddress);
 		}
 		
-		result.put("message", "success");
+		result.put("message", "ADDRESS_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 유저배송지 삭제
@@ -175,7 +176,7 @@ public class MypageController {
 		
 		mypageService.deleteUserAddress(addressId);
 		
-		result.put("message", "success");
+		result.put("message", "ADDRESS_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

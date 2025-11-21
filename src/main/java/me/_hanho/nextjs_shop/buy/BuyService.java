@@ -151,7 +151,7 @@ public class BuyService {
 		int orderId = buyMapper.getOrderId(payRequest.getUserId());
 		// 
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
-		// nextjs_shop_order_list(주문목록) INSERT
+		// nextjs_shop_order_item(주문목록) INSERT
 		buyMapper.insertOrderList(productWithCouponList, orderId, payRequest.getUserId());
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
