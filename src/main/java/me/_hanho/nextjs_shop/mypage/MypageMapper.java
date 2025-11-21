@@ -15,7 +15,7 @@ public interface MypageMapper {
 
 	List<MyOrderGroupDTO> getMyOrderListGroupList(String userId);
 	
-	List<OrderListWithReviewDTO> getMyOrderListProductWithReview(int orderId);
+	List<OrderItemWithReviewDTO> getMyOrderListProductWithReview(int orderId);
 	
 	MyOrderDetailDTO getMyOrderDetail(String orderId);
 	

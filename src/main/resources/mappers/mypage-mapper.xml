@@ -4,7 +4,7 @@
 	
 	<select id="getUserCoupons">
 		SELECT uc.user_coupon_id, uc.used, 
-			c.coupon_id, c.description, c.discount_type, c.discount_value,
+			c.coupon_id, c.description, c.coupon_code, c.discount_type, c.discount_value,
 			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
 			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
 			c.seller_id, s.seller_name
@@ -33,11 +33,11 @@
 			pd.product_detail_id, pd.add_price, pd.size,
 			p.product_id, p.name AS productName, p.color_name, p.price,
 			s.seller_id, s.seller_name,
-			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName,
+			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName, mt.gender,
 			tpi.product_image_id,
 			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
 			r.review_id, r.content, r.created_at AS reviewDate, r.rating
-		FROM nextjs_shop_order_list ol
+		FROM nextjs_shop_order_item ol
 		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
 		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
@@ -90,7 +90,7 @@
 			tpi.product_image_id,
 			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
 			r.review_id, r.content, r.created_at AS reviewDate, r.rating
-		FROM nextjs_shop_order_list ol
+		FROM nextjs_shop_order_item ol
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = ol.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id

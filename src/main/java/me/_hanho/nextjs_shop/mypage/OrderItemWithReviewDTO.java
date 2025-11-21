@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderListWithReviewDTO {
+public class OrderItemWithReviewDTO {
 	
     private int orderListId;
     private int orderId;
@@ -41,6 +41,7 @@ public class OrderListWithReviewDTO {
     private String subMenuName;
     private int menuTopId;
     private String topMenuName;
+    private String gender;
     
     private int productImageId;
     private int fileId;

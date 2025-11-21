@@ -56,7 +56,7 @@ public class ProductController {
 		
 		productService.addToWishList(wish);
 
-		result.put("message", "success");
+		result.put("message", "WISH_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록해제
@@ -67,18 +67,18 @@ public class ProductController {
 		
 		productService.deleteWish(wishId);
 
-		result.put("message", "success");
+		result.put("message", "WISH_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> putCart(@ModelAttribute Cart cart) {
+	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute Cart cart) {
 		logger.info("putCart");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		productService.putCart(cart);
 
-		result.put("message", "success");
+		result.put("message", "CART_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상세보기 조회

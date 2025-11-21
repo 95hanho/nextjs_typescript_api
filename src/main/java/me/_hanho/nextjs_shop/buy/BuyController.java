@@ -47,7 +47,7 @@ public class BuyController {
 	    	
 	    } else {
 	    	result.put("message", "STOCK_HOLD_SUCCESS");
-//	    	result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
+	    	result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
 	    	return new ResponseEntity<>(result, HttpStatus.OK);
 	    }
 	}
@@ -56,32 +56,42 @@ public class BuyController {
     @PostMapping("/stock-hold/extend")
     public ResponseEntity<Map<String, Object>> extendStockHold(@RequestBody HoldBatchRequest req) {
         logger.info("extendStockHold {}", req);
+        Map<String, Object> result = new HashMap<>();
+        
         int updated = buyService.extendHolds(req.getHoldIds());
-        Map<String, Object> body = new HashMap<>();
-        body.put("requestedIds", req.getHoldIds());
-        body.put("updatedCount", updated);
-        body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
-        body.put("message", "success");
-        return ResponseEntity.ok(body);
+        int requested = req.getHoldIds() == null ? 0 : req.getHoldIds().size();
+        
+        result.put("holdIds", req.getHoldIds());
+        result.put("requestedCount", requested);
+        result.put("updatedCount", updated);
+        if(updated == requested) {
+        	result.put("message", "STOCK_HOLD_EXTEND_SUCCESS");
+        	return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+        	result.put("message", "STOCK_HOLD_EXTEND_FAILED");
+        	return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+        }
+        
     }
     
     // 점유 해제 (여러 holdId 배치)
     // DELETE /bapi/buy/stock-hold   (body: {"holdIds":[...]} )
     @DeleteMapping("/stock-hold")
-    public ResponseEntity<Map<String, Object>> release(@RequestBody HoldBatchRequest req) {
-        logger.info("release holds: {}", req);
-        int released = buyService.releaseHolds(req.getHoldIds());
-        Map<String, Object> body = new HashMap<>();
-        body.put("requestedIds", req.getHoldIds());
-        body.put("releasedCount", released);
-        body.put("requestedCount", req.getHoldIds() == null ? 0 : req.getHoldIds().size());
-        body.put("message", "success");
-        return ResponseEntity.ok(body);
+    public ResponseEntity<Map<String, Object>> release(@RequestParam("holdIds") List<Integer> holdIds) {
+        logger.info("release holds: {}", holdIds);
+        Map<String, Object> result = new HashMap<>();
+        int released = buyService.releaseHolds(holdIds);
+        
+        result.put("holdIds", holdIds);
+        result.put("releasedCount", released);
+        result.put("requestedCount", holdIds == null ? 0 : holdIds.size());
+        result.put("message", "success");
+        return ResponseEntity.ok(result);
     }
     
 	// 결제 바로 전 상품 및 필요정보들 조회 점유하고 있는 상품조회
 	@GetMapping("/pay")
-    public ResponseEntity<Map<String, Object>> getPayBefore(@RequestParam("userId") String userId) {
+    public ResponseEntity<Map<String, Object>> getStockHold(@RequestParam("userId") String userId) {
         logger.info("getPayBefore : " + userId);
         Map<String, Object> body = new HashMap<>();
         
