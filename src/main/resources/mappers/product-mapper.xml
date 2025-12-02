@@ -57,14 +57,64 @@
 	  </choose>
 	  LIMIT 30
 	</select>
-	<insert id="addToWishList">
+	<select id="isWishExist" resultType="boolean">
+		SELECT EXISTS (
+        SELECT 1
+        FROM nextjs_shop_wish
+        WHERE product_id = #{productId}
+          AND user_id = #{userId}
+	    )
+	</select>
+	<update id="upProductWish">
+		UPDATE nextjs_shop_product
+		SET wish_count = wish_count + 1
+		WHERE product_id = #{productId} 
+	</update>
+	<insert id="insertWish">
 		INSERT INTO nextjs_shop_wish(product_id, user_id)
 		VALUES(#{productId}, #{userId})
 	</insert>
+	<update id="downProductWish">
+		UPDATE nextjs_shop_product
+		SET wish_count = wish_count - 1
+		WHERE product_id = #{productId}
+	</update>
 	<delete id="deleteWish">
 		DELETE FROM nextjs_shop_wish
-		WHERE wish_id = #{wishId}
+		WHERE product_id = #{productId}
+          AND user_id = #{userId}
 	</delete>
+	<!--  -->
+	<select id="isLikeExist" resultType="boolean">
+		SELECT EXISTS (
+        SELECT 1
+        FROM nextjs_shop_like
+        WHERE product_id = #{productId}
+          AND user_id = #{userId}
+	    )
+	</select>
+	<update id="upProductLike">
+		UPDATE nextjs_shop_product
+		SET like_count = like_count + 1
+		WHERE product_id = #{productId} 
+	</update>
+	<insert id="insertLike">
+		INSERT INTO nextjs_shop_like(product_id, user_id)
+		VALUES(#{productId}, #{userId})
+	</insert>
+	<update id="downProductLike">
+		UPDATE nextjs_shop_product
+		SET like_count = like_count - 1
+		WHERE product_id = #{productId}
+	</update>
+	<delete id="deleteLike">
+		DELETE FROM nextjs_shop_like
+		WHERE product_id = #{productId}
+          AND user_id = #{userId}
+	</delete>
+	
+	
+	
 	<insert id="putCart">
 		INSERT INTO nextjs_shop_cart(product_detail_id, user_id, quantity)
 		VALUES(#{productDetailId}, #{userId}, #{quantity})

@@ -56,9 +56,6 @@ public class MypageService {
 		return mypageMapper.getWishlistItems(userId);
 	}
 
-	public void deleteWish(int wishId) {
-		mypageMapper.deleteWish(wishId);
-	}
 	public List<UserAddress> getUserAddressList(String userId) {
 		return mypageMapper.getUserAddressList(userId);
 	}

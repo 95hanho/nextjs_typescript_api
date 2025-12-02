@@ -31,8 +31,6 @@ public interface MypageMapper {
 	
 	List<WishlistItemDTO> getWishlistItems(String userId);
 
-	void deleteWish(int wishId);
-	
 	List<UserAddress> getUserAddressList(String userId);
 
 	void insertUserAddress(UserAddress userAddress);

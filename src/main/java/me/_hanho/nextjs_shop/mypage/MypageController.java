@@ -129,18 +129,6 @@ public class MypageController {
 	
 	// 위시리스트 추가(실행 취소) => ProductController(/bapi/product/wish)에 있음.
 	
-	// 위시리스트 삭제
-	@DeleteMapping("/wish/{wishId}")
-	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wishId") int wishId) {
-		logger.info("deleteWish : " + wishId);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		mypageService.deleteWish(wishId);
-		
-		result.put("message", "WISH_DELETE_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-	
 	// 유저배송지 조회
 	@GetMapping("/address")
 	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestParam("userId") String userId) {

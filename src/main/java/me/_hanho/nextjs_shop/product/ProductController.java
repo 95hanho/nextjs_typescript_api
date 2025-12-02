@@ -10,16 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.Wish;
 
 @RestController
@@ -48,26 +47,26 @@ public class ProductController {
 		result.put("message", "PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 위시 등록
-	@PostMapping("/wish")
-	public ResponseEntity<Map<String, Object>> addToWishList(@ModelAttribute Wish wish) {
+	// 좋아요/취소
+	@PostMapping("like")
+	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute Like like) {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.addToWishList(wish);
+		productService.setLike(like);
 
-		result.put("message", "WISH_ADD_SUCCESS");
+		result.put("message", "WISH_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 위시 등록해제
-	@DeleteMapping("/wish/{wishId}")
-	public ResponseEntity<Map<String, Object>> deleteWish(@PathVariable("wishId") String wishId) {
-		logger.info("deleteWish.wishId : " + wishId);
+	// 위시 등록/해제
+	@PostMapping("/wish")
+	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute Wish wish) {
+		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.deleteWish(wishId);
+		productService.setWish(wish);
 
-		result.put("message", "WISH_DELETE_SUCCESS");
+		result.put("message", "WISH_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 넣기/수량증가

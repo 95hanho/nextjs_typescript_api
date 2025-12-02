@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.Wish;
 
 @Service
@@ -24,16 +26,34 @@ public class ProductService {
 		return productMapper.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 	}
 	
-	public void addToWishList(Wish wish) {
-		productMapper.addToWishList(wish);
+	@Transactional
+	public void setLike(Like like) {
+		boolean hasLike = productMapper.isLikeExist(like);
+		if(!hasLike) {
+			productMapper.upProductLike(like.getProductId());
+			productMapper.insertLike(like);
+		} else {
+			productMapper.downProductLike(like.getProductId());
+			productMapper.deleteLike(like);
+		}
 	}
-
-	public void deleteWish(String wishId) {
-		productMapper.deleteWish(wishId);
+	
+	@Transactional
+	public void setWish(Wish wish) {
+		boolean hasWish = productMapper.isWishExist(wish);
+		if(!hasWish) {
+			productMapper.upProductWish(wish.getProductId());
+			productMapper.insertWish(wish);
+		} else {
+			productMapper.downProductWish(wish.getProductId());
+			productMapper.deleteWish(wish);
+		}
 	}
 
 	public void putCart(Cart cart) {
 		productMapper.putCart(cart);
 	}
+
+
 
 }

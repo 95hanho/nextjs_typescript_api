@@ -15,6 +15,7 @@ public class Product {
     private String colorName;
     private int price;
     private Timestamp createdAt;
+    private int likeCount;
     private int viewCount;
     private int wishCount;
     private boolean saleStop;
