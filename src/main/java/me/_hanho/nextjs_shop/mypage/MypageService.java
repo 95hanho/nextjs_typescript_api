@@ -46,6 +46,12 @@ public class MypageService {
 	        throw new UserNotFoundException("updateCart not found: " + cart.getCartId());
 	    }
 	}
+	public void updateSelectedCart(UpdateSelectedCartDTO selectedCart) {
+		int updated = mypageMapper.updateSelectedCart(selectedCart);
+	    if (updated == 0) {
+	        throw new UserNotFoundException("updateSelectedCart not found: " + selectedCart.getCartIdList().toString());
+	    }
+	}
 	public void deleteCart(int cartId) {
 		int updated = mypageMapper.deleteCart(cartId);
 	    if (updated == 0) {

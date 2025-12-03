@@ -154,8 +154,16 @@
 	</select>
 	<update id="updateCart">
 		UPDATE nextjs_shop_cart
-		SET quantity = #{quantity}, selected = #{selected}
+		SET quantity = #{quantity}
 		WHERE cart_id = #{cartId}
+	</update>
+	<update id="updateSelectedCart">
+		UPDATE nextjs_shop_cart
+		SET selected = #{selected}
+		WHERE cart_id IN
+          <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
+            #{cartId}
+          </foreach>
 	</update>
 	<delete id="deleteCart">
 		DELETE FROM nextjs_shop_cart

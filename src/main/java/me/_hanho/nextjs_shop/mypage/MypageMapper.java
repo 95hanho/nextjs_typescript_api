@@ -27,6 +27,8 @@ public interface MypageMapper {
 	
 	int updateCart(Cart cart);
 	
+	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
+	
 	int deleteCart(int cartId);
 	
 	List<WishlistItemDTO> getWishlistItems(String userId);
@@ -38,6 +40,8 @@ public interface MypageMapper {
 	int updateUserAddress(UserAddress userAddress);
 
 	int deleteUserAddress(int addressId);
+
+	
 
 	
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -92,7 +93,7 @@ public class MypageController {
 		result.put("message", "CART_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 장바구니 제품 수량/선택여부 변경
+	// 장바구니 제품 수량 변경
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute Cart cart) {
 		logger.info("updateCart : " + cart.getCartId());
@@ -101,6 +102,17 @@ public class MypageController {
 		mypageService.updateCart(cart);
 		
 		result.put("message", "CART_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 장바구니 제품 선택여부 변경
+	@PutMapping("/cart")
+	public ResponseEntity<Map<String, Object>> updateSelectedCart(@ModelAttribute UpdateSelectedCartDTO selectedCart) {
+		logger.info("updateSelectedCart : " + selectedCart);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		mypageService.updateSelectedCart(selectedCart);
+		
+		result.put("message", "CART_SELECTED_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 제품 삭제
