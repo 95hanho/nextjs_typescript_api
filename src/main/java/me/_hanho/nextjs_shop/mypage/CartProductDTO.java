@@ -23,6 +23,8 @@ public class CartProductDTO {
     private String productName;
     private int price;
     
+    private Integer wishId;
+    
     private int fileId;
     private String fileName;
     private String storeName;

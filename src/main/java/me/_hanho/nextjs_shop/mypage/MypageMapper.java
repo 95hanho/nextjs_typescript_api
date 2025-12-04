@@ -23,6 +23,8 @@ public interface MypageMapper {
 	
 	void insertReview(Review review);
 	
+	void unselectOutOfStockItems(String userId);
+	
 	List<CartProductDTO> getCartList(String userId);
 	
 	int updateCart(Cart cart);
@@ -40,6 +42,8 @@ public interface MypageMapper {
 	int updateUserAddress(UserAddress userAddress);
 
 	int deleteUserAddress(int addressId);
+
+	
 
 	
 

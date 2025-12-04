@@ -38,6 +38,9 @@ public class MypageService {
 		mypageMapper.insertReview(review);
 	}
 	public List<CartProductDTO> getCartList(String userId) {
+		// 재고 부족한 얘들 선택 해제
+		mypageMapper.unselectOutOfStockItems(userId);
+		//
 		return mypageMapper.getCartList(userId);
 	}
 	public void updateCart(Cart cart) {
