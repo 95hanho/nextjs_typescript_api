@@ -181,6 +181,12 @@
 		WHERE cart_id = #{cartId}
 	</delete>
 	
+	<select id="getCartOptionProductDetailList">
+		SELECT *
+		FROM nextjs_shop_product_detail
+		WHERE product_id = #{productId}
+	</select>
+	
 	<select id="getWishlistItems">
 		SELECT w.wish_id, w.created_at, w.user_id, 
 			p.product_id, p.name, p.price, p.like_count, p.view_count, p.wish_count,

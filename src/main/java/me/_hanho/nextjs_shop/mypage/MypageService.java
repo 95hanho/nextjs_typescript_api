@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.ProductDetail;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
@@ -61,6 +62,9 @@ public class MypageService {
 	        throw new UserNotFoundException("deleteCart not found: " + cartId);
 	    }
 	}
+	public List<ProductDetail> getCartOptionProductDetailList(int productId) {
+		return mypageMapper.getCartOptionProductDetailList(productId);
+	}
 	public List<WishlistItemDTO> getWishlistItems(String userId) {
 		return mypageMapper.getWishlistItems(userId);
 	}
@@ -87,6 +91,7 @@ public class MypageService {
 		}
 		
 	}
+
 
 
 
