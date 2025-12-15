@@ -94,7 +94,7 @@ public class MypageController {
 		result.put("message", "CART_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 장바구니 제품 수량 변경
+	// 장바구니 제품 옵션/수량 변경
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute Cart cart) {
 		logger.info("updateCart : " + cart.getCartId());

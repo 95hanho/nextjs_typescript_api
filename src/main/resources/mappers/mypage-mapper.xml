@@ -165,7 +165,7 @@
 	</select>
 	<update id="updateCart">
 		UPDATE nextjs_shop_cart
-		SET quantity = #{quantity}
+		SET quantity = #{quantity}, product_detail_id = #{productDetailId}
 		WHERE cart_id = #{cartId}
 	</update>
 	<update id="updateSelectedCart">
