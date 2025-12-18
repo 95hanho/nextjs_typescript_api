@@ -178,7 +178,10 @@
 	</update>
 	<delete id="deleteCart">
 		DELETE FROM nextjs_shop_cart
-		WHERE cart_id = #{cartId}
+		WHERE cart_id IN
+          <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
+            #{cartId}
+          </foreach>
 	</delete>
 	
 	<select id="getCartOptionProductDetailList">

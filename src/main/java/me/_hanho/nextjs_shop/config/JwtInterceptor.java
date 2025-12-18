@@ -38,11 +38,15 @@ public class JwtInterceptor implements HandlerInterceptor {
                 // JWT 파싱 및 복호화
                 Claims claims = tokenService.parseJwtToken(accessToken);
 
+                /* 파싱이 되는지만 확인할거임 */
+                
                 // userId 추출
                 String userId = claims.get("userId", String.class);
-
+                logger.info("userId : " + userId);
+                
                 // HttpServletRequest에 userId 추가
                 request.setAttribute("userId", userId);
+                
             } catch (Exception e) {
                 // 토큰이 유효하지 않으면 요청을 거부
             	logger.error("token UNAUTHORIZED");

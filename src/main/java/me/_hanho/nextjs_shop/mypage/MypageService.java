@@ -56,7 +56,7 @@ public class MypageService {
 	        throw new UserNotFoundException("updateSelectedCart not found: " + selectedCart.getCartIdList().toString());
 	    }
 	}
-	public void deleteCart(int cartId) {
+	public void deleteCart(List<Integer> cartId) {
 		int updated = mypageMapper.deleteCart(cartId);
 	    if (updated == 0) {
 	        throw new UserNotFoundException("deleteCart not found: " + cartId);

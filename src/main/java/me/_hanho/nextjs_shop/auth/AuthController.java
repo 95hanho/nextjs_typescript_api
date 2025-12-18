@@ -154,7 +154,7 @@ public class AuthController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> insertToken(
-			@RequestParam("refreshToken") String refreshToken, @RequestParam("userId") String userId,
+			@RequestAttribute("userId") String userId, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
 		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userId : " + userId + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -107,7 +108,8 @@ public class MypageController {
 	}
 	// 장바구니 제품 선택여부 변경
 	@PutMapping("/cart")
-	public ResponseEntity<Map<String, Object>> updateSelectedCart(@ModelAttribute UpdateSelectedCartDTO selectedCart) {
+	public ResponseEntity<Map<String, Object>> updateSelectedCart(@ModelAttribute UpdateSelectedCartDTO selectedCart, 
+			@RequestAttribute("userId") String userId) {
 		logger.info("updateSelectedCart : " + selectedCart);
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -117,12 +119,12 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 제품 삭제
-	@DeleteMapping("/cart/{cartId}")
-	public ResponseEntity<Map<String, Object>> deleteCart(@PathVariable("cartId") int cartId) {
-		logger.info("deleteCart : " + cartId);
+	@DeleteMapping("/cart")
+	public ResponseEntity<Map<String, Object>> deleteCart(@RequestParam("cartIdList") List<Integer> cartIdList) {
+		logger.info("deleteCart : " + cartIdList);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteCart(cartId);
+		mypageService.deleteCart(cartIdList);
 		
 		result.put("message", "CART_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);

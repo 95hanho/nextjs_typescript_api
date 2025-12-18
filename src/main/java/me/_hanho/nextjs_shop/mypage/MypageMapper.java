@@ -32,7 +32,7 @@ public interface MypageMapper {
 	
 	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
 	
-	int deleteCart(int cartId);
+	int deleteCart(List<Integer> cartId);
 	
 	List<ProductDetail> getCartOptionProductDetailList(int productId);
 	

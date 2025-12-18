@@ -18,4 +18,3 @@ public class PayPriceRequest {
 	private int useMileage; // 사용마일리지
 	
 }
- 
