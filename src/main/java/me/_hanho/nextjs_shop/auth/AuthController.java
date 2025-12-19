@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
@@ -31,8 +32,8 @@ public class AuthController {
 	@Autowired
 	private AuthService authService;
 	
-//	@Autowired
-//	private TokenService tokenService;
+	@Autowired
+	private TokenService tokenService;
 	
 	// 유저정보가져오기
 	@GetMapping
@@ -114,15 +115,35 @@ public class AuthController {
 	}
 	// 휴대폰인증
 	@PostMapping("/phone")
-	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone) {
+	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken) {
 		logger.info("phoneAuth");
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		// JWT 파싱 및 복호화
+        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+        // userId 추출
+        String userId = claims.get("phoneUserId", String.class);
+		
+		// 인증번호(6자리?)를 생성하고 휴대폰에 보냄.
+		
+		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
+		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
+		// "VERIFICATION_SENT" 인증번호 전송 완료
+		result.put("message", "PHONE_VERIFIED");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 휴대폰인증 확인!!
+	@PostMapping("/phone/check")
+	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, @RequestParam("phoneAuthToken") String phoneAuthToken,
+			@RequestAttribute("phoneUserId") String userId) {
+		logger.info("phoneAuthCheck");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
 		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
 		// "VERIFICATION_SENT" 인증번호 전송 완료
 		
-		result.put("message", "PHONE_VERIFIED");
+		result.put("message", "PHONEAUTH_VALIDATE");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원가입
