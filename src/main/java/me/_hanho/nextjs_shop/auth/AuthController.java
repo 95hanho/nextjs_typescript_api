@@ -122,7 +122,8 @@ public class AuthController {
 		// JWT 파싱 및 복호화
         Claims claims = tokenService.parseJwtToken(phoneAuthToken);
         // userId 추출
-        String userId = claims.get("phoneUserId", String.class);
+        String phoneUserId = claims.get("userId", String.class);
+        System.out.println("phoneUserId : " + phoneUserId);
 		
 		// 인증번호(6자리?)를 생성하고 휴대폰에 보냄.
 		
@@ -136,7 +137,7 @@ public class AuthController {
 	@PostMapping("/phone/check")
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, @RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestAttribute("phoneUserId") String userId) {
-		logger.info("phoneAuthCheck");
+		logger.info("phoneAuthCheck - authNumber='" + authNumber);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
