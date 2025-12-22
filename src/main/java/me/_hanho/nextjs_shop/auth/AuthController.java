@@ -115,8 +115,9 @@ public class AuthController {
 	}
 	// 휴대폰인증
 	@PostMapping("/phone")
-	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken) {
-		logger.info("phoneAuth");
+	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
+			@RequestParam(required = false, name = "userId") String userId) {
+		logger.info("phoneAuth - phone : " + phone + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// JWT 파싱 및 복호화
@@ -125,6 +126,11 @@ public class AuthController {
         String phoneUserId = claims.get("userId", String.class);
         System.out.println("phoneUserId : " + phoneUserId);
 		
+        //
+        if(userId != null && userId.equals(phoneUserId)) {
+        	// 유저아이디 있으면 비밀번호 찾기 인증
+        }
+        
 		// 인증번호(6자리?)를 생성하고 휴대폰에 보냄.
 		
 		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
@@ -136,16 +142,36 @@ public class AuthController {
 	// 휴대폰인증 확인!!
 	@PostMapping("/phone/check")
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, @RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestAttribute("phoneUserId") String userId) {
-		logger.info("phoneAuthCheck - authNumber='" + authNumber);
+			@RequestParam(required = false, name = "userId") String userId) {
+		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
+		
+		
 		
 		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
 		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
 		// "VERIFICATION_SENT" 인증번호 전송 완료
 		
-		result.put("message", "PHONEAUTH_VALIDATE");
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		// JWT 파싱 및 복호화
+        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+        // userId 추출
+        String phoneUserId = claims.get("userId", String.class);
+        System.out.println("phoneUserId : " + phoneUserId);
+        
+        //
+        if(userId != null && userId.equals(phoneUserId)) {
+        	// 유저아이디 있으면 비밀번호 찾기 인증
+        }
+		
+		if(authNumber.equals("111111")) {
+			result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} else {
+			result.put("message", "INVALID_VERIFICATION_CODE"); // 인증 실패
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+//	        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		}
+		
 	}
 	// 회원가입
 	@PostMapping("/user")
