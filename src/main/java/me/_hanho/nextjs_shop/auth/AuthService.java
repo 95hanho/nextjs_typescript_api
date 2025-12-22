@@ -2,27 +2,21 @@ package me._hanho.nextjs_shop.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
-	private final PasswordEncoder passwordEncoder;
-	
-	@Autowired
-	private AuthMapper authMapper;
-	
-	 // 생성자 주입
-    public AuthService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-	}
+    private final PasswordEncoder passwordEncoder;
+    private final AuthMapper authMapper;
 	
 	public User getUserExceptPassword(String userId) {
 		return authMapper.getUserExceptPassword(userId);

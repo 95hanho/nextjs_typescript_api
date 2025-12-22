@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,21 +19,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/bapi/auth")
 public class AuthController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-	@Autowired
-	private AuthService authService;
-	
-	@Autowired
-	private TokenService tokenService;
-	
+	private final AuthService authService;
+    private final TokenService tokenService;
+    private final PhoneAuthCodeService phoneAuthCodeService;
+
 	// 유저정보가져오기
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestParam("userId") String userId) {
@@ -115,63 +115,89 @@ public class AuthController {
 	}
 	// 휴대폰인증
 	@PostMapping("/phone")
-	public ResponseEntity<Map<String, Object>> phoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
+	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestParam(required = false, name = "userId") String userId) {
 		logger.info("phoneAuth - phone : " + phone + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		// JWT 파싱 및 복호화
-        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
-        // userId 추출
-        String phoneUserId = claims.get("userId", String.class);
-        System.out.println("phoneUserId : " + phoneUserId);
+		String phoneUserId = null;
+		try {
+			// JWT 파싱 및 복호화
+	        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+	        // 휴대폰인증토큰 userId 추출
+	        phoneUserId = claims.get("userId", String.class);
+	        System.out.println("phoneUserId : " + phoneUserId);
+		} catch(Exception e) {
+			result.put("message", "VERIFICATION_EXPIRED");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+
+		// 인증번호(6자리?)를 생성
+		String verificationCode = phoneAuthCodeService.generate6DigitCode();
 		
-        //
-        if(userId != null && userId.equals(phoneUserId)) {
-        	// 유저아이디 있으면 비밀번호 찾기 인증
-        }
-        
-		// 인증번호(6자리?)를 생성하고 휴대폰에 보냄.
+        // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
+		PhoneAuth phoneAuth = PhoneAuth.builder().userId(phoneUserId).phoneAuthToken(phoneAuthToken)
+				.phone(phone).verificationCode(verificationCode).build();
+//		authService.savePhoneAuth(phoneAuth);
 		
-		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
-		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
-		// "VERIFICATION_SENT" 인증번호 전송 완료
-		result.put("message", "PHONE_VERIFIED");
+		// 인증번호를 휴대폰으로 보냄!!
+		
+		result.put("message", "VERIFICATION_SENT");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 휴대폰인증 확인!!
 	@PostMapping("/phone/check")
-	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, @RequestParam("phoneAuthToken") String phoneAuthToken,
+	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, 
+			@RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestParam(required = false, name = "userId") String userId) {
 		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		
-		
-		// "INVALID_VERIFICATION_CODE" 인증번호가 올바르지 않음
-		// "VERIFICATION_EXPIRED" 인증번호 유효기간 만료
-		// "VERIFICATION_SENT" 인증번호 전송 완료
-		
-		// JWT 파싱 및 복호화
-        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
-        // userId 추출
-        String phoneUserId = claims.get("userId", String.class);
-        System.out.println("phoneUserId : " + phoneUserId);
-        
-        //
-        if(userId != null && userId.equals(phoneUserId)) {
-        	// 유저아이디 있으면 비밀번호 찾기 인증
-        }
-		
-		if(authNumber.equals("111111")) {
-			result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			result.put("message", "INVALID_VERIFICATION_CODE"); // 인증 실패
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-//	        return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+//		String verificationCode = authService.getPhoneAuthCode(phoneAuthToken);
+		String verificationCode = "111111";
+		// 인증번호가 올바르지 않음
+		if(!authNumber.equals(verificationCode)) {
+			result.put("message", "INVALID_VERIFICATION_CODE");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 		}
 		
+		String phoneUserId = null;
+		try {
+			// JWT 파싱 및 복호화
+	        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+	        // 토큰의 userId 추출
+	        phoneUserId = claims.get("userId", String.class);
+	        System.out.println("phoneUserId : " + phoneUserId);
+		} catch(Exception e) {
+			result.put("message", "VERIFICATION_EXPIRED");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+        
+        if(userId == null) {
+//        	String userIdOfToken = authService.getUserByPhoneAuthToken(phoneAuthToken);
+        	String userIdOfToken = "hoseongs";
+        	// 1. userId가 없고, phoneUserId에 id도 없다. = 회원가입
+        	if(userIdOfToken == null) {
+        		result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
+    			return new ResponseEntity<>(result, HttpStatus.OK);
+        	} 
+        	// 2. userId가 없고, phoneUserId가 존재하는 유저이다.  = 아이디찾기
+        	else {
+        		result.put("userId", userIdOfToken);
+        		result.put("message", "IDFIND_SUCCESS"); // 인증 성공
+        		return new ResponseEntity<>(result, HttpStatus.OK);
+        	}
+        } 
+        // 3. userId가 있고, phoneUserId와 일치한다. = 비밀번호 찾기
+        else if(userId != null && userId.equals(phoneUserId)) {
+        	result.put("message", "PWDFIND_SUCCESS"); // 인증 성공
+    		return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+        
+        result.put("message", "INTERNAL_SERVER_ERROR");
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(result);
 	}
 	// 회원가입
 	@PostMapping("/user")
