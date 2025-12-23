@@ -47,6 +47,10 @@ public class AuthService {
 	    }
 	}
 	
+	public void changePassword(String userId, String newPassword) {
+		authMapper.changePassword(userId, passwordEncoder.encode(newPassword));
+	}
+	
 	public void insertToken(Token token) {
 		authMapper.insertToken(token);
 	}
@@ -61,5 +65,7 @@ public class AuthService {
 	public String getUserIdByToken(TokenDTO token) {
 		return authMapper.getUserIdByToken(token);
 	}
+
+
 
 }

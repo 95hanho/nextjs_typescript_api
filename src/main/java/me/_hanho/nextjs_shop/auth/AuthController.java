@@ -123,7 +123,7 @@ public class AuthController {
 		String phoneUserId = null;
 		try {
 			// JWT 파싱 및 복호화
-	        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+	        Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 	        // 휴대폰인증토큰 userId 추출
 	        phoneUserId = claims.get("userId", String.class);
 	        System.out.println("phoneUserId : " + phoneUserId);
@@ -164,7 +164,7 @@ public class AuthController {
 		String phoneUserId = null;
 		try {
 			// JWT 파싱 및 복호화
-	        Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+	        Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 	        // 토큰의 userId 추출
 	        phoneUserId = claims.get("userId", String.class);
 	        System.out.println("phoneUserId : " + phoneUserId);
@@ -173,9 +173,9 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
         
+//    	String userIdOfToken = authService.getUserByPhoneAuthToken(phoneAuthToken);
+    	String userIdOfToken = "hoseongs";
         if(userId == null) {
-//        	String userIdOfToken = authService.getUserByPhoneAuthToken(phoneAuthToken);
-        	String userIdOfToken = "hoseongs";
         	// 1. userId가 없고, phoneUserId에 id도 없다. = 회원가입
         	if(userIdOfToken == null) {
         		result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
@@ -189,7 +189,8 @@ public class AuthController {
         	}
         } 
         // 3. userId가 있고, phoneUserId와 일치한다. = 비밀번호 찾기
-        else if(userId != null && userId.equals(phoneUserId)) {
+        else if(userId != null && userId.equals(phoneUserId) && phoneUserId.equals(userIdOfToken)) {
+        	result.put("userId", userIdOfToken);
         	result.put("message", "PWDFIND_SUCCESS"); // 인증 성공
     		return new ResponseEntity<>(result, HttpStatus.OK);
         }
@@ -222,6 +223,38 @@ public class AuthController {
 //		"UNAUTHORIZED_USER" : 권한이 없음.
 		
 		result.put("message", "USER_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 비밀번호 변경
+	@PostMapping("/password")
+	public ResponseEntity<Map<String, Object>> passwordChange(@ModelAttribute PasswordChangeDTO pwdChangeDTO) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		String userId;
+		try {
+			String pwdResetToken = pwdChangeDTO.getPwdResetToken();
+			// JWT 파싱 및 복호화
+	        Claims claims = tokenService.parseJwtPwdChangeToken(pwdResetToken);
+	        // 토큰의 userId 추출
+	        userId = claims.get("userId", String.class);
+		} catch(Exception e) {
+			result.put("message", "VERIFICATION_EXPIRED");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		
+		// 현재 비밀번호가 있다면 비밀번호 확인(없으면 비밀번호찾기에서 바꾸는거)
+		String curPassword = pwdChangeDTO.getCurPassword();
+		if(curPassword != null) {
+			User checkUser = authService.getUser(userId);
+			if(!authService.passwordCheck(curPassword, checkUser.getPassword())) {
+				result.put("message", "CURRENT_PASSWORD_MISMATCH");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+			}
+		}
+		
+		// 비밀번호 변경
+		authService.changePassword(userId, pwdChangeDTO.getNewPassword());
+		
+		result.put("message", "PASSWORD_CHANGE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 

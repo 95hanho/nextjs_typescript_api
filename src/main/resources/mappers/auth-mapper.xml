@@ -31,6 +31,12 @@
 		WHERE user_id = #{userId}
 	</update>
 	
+	<update id="changePassword">
+		UPDATE nextjs_shop_user
+		SET password = #{newPassword}
+		WHERE user_id = #{userId}
+	</update>
+	
 	<insert id="insertToken">
 		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_id)
 		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userId})

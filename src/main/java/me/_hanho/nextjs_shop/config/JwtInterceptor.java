@@ -58,7 +58,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 			logger.info("phoneAuthToken : " + phoneAuthToken);
             try {
                 // JWT 파싱 및 복호화
-                Claims claims = tokenService.parseJwtToken(phoneAuthToken);
+                Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 
                 /* 파싱이 되는지만 확인할거임 */
                 // userId 추출

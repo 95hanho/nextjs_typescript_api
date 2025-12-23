@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.auth;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
@@ -18,10 +19,13 @@ public interface AuthMapper {
 	
 	int userInfoUpdate(User user);
 	
+	void changePassword(@Param("userId") String userId, @Param("newPassword") String newPassword);
+	
 	void insertToken(Token token);
 	
 	int updateToken(TokenDTO token);
 
 	String getUserIdByToken(TokenDTO token);
+
 	
 }
