@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
 
@@ -33,6 +35,18 @@ public class AuthService {
 	
 	public boolean getId(String userId) {
 		return authMapper.getId(userId) == 1;
+	}
+	
+	public void insertPhoneAuth(PhoneAuth phoneAuth) {
+		authMapper.insertPhoneAuth(phoneAuth);
+	}
+	
+	public PhoneAuth getPhoneAuthCode(String phoneAuthToken) {
+		return authMapper.getPhoneAuthCode(phoneAuthToken);
+	}
+	
+	public void markPhoneAuthUsed(int phoneAuthId) {
+		authMapper.markPhoneAuthUsed(phoneAuthId);
 	}
 
 	public void joinUser(User user) {
@@ -65,6 +79,11 @@ public class AuthService {
 	public String getUserIdByToken(TokenDTO token) {
 		return authMapper.getUserIdByToken(token);
 	}
+
+
+
+
+
 
 
 

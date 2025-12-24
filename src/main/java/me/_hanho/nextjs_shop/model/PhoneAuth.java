@@ -15,4 +15,7 @@ public class PhoneAuth {
 	private String phoneAuthToken;
 	private String phone;
 	private String verificationCode;
+	private String connectIp;
+	private String connectAgent;
+	private boolean isUsed;
 }

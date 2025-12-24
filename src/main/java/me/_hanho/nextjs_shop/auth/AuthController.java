@@ -116,9 +116,11 @@ public class AuthController {
 	// 휴대폰인증
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestParam(required = false, name = "userId") String userId) {
+			@RequestParam(required = false, name = "userId") String userId,
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
 		logger.info("phoneAuth - phone : " + phone + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		
 		String phoneUserId = null;
 		try {
@@ -134,11 +136,12 @@ public class AuthController {
 
 		// 인증번호(6자리?)를 생성
 		String verificationCode = phoneAuthCodeService.generate6DigitCode();
+		logger.info("phoneAuth-verificationCode : " + verificationCode);
 		
         // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
 		PhoneAuth phoneAuth = PhoneAuth.builder().userId(phoneUserId).phoneAuthToken(phoneAuthToken)
-				.phone(phone).verificationCode(verificationCode).build();
-//		authService.savePhoneAuth(phoneAuth);
+				.phone(phone).verificationCode(verificationCode).connectIp(ipAddress).connectAgent(userAgent).build();
+		authService.insertPhoneAuth(phoneAuth);
 		
 		// 인증번호를 휴대폰으로 보냄!!
 		
@@ -147,19 +150,12 @@ public class AuthController {
 	}
 	// 휴대폰인증 확인!!
 	@PostMapping("/phone/check")
-	public ResponseEntity<Map<String, Object>> phoneAuthCheck(@RequestParam("authNumber") String authNumber, 
+	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
+			@RequestParam("authNumber") String authNumber, 
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestParam(required = false, name = "userId") String userId) {
 		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
-		
-//		String verificationCode = authService.getPhoneAuthCode(phoneAuthToken);
-		String verificationCode = "111111";
-		// 인증번호가 올바르지 않음
-		if(!authNumber.equals(verificationCode)) {
-			result.put("message", "INVALID_VERIFICATION_CODE");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-		}
 		
 		String phoneUserId = null;
 		try {
@@ -172,9 +168,21 @@ public class AuthController {
 			result.put("message", "VERIFICATION_EXPIRED");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
+		
+		PhoneAuth phoneAuth = authService.getPhoneAuthCode(phoneAuthToken);
+		if (phoneAuth == null) {
+			result.put("message", "VERIFICATION_EXPIRED");
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+	    }
+		// 인증번호가 올바르지 않음
+		if(!authNumber.equals(phoneAuth.getVerificationCode())) {
+			result.put("message", "INVALID_VERIFICATION_CODE");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+		}
+		// 인증번호 검증 성공(사용토큰으로 변경)
+		authService.markPhoneAuthUsed(phoneAuth.getPhoneAuthId());
         
-//    	String userIdOfToken = authService.getUserByPhoneAuthToken(phoneAuthToken);
-    	String userIdOfToken = "hoseongs";
+    	String userIdOfToken = phoneAuth.getUserId();
         if(userId == null) {
         	// 1. userId가 없고, phoneUserId에 id도 없다. = 회원가입
         	if(userIdOfToken == null) {
@@ -195,9 +203,9 @@ public class AuthController {
     		return new ResponseEntity<>(result, HttpStatus.OK);
         }
         
-        result.put("message", "INTERNAL_SERVER_ERROR");
+        result.put("message", "INVALID_REQUEST");
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .status(HttpStatus.FORBIDDEN)
                 .body(result);
 	}
 	// 회원가입
@@ -247,6 +255,10 @@ public class AuthController {
 			User checkUser = authService.getUser(userId);
 			if(!authService.passwordCheck(curPassword, checkUser.getPassword())) {
 				result.put("message", "CURRENT_PASSWORD_MISMATCH");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+			}
+			if(authService.passwordCheck(pwdChangeDTO.getNewPassword(), checkUser.getPassword())) {
+				result.put("message", "CURRENT_PASSWORD_EQUAL");
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 			}
 		}

@@ -16,6 +16,7 @@ import me._hanho.nextjs_shop.model.User;
 public class TokenService {
 private static final String SECRET_KEY = "HANHOSEONGTOKENTESTHANHOSEONGTOKENTEST";
 private static final String SECRET_PHONEAUTH_KEY = "HANHOSEONGPHONEAUTHHANHOSEONGPHONEAUTH";
+private static final String SECRET_PHONEAUTH_COMPLETE_KEY = "HANHOSEONGPHONEAUTHCOMPLETEHANHOSEONGPHONEAUTHCOMPLETE";
 private static final String SECRET_PWDCHANGE_KEY = "HANHOSEONGPWDCHANGEHANHOSEONGPWDCHANGE";
 	
 	/**
@@ -86,6 +87,24 @@ private static final String SECRET_PWDCHANGE_KEY = "HANHOSEONGPWDCHANGEHANHOSEON
 	 */
 	public Claims parseJwtPhoneAuthToken(String token) {
 		Key key = Keys.hmacShaKeyFor(SECRET_PHONEAUTH_KEY.getBytes(StandardCharsets.UTF_8));
+		
+		Claims claims = Jwts.parserBuilder()
+				.setSigningKey(key)
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
+		System.out.println("claims = " + claims.toString());
+		
+		return claims;
+	}
+	
+	/**
+	 * 휴대폰인증성공 토큰 복호화 하여 본문(Payload) 가져오기
+	 * @param token
+	 * @return
+	 */
+	public Claims parseJwtPhoneAuthCompleteToken(String token) {
+		Key key = Keys.hmacShaKeyFor(SECRET_PHONEAUTH_COMPLETE_KEY.getBytes(StandardCharsets.UTF_8));
 		
 		Claims claims = Jwts.parserBuilder()
 				.setSigningKey(key)
