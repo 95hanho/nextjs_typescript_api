@@ -44,7 +44,7 @@
 	
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
-		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{addressDetail}, phone = #{phone}, email = #{email}
+		SET phone = #{phone}, email = #{email}
 		WHERE user_id = #{userId}
 	</update>
 	
