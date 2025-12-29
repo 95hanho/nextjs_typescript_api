@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
@@ -75,17 +76,19 @@ public class MypageService {
 	public void insertUserAddress(UserAddress userAddress) {
 		mypageMapper.insertUserAddress(userAddress);
 	}
-
+	@Transactional
 	public void updateUserAddress(UserAddress userAddress) {
+		if(userAddress.isDefaultAddress()) {
+			mypageMapper.clearDefaultAddress(userAddress.getAddressId());
+		}
 		int updated = mypageMapper.updateUserAddress(userAddress);
 		if (updated == 0) {
 			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddressId());
 	    }
-		
 	}
 
-	public void deleteUserAddress(int addressId) {
-		int updated = mypageMapper.deleteUserAddress(addressId);
+	public void deleteUserAddress(int addressId, String userId) {
+		int updated = mypageMapper.deleteUserAddress(addressId, userId);
 		if(updated == 0) {
 			throw new UserNotFoundException("deleteUserAddress not found: " + addressId);
 		}

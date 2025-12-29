@@ -219,32 +219,37 @@
 		WHERE w.user_id = #{userId}
 	</select>
 	<select id="getUserAddressList">
-		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, is_default, created_at, usedate_at
+		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, default_address, created_at, usedate_at
 		FROM nextjs_shop_user_address
 		WHERE user_id = #{userId}
 		AND deleted = 0
 	</select>
 	<insert id="insertUserAddress">
-		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, is_default, user_id)
+		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, default_address, user_id)
 		VALUES (
-			#{addressName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{isDefault}, #{userId}
+			#{addressName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{defaultAddress}, #{userId}
 		)
 	</insert>
+	<update id="clearDefaultAddress">
+		UPDATE nextjs_shop_user_address
+		SET default_address = 0
+		WHERE default_address = 1 AND address_id != #{addressId}
+	</update>
 	<update id="updateUserAddress">
 		UPDATE nextjs_shop_user_address
 		SET address_name = #{addressName}, 
-		address_phone = #{addressPhone}, 
-		zonecode = #{zonecode},
-		address = #{address},
-		address_detail = #{addressDetail},
-		memo = #{memo},
-		is_default = #{isDefault}
+			address_phone = #{addressPhone}, 
+			zonecode = #{zonecode},
+			address = #{address},
+			address_detail = #{addressDetail},
+			memo = #{memo},
+			default_address = #{defaultAddress}
 		WHERE address_id = #{addressId} AND user_id = #{userId}
 	</update>
 	<delete id="deleteUserAddress">
 		UPDATE nextjs_shop_user_address
 		SET deleted = 1
-		WHERE address_id = #{addressId}
+		WHERE address_id = #{addressId} AND user_id = #{userId}
 	</delete>
 
 </mapper>

@@ -17,7 +17,7 @@ public class UserAddress {
 	private String address;
 	private String addressDetail;
 	private String memo;
-	private boolean isDefault;
+	private boolean defaultAddress;
 	private Timestamp createdAt;
 	private Timestamp usedateAt;
 	private String userId;

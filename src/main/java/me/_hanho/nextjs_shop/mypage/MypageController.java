@@ -158,7 +158,7 @@ public class MypageController {
 	
 	// 유저배송지 조회
 	@GetMapping("/address")
-	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestAttribute("userId") String userId) {
 		logger.info("getUserAddress : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -170,7 +170,8 @@ public class MypageController {
 	}
 	// 유저배송지 추가/수정
 	@PostMapping("/address")
-	public ResponseEntity<Map<String, Object>> setUserAddress(@ModelAttribute UserAddress userAddress) {
+	public ResponseEntity<Map<String, Object>> setUserAddress(@RequestAttribute("userId") String userId, @ModelAttribute UserAddress userAddress) {
+		userAddress.setUserId(userId);
 		logger.info("setUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -185,11 +186,12 @@ public class MypageController {
 	}
 	// 유저배송지 삭제
 	@DeleteMapping("/address/{addressId}")
-	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("addressId") int addressId) {
+	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("addressId") int addressId,
+			@RequestAttribute("userId") String userId) {
 		logger.info("deleteUserAddress : " + addressId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteUserAddress(addressId);
+		mypageService.deleteUserAddress(addressId, userId);
 		
 		result.put("message", "ADDRESS_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);

@@ -3,6 +3,7 @@ package me._hanho.nextjs_shop.mypage;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.ProductDetail;
@@ -42,9 +43,13 @@ public interface MypageMapper {
 
 	void insertUserAddress(UserAddress userAddress);
 
+	void clearDefaultAddress(int addressId);
+	
 	int updateUserAddress(UserAddress userAddress);
 
-	int deleteUserAddress(int addressId);
+	int deleteUserAddress(@Param("addressId") int addressId, @Param("userId") String userId);
+
+	
 
 
 	
