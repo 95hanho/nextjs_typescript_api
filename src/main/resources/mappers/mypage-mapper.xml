@@ -71,8 +71,8 @@
 		og.payment_code, og.status, og.shipping_date, og.delivered_date, og.return_date,
 		og.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
 		c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
-		og.address_id, ua.address_name, ua.address_phone, ua.zonecode,
-		ua.address, ua.address_detail, ua.memo, ua.is_default
+		og.address_id, ua.address_name, ua.recipient_name, ua.address_phone, ua.zonecode,
+		ua.address, ua.address_detail, ua.memo, ua.default_address
 		FROM nextjs_shop_order_group og
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = og.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
@@ -219,15 +219,19 @@
 		WHERE w.user_id = #{userId}
 	</select>
 	<select id="getUserAddressList">
-		SELECT address_id, address_name, address_phone, zonecode, address, address_detail, memo, default_address, created_at, usedate_at
+		SELECT address_id, address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, created_at, updated_at, usedate_at
 		FROM nextjs_shop_user_address
 		WHERE user_id = #{userId}
 		AND deleted = 0
+		ORDER BY default_address DESC,
+			usedate_at DESC,
+			updated_at DESC,
+			created_at DESC
 	</select>
 	<insert id="insertUserAddress">
-		INSERT INTO nextjs_shop_user_address(address_name, address_phone, zonecode, address, address_detail, memo, default_address, user_id)
+		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, user_id)
 		VALUES (
-			#{addressName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{defaultAddress}, #{userId}
+			#{addressName}, #{recipientName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{defaultAddress}, #{userId}
 		)
 	</insert>
 	<update id="clearDefaultAddress">
@@ -238,12 +242,14 @@
 	<update id="updateUserAddress">
 		UPDATE nextjs_shop_user_address
 		SET address_name = #{addressName}, 
+			recipient_name = #{recipientName},
 			address_phone = #{addressPhone}, 
 			zonecode = #{zonecode},
 			address = #{address},
 			address_detail = #{addressDetail},
 			memo = #{memo},
-			default_address = #{defaultAddress}
+			default_address = #{defaultAddress},
+			updated_at = NOW()
 		WHERE address_id = #{addressId} AND user_id = #{userId}
 	</update>
 	<delete id="deleteUserAddress">

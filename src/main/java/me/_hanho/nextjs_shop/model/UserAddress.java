@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class UserAddress {
 	private int addressId;
 	private String addressName;
+	private String recipientName;
 	private String addressPhone;
 	private String zonecode;
 	private String address;
@@ -19,6 +20,7 @@ public class UserAddress {
 	private String memo;
 	private boolean defaultAddress;
 	private Timestamp createdAt;
+	private Timestamp updatedAt;
 	private Timestamp usedateAt;
 	private String userId;
 	private boolean deleted;
