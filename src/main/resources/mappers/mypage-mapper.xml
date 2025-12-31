@@ -231,7 +231,7 @@
 	<insert id="insertUserAddress">
 		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, user_id)
 		VALUES (
-			#{addressName}, #{recipientName}, #{addressPhone}, #{zonecode}, #{address}, #{isDefault}, #{memo}, #{defaultAddress}, #{userId}
+			#{addressName}, #{recipientName}, #{addressPhone}, #{zonecode}, #{address}, #{addressDetail}, #{memo}, #{defaultAddress}, #{userId}
 		)
 	</insert>
 	<update id="clearDefaultAddress">
