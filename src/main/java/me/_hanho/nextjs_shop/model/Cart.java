@@ -13,7 +13,7 @@ public class Cart {
 
 	private int cartId;
 	private Timestamp createdAt;
-	private int productDetailId;
+	private int productOptionId;
 	private String userId;
 	private int quantity;
 	private boolean selected;

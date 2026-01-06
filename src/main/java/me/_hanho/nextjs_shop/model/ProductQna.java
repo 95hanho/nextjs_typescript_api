@@ -15,7 +15,8 @@ public class ProductQna {
     private Timestamp createdAt;
     private String answer;
     private Timestamp resCreatedAt;
-    private Timestamp secret;
+    private boolean secret;
     private int productQnaTypeId;
     private int productId;
+    private String userId;
 }

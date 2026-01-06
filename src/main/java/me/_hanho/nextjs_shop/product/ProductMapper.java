@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Like;
+import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.model.ProductQna;
 import me._hanho.nextjs_shop.model.Wish;
 
 @Mapper
@@ -38,9 +40,11 @@ public interface ProductMapper {
 	
 	void putCart(Cart cart);
 
-	
+	ProductDetailResponse getProductDetail(String productId);
 
-	
+	List<ProductOption> getProductOptionList(String productId);
 
-	
+	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") String productId, @Param("userId") String userId);
+
+	List<ProductQna> getProductQnaList(@Param("productId") String productId, @Param("userId") String userId);
 }

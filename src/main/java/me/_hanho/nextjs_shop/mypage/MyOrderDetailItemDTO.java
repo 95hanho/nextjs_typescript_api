@@ -31,7 +31,7 @@ public class MyOrderDetailItemDTO {
 	private boolean isStackable;
 
     private int holdId;
-    private int productDetailId;
+    private int productOptionId;
     private int addPrice;
     private String size;
     

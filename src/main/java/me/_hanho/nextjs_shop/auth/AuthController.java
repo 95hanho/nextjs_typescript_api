@@ -37,7 +37,7 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userId") String userId) {
 		logger.info("getUserInfo : userId=" + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -57,8 +57,6 @@ public class AuthController {
 			result.put("message", "UNAUTHORIZED_USER"); // 인증 실패로 조회 불가
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED); 
 		}
-			
-			
 	}
 	// 로그인
 	@PostMapping

@@ -13,7 +13,7 @@ public class ProductWithCouponsDTO {
 	private int holdId;
 	private int count;
 
-	private int productDetailId;
+	private int productOptionId;
 	private int addPrice;
 	
 	private Integer userCouponId;

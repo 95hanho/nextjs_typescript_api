@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuyProductDetailListRequest {
-	private int productDetailId;
+public class BuyProductOptionListRequest {
+	private int productOptionId;
 	private int addPrice;
 	private int count;
 	

@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.model;
+package me._hanho.nextjs_shop.mypage;
 
 import java.sql.Timestamp;
 
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDetail {
-    private int productDetailId;
+public class CartOtherOptionDTO {
+	private int productOptionId;
     private int productId;
     private int addPrice;
     private int stock;

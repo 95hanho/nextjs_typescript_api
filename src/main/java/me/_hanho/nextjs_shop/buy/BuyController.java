@@ -47,7 +47,7 @@ public class BuyController {
 	    	
 	    } else {
 	    	result.put("message", "STOCK_HOLD_SUCCESS");
-	    	result.put("holds", res.getHolds()); // [{productDetailId, holdId}]
+	    	result.put("holds", res.getHolds()); // [{productOptionId, holdId}]
 	    	return new ResponseEntity<>(result, HttpStatus.OK);
 	    }
 	}

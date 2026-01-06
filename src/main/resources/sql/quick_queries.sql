@@ -3,7 +3,7 @@ UPDATE nextjs_shop_product
 SET like_count = FLOOR(RAND() * 50001);
 
 -- 
-SELECT c.cart_id, c.created_at, c.product_detail_id, c.user_id,
+SELECT c.cart_id, c.created_at, c.product_option_id, c.user_id,
 			pd.add_price, pd.stock, pd.size, p.product_id, 
 			p.name AS productName, p.price,
 			w.wish_id,
@@ -11,7 +11,7 @@ SELECT c.cart_id, c.created_at, c.product_detail_id, c.user_id,
 			s.seller_id, s.seller_name,
 			c.quantity, c.selected
 		FROM nextjs_shop_cart c
-		JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = c.product_detail_id
+		JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_id = c.user_id
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
@@ -32,3 +32,8 @@ SELECT c.cart_id, c.created_at, c.product_detail_id, c.user_id,
 	    ) tpi ON tpi.product_id = p.product_id
 	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE c.user_id = 'hoseongs';
+		
+		
+		UPDATE nextjs_shop_user_address
+		SET usedate_at = NULL
+		WHERE address_id = 2;

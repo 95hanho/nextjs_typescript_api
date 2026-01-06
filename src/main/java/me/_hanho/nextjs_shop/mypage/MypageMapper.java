@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.ProductDetail;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
@@ -35,7 +34,7 @@ public interface MypageMapper {
 	
 	int deleteCart(List<Integer> cartId);
 	
-	List<ProductDetail> getCartOptionProductDetailList(int productId);
+	List<CartOtherOptionDTO> getCartOptionProductOptionList(int productId);
 	
 	List<WishlistItemDTO> getWishlistItems(String userId);
 

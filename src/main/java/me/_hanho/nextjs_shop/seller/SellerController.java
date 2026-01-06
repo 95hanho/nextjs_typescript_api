@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
-import me._hanho.nextjs_shop.model.ProductDetail;
+import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.product.ProductController;
 
 @RestController
@@ -57,9 +57,9 @@ public class SellerController {
 		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 상세보기
-	@GetMapping("/product/detail")
-	public ResponseEntity<Map<String, Object>> getSellerProductDetail(@RequestParam("productId") String productId) {
+	// 판매자 제품 옵션보기
+	@GetMapping("/product/option")
+	public ResponseEntity<Map<String, Object>> getSellerProductOption(@RequestParam("productId") String productId) {
 		logger.info("getSellerProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -74,15 +74,15 @@ public class SellerController {
 	}
 	
 	// 판매자 제품 상세 추가 / 수정
-	@PostMapping("/product/detail")
-	public ResponseEntity<Map<String, Object>> setSellerProductDetail(@ModelAttribute ProductDetail productDetail) {
-		logger.info("setProductDetail " + productDetail);
+	@PostMapping("/product/option")
+	public ResponseEntity<Map<String, Object>> setSellerProductOption(@ModelAttribute ProductOption productOption) {
+		logger.info("setProductOption " + productOption);
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		if(productDetail.getProductDetailId() == 0) { 
-			sellerService.addProductDetail(productDetail);
+		if(productOption.getProductOptionId() == 0) { 
+			sellerService.addProductOption(productOption);	
 		} else {
-			sellerService.updateProductDetail(productDetail);
+			sellerService.updateProductOption(productOption);
 		}
 
 		result.put("message", "SELLER_PRODUCT_DETAIL_SAVE_SUCCESS");

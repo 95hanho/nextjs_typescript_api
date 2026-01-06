@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.ProductDetail;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
@@ -63,8 +62,8 @@ public class MypageService {
 	        throw new UserNotFoundException("deleteCart not found: " + cartId);
 	    }
 	}
-	public List<ProductDetail> getCartOptionProductDetailList(int productId) {
-		return mypageMapper.getCartOptionProductDetailList(productId);
+	public List<CartOtherOptionDTO> getCartOptionProductOptionList(int productId) {
+		return mypageMapper.getCartOptionProductOptionList(productId);
 	}
 	public List<WishlistItemDTO> getWishlistItems(String userId) {
 		return mypageMapper.getWishlistItems(userId);

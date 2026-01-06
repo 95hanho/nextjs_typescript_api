@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.ProductDetail;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
@@ -130,14 +129,14 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 옵션변경 - 장바구니 제품 다른 detail조회
-	@GetMapping("/cart/option/product-detail")
-	public ResponseEntity<Map<String, Object>> getCartOptionProductDetailList(@RequestParam("productId") int productId) {
-		logger.info("getCartOptionProductDetail : " + productId);
+	@GetMapping("/cart/option/product-option")
+	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(@RequestParam("productId") int productId) {
+		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductDetail> cartOptionProductDetailList = mypageService.getCartOptionProductDetailList(productId);
+		List<CartOtherOptionDTO> cartOptionProductOptionList = mypageService.getCartOptionProductOptionList(productId);
 		
-		result.put("cartOptionProductDetailList", cartOptionProductDetailList);
+		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
 		result.put("message", "CART_OPTION_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
