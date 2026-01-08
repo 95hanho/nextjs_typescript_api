@@ -164,6 +164,7 @@ public class BuyController {
 	    // 총 할인 = (각 상품쿠폰 합) + (공용쿠폰 할인) + (마일리지)
 	    BigDecimal totalDiscount = couponDiscountTotal.add(mainCouponDiscount).add(mileageApplied);
 
+	    
 	    // 응답
 	    result.put("items", items);
 	    result.put("onlyEachCouponDiscountTotal", couponDiscountTotal); // 각각 상품 쿠폰으로만 할인된 가격 
