@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,10 +35,12 @@ public class BuyController {
 	// 상품 확인 및 점유 => 이후 (구매페이지이동)
 	// FE : 10분 안에 아무 동작도 없고 결제도 안하고 하면 알람
 	@PostMapping("/stock-hold")
-	public ResponseEntity<Map<String, Object>> saleStatusCheck(@RequestBody BuyCheckRequest buyCheck) {
+	public ResponseEntity<Map<String, Object>> saleStatusCheck(@RequestBody BuyCheckRequest buyCheck,
+			@RequestAttribute("userId") String userId) {
 		logger.info("saleStatusCheck {}", buyCheck);
 	    Map<String, Object> result = new HashMap<>();
 
+	    buyCheck.setUserId(userId);
 //	    HoldTryResult res = buyService.tryHoldAllOrNothing(buyCheck); // 전부 가능 시 홀드 생성
 	    HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck);
 	    
@@ -54,11 +57,12 @@ public class BuyController {
 	
 	// 점유 연장 (여러 holdId 배치)
     @PostMapping("/stock-hold/extend")
-    public ResponseEntity<Map<String, Object>> extendStockHold(@RequestBody HoldBatchRequest req) {
+    public ResponseEntity<Map<String, Object>> extendStockHold(@RequestBody HoldBatchRequest req,
+    		@RequestAttribute("userId") String userId) {
         logger.info("extendStockHold {}", req);
         Map<String, Object> result = new HashMap<>();
         
-        int updated = buyService.extendHolds(req.getHoldIds());
+        int updated = buyService.extendHolds(req.getHoldIds(), userId);
         int requested = req.getHoldIds() == null ? 0 : req.getHoldIds().size();
         
         result.put("holdIds", req.getHoldIds());
@@ -77,21 +81,22 @@ public class BuyController {
     // 점유 해제 (여러 holdId 배치)
     // DELETE /bapi/buy/stock-hold   (body: {"holdIds":[...]} )
     @DeleteMapping("/stock-hold")
-    public ResponseEntity<Map<String, Object>> release(@RequestParam("holdIds") List<Integer> holdIds) {
+    public ResponseEntity<Map<String, Object>> release(@RequestParam("holdIds") List<Integer> holdIds,
+    		@RequestAttribute("userId") String userId) {
         logger.info("release holds: {}", holdIds);
         Map<String, Object> result = new HashMap<>();
-        int released = buyService.releaseHolds(holdIds);
+        int released = buyService.releaseHolds(holdIds, userId);
         
         result.put("holdIds", holdIds);
-        result.put("releasedCount", released);
         result.put("requestedCount", holdIds == null ? 0 : holdIds.size());
+        result.put("releasedCount", released);
         result.put("message", "success");
         return ResponseEntity.ok(result);
     }
     
-	// 결제 바로 전 상품 및 필요정보들 조회 점유하고 있는 상품조회
+	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제 바로 전)
 	@GetMapping("/pay")
-    public ResponseEntity<Map<String, Object>> getStockHold(@RequestParam("userId") String userId) {
+    public ResponseEntity<Map<String, Object>> getStockHoldProduct(@RequestParam("userId") String userId) {
         logger.info("getPayBefore : " + userId);
         Map<String, Object> body = new HashMap<>();
         
@@ -112,7 +117,7 @@ public class BuyController {
         return ResponseEntity.ok(body);
     }
 	
-	// 결제 바로 전 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.
+	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제 바로 전) 
 	@PostMapping("pay-price")
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest) {
 	    logger.info("pay-price : {}", payPriceRequest);

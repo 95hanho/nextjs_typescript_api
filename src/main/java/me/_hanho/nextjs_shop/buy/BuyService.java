@@ -44,7 +44,7 @@ public class BuyService {
             toRelease.add(h.getHoldId());
         }
         if (!toRelease.isEmpty()) {
-            buyMapper.releaseHolds(toRelease); // status='RELEASED', active_hold=NULL
+            buyMapper.releaseHolds(toRelease, req.getUserId()); // status='RELEASED', active_hold=NULL
         }
 
         // 3. 가용수량 체크 (지금 있는 로직과 유사)
@@ -109,16 +109,16 @@ public class BuyService {
         }
     }
     
-    public int extendHolds(List<Integer> holdIds) {
+    public int extendHolds(List<Integer> holdIds, String userId) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성)만 NOW()+TTL로 연장
-        return buyMapper.extendHolds(holdIds, HOLD_TTL_SECONDS);
+        return buyMapper.extendHolds(holdIds, userId, HOLD_TTL_SECONDS);
     }
-    // 점유해
-    public int releaseHolds(List<Integer> holdIds) {
+    // 점유해제
+    public int releaseHolds(List<Integer> holdIds, String userId) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성) → RELEASED, activeHold=NULL
-        return buyMapper.releaseHolds(holdIds);
+        return buyMapper.releaseHolds(holdIds, userId);
     }
     
 	public List<OrderStockDTO> getOrderStock(String userId) {

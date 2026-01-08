@@ -109,7 +109,7 @@
   <update id="extendHolds">
     UPDATE nextjs_shop_stock_hold
     SET expires_at = DATE_ADD(NOW(), INTERVAL #{ttlSeconds} SECOND)
-    WHERE status = 'HOLD'
+    WHERE user_id = #{userId} AND status = 'HOLD'
       AND active_hold = 1
       AND hold_id IN
       <foreach collection="holdIds" item="id" open="(" separator="," close=")">
@@ -122,7 +122,7 @@
     UPDATE nextjs_shop_stock_hold
     SET status = 'RELEASED',
         active_hold = NULL
-    WHERE status = 'HOLD'
+    WHERE user_id = #{userId} AND status = 'HOLD'
       AND active_hold = 1
       AND hold_id IN
       <foreach collection="holdIds" item="id" open="(" separator="," close=")">

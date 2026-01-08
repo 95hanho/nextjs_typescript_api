@@ -23,12 +23,13 @@ public class JwtInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 		String authorizationHeader = request.getHeader("Authorization");
+
 //		logger.info(authorizationHeader);
 		String accessToken = null;
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 			accessToken = authorizationHeader.substring(7); // "Bearer " 이후의 문자열만 추출
 	    }
-//		logger.info("preHandle ===> accessToken : " + accessToken);
+		logger.info("preHandle ===> url : " + request.getRequestURL());
 		if (accessToken != null && !accessToken.isEmpty()) {
 			logger.info("accessToken : " + accessToken);
             try {

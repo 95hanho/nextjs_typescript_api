@@ -219,10 +219,11 @@ public class AuthController {
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user, @RequestAttribute("userId") String userId) {
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		user.setUserId(userId);
 		authService.userInfoUpdate(user);
 		
 //		"USER_UPDATE_FAILED" : 변경 중 오류 발생 (DB 문제 등)
