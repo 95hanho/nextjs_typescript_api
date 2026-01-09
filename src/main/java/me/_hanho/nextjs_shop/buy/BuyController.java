@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,16 +20,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/bapi/buy")
 public class BuyController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BuyController.class);
 	
-	@Autowired
-	private BuyService buyService;
+	private final BuyService buyService;
 	
 	// 상품 확인 및 점유 => 이후 (구매페이지이동)
 	// FE : 10분 안에 아무 동작도 없고 결제도 안하고 하면 알람
@@ -94,9 +94,9 @@ public class BuyController {
         return ResponseEntity.ok(result);
     }
     
-	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제 바로 전)
+	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제화면)
 	@GetMapping("/pay")
-    public ResponseEntity<Map<String, Object>> getStockHoldProduct(@RequestParam("userId") String userId) {
+    public ResponseEntity<Map<String, Object>> getStockHoldProduct(@RequestAttribute("userId") String userId) {
         logger.info("getPayBefore : " + userId);
         Map<String, Object> body = new HashMap<>();
         
@@ -117,12 +117,14 @@ public class BuyController {
         return ResponseEntity.ok(body);
     }
 	
-	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제 바로 전) 
+	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제화면)
 	@PostMapping("pay-price")
-	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest) {
+	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest, 
+			@RequestAttribute("userId") String userId) {
 	    logger.info("pay-price : {}", payPriceRequest);
 	    Map<String, Object> result = new HashMap<>();
 	    
+	    payPriceRequest.setUserId(userId);
 	    List<ProductWithCouponsDTO> items =
 	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUserId());
 	    
@@ -182,10 +184,11 @@ public class BuyController {
 	
 	// 상품 구매/결제
 	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액, 
-	public ResponseEntity<Map<String, Object>> pay(@RequestBody PayRequest payRequest) {
+	public ResponseEntity<Map<String, Object>> pay(@RequestBody PayRequest payRequest, @RequestAttribute("userId") String userId) {
 		logger.info("pay : {}" + payRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		payRequest.setUserId(userId);
 		buyService.pay(payRequest);
 		
 		result.put("message", "success");

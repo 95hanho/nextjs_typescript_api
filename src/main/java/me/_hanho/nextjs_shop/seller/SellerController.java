@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,19 +15,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.product.ProductController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/bapi/seller")
 public class SellerController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 	
-	@Autowired
-	private SellerService sellerService;
+	private final SellerService sellerService;
 	
 	// 판매자 제품 조회
 	@GetMapping("/product")

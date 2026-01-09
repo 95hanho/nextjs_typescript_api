@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.ProductOption;
@@ -16,12 +16,12 @@ import me._hanho.nextjs_shop.model.ProductQna;
 import me._hanho.nextjs_shop.model.Wish;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-	@Autowired
-	private ProductMapper productMapper;
+	private final ProductMapper productMapper;
 	
 	public List<ProductListDTO> getProductList(String sort, Integer menuSubId, Timestamp lastCreatedAt, Integer lastProductId,
 			Integer lastPopularity) {
@@ -56,15 +56,15 @@ public class ProductService {
 		productMapper.putCart(cart);
 	}
 
-	public ProductDetailResponse getProductDetail(String productId) {
+	public ProductDetailResponse getProductDetail(int productId) {
 		return productMapper.getProductDetail(productId);
 	}
 
-	public List<ProductOption> getProductOptionList(String productId) {
+	public List<ProductOption> getProductOptionList(int productId) {
 		return productMapper.getProductOptionList(productId);
 	}
 
-	public List<AvailableProductCouponResponse> getAvailableProductCoupon(String productId, String userId) {
+	public List<AvailableProductCouponResponse> getAvailableProductCoupon(int productId, String userId) {
 		return productMapper.getAvailableProductCoupon(productId, userId);
 	}
 

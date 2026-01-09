@@ -13,4 +13,5 @@ public class UpdateSelectedCartDTO {
 
 	private List<Integer> cartIdList;
 	private boolean selected;
+	private String userId;
 }

@@ -2,24 +2,23 @@ package me._hanho.nextjs_shop.file;
 
 import java.io.File;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.io.IOException;
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.FileInfo;
 
 @Service
+@RequiredArgsConstructor
 public class FileService {
 
 	@Value("${spring.servlet.multipart.location}")
     private String uploadDir;
 	
-	@Autowired
-	private FileMapper fileMapper;
-	
+	private final FileMapper fileMapper;
 
 	public FileInfo getStoredFile(String id) {
 		return fileMapper.getFile(id);

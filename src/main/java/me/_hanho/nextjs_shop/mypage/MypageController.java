@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,22 +19,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Cart;
+import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
+import me._hanho.nextjs_shop.product.ProductService;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/bapi/mypage")
 public class MypageController {
 
 	private static final Logger logger = LoggerFactory.getLogger(MypageController.class);
 	
-	@Autowired
-	private MypageService mypageService;
+	private final MypageService mypageService;
+	
+	private final ProductService productService;
 	
 	// 유저 쿠폰 조회
 	@GetMapping("/user-coupon")
-	public ResponseEntity<Map<String, Object>> getUserCoupons(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getUserCoupons(@RequestAttribute("userId") String userId) {
 		logger.info("getUserCoupons : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -48,7 +52,7 @@ public class MypageController {
 	
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
-	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestAttribute("userId") String userId) {
 		logger.info("getMyReviews : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -60,11 +64,12 @@ public class MypageController {
 	}
 	// 주문배송정보 상세조회
 	@GetMapping("/my-order/{orderId}")
-	public ResponseEntity<Map<String, Object>> getMyOrderDetail(@PathVariable("orderId") String orderId) {
+	public ResponseEntity<Map<String, Object>> getMyOrderDetail(@PathVariable("orderId") String orderId,
+			@RequestAttribute("userId") String userId) {
 		logger.info("getMyReviews : " + orderId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		MyOrderDetailDTO myOrderDetail = mypageService.getMyOrderDetail(orderId);
+		MyOrderDetailDTO myOrderDetail = mypageService.getMyOrderDetail(orderId, userId);
 
 		result.put("myOrderDetail", myOrderDetail);
 		result.put("message", "MY_ORDER_DETAIL_FETCH_SUCCESS");
@@ -72,11 +77,11 @@ public class MypageController {
 	}
 	// 리뷰 작성
 	@PostMapping("/review")
-	public ResponseEntity<Map<String, Object>> writeReview(@ModelAttribute Review review) {
+	public ResponseEntity<Map<String, Object>> writeReview(@ModelAttribute Review review, @RequestAttribute("userId") String userId) {
 		logger.info("writeReview : ");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.insertReview(review);
+		mypageService.insertReview(review, userId);
 		
 		result.put("message", "REVIEW_WRITE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -84,7 +89,7 @@ public class MypageController {
 	
 	// 장바구니 조회
 	@GetMapping("/cart")
-	public ResponseEntity<Map<String, Object>> selectCart(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> selectCart(@RequestAttribute("userId") String userId) {
 		logger.info("selectCart : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -96,10 +101,11 @@ public class MypageController {
 	}
 	// 장바구니 제품 옵션/수량 변경
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute Cart cart) {
+	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute Cart cart, @RequestAttribute("userId") String userId) {
 		logger.info("updateCart : " + cart.getCartId());
 		Map<String, Object> result = new HashMap<String, Object>();
 
+		cart.setUserId(userId);
 		mypageService.updateCart(cart);
 		
 		result.put("message", "CART_UPDATE_SUCCESS");
@@ -112,6 +118,7 @@ public class MypageController {
 		logger.info("updateSelectedCart : " + selectedCart);
 		Map<String, Object> result = new HashMap<String, Object>();
 
+		selectedCart.setUserId(userId);
 		mypageService.updateSelectedCart(selectedCart);
 		
 		result.put("message", "CART_SELECTED_UPDATE_SUCCESS");
@@ -119,22 +126,23 @@ public class MypageController {
 	}
 	// 장바구니 제품 삭제
 	@DeleteMapping("/cart")
-	public ResponseEntity<Map<String, Object>> deleteCart(@RequestParam("cartIdList") List<Integer> cartIdList) {
+	public ResponseEntity<Map<String, Object>> deleteCart(@RequestParam("cartIdList") List<Integer> cartIdList,
+			@RequestAttribute("userId") String userId) {
 		logger.info("deleteCart : " + cartIdList);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.deleteCart(cartIdList);
+		mypageService.deleteCart(cartIdList, userId);
 		
 		result.put("message", "CART_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 장바구니 옵션변경 - 장바구니 제품 다른 detail조회
+	// 장바구니 옵션조회 - 장바구니 제품 다른 option조회
 	@GetMapping("/cart/option/product-option")
 	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(@RequestParam("productId") int productId) {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartOtherOptionDTO> cartOptionProductOptionList = mypageService.getCartOptionProductOptionList(productId);
+		List<ProductOption> cartOptionProductOptionList = productService.getProductOptionList(productId);
 		
 		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
 		result.put("message", "CART_OPTION_FETCH_SUCCESS");
@@ -142,7 +150,7 @@ public class MypageController {
 	}
 	// 위시리스트 조회
 	@GetMapping("/wish")
-	public ResponseEntity<Map<String, Object>> getWishList(@RequestParam("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> getWishList(@RequestAttribute("userId") String userId) {
 		logger.info("getWishList : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		

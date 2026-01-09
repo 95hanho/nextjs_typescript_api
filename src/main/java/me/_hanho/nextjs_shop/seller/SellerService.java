@@ -5,20 +5,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
 
 @Service
+@RequiredArgsConstructor
 public class SellerService {
 	
-	@Autowired
-	private SellerMapper sellerMapper;
+	private final SellerMapper sellerMapper;
 	
 	public List<SellerProductDTO> getSellerProductList(String sellerId) {
 		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);

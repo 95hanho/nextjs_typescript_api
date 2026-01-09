@@ -40,11 +40,11 @@ public interface ProductMapper {
 	
 	void putCart(Cart cart);
 
-	ProductDetailResponse getProductDetail(String productId);
+	ProductDetailResponse getProductDetail(int productId);
 
-	List<ProductOption> getProductOptionList(String productId);
+	List<ProductOption> getProductOptionList(int productId);
 
-	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") String productId, @Param("userId") String userId);
+	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userId") String userId);
 
 	List<ProductQna> getProductQnaList(@Param("productId") String productId, @Param("userId") String userId);
 }

@@ -2,22 +2,22 @@ package me._hanho.nextjs_shop.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenService;
 
 @Component
+@RequiredArgsConstructor
 public class JwtInterceptor implements HandlerInterceptor {
 
 	private static final Logger logger = LoggerFactory.getLogger(JwtInterceptor.class);
 	
-	@Autowired
-	private TokenService tokenService;
+	private final TokenService tokenService;
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

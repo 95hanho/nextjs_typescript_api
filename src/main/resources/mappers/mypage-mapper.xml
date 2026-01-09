@@ -77,7 +77,7 @@
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = og.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_user_address ua ON ua.address_id = og.address_id
-		WHERE og.order_id = #{orderId}
+		WHERE og.order_id = #{orderId} AND user_id = #{userId}
 	</select>
 	<select id="getMyOrderDetailItems">
 		SELECT ol.order_list_id, ol.order_id , ol.count, ol.order_price, ol.discount_price, ol.final_price,
@@ -93,7 +93,7 @@
 		FROM nextjs_shop_order_item ol
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = ol.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
-		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id AND user_id = #{userId}
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
@@ -120,8 +120,21 @@
 		WHERE ol.order_id = #{orderId}
 	</select>
 	<insert id="insertReview">
-		INSERT INTO nextjs_shop_review(content, rating, order_list_id)
-		VALUES (#{content}, #{rating}, #{orderListId})
+		INSERT INTO nextjs_shop_review (
+			content,
+			rating,
+			order_list_id
+		)
+		SELECT
+			#{review.content},
+			#{review.rating},
+			oli.order_list_id
+		FROM nextjs_shop_order_item oli
+		JOIN nextjs_shop_order_group og
+			ON og.order_id = oli.order_id
+		WHERE
+			oli.order_list_id = #{review.orderListId}
+			AND og.user_id = #{userId}
 	</insert>
 	
 	<update id="unselectOutOfStockItems">
@@ -171,24 +184,20 @@
 	<update id="updateSelectedCart">
 		UPDATE nextjs_shop_cart
 		SET selected = #{selected}
-		WHERE cart_id IN
+		WHERE user_id = #{userId}
+			AND cart_id IN
           <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
             #{cartId}
           </foreach>
 	</update>
 	<delete id="deleteCart">
 		DELETE FROM nextjs_shop_cart
-		WHERE cart_id IN
+		WHERE user_id = #{userId} 
+			AND cart_id IN
           <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
             #{cartId}
           </foreach>
 	</delete>
-	
-	<select id="getCartOptionProductOptionList">
-		SELECT *
-		FROM nextjs_shop_product_option
-		WHERE product_id = #{productId}
-	</select>
 	
 	<select id="getWishlistItems">
 		SELECT w.wish_id, w.created_at, w.user_id, 

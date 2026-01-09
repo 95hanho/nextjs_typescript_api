@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.OrderGroup;
 import me._hanho.nextjs_shop.model.StockHold;
 
 @Service
+@RequiredArgsConstructor
 public class BuyService {
 	
 	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
-	@Autowired
-	private BuyMapper buyMapper;
 	
+	private final BuyMapper buyMapper;
 	
     @Transactional
     public HoldTryResult tryHoldUpsertAllOrNothing(BuyCheckRequest req) {

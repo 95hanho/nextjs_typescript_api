@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.ProductOption;
@@ -26,13 +26,13 @@ import me._hanho.nextjs_shop.model.ProductQna;
 import me._hanho.nextjs_shop.model.Wish;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/bapi/product")
 public class ProductController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 	
-	@Autowired
-	private ProductService productService;
+	private final ProductService productService;
 	
 	// 제품 리스트 조회
 	@GetMapping
@@ -53,10 +53,11 @@ public class ProductController {
 	}
 	// 좋아요/취소
 	@PostMapping("like")
-	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute Like like) {
+	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute Like like, @RequestAttribute("userId") String userId) {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		like.setUserId(userId);
 		productService.setLike(like);
 
 		result.put("message", "WISH_SET_SUCCESS");
@@ -64,10 +65,11 @@ public class ProductController {
 	}
 	// 위시 등록/해제
 	@PostMapping("/wish")
-	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute Wish wish) {
+	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute Wish wish, @RequestAttribute("userId") String userId) {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		wish.setUserId(userId);
 		productService.setWish(wish);
 
 		result.put("message", "WISH_SET_SUCCESS");
@@ -75,10 +77,11 @@ public class ProductController {
 	}
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute Cart cart) {
+	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute Cart cart, @RequestAttribute("userId") String userId) {
 		logger.info("putCart");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		cart.setUserId(userId);
 		productService.putCart(cart);
 
 		result.put("message", "CART_ADD_SUCCESS");
@@ -86,7 +89,7 @@ public class ProductController {
 	}
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
-	public ResponseEntity<Map<String, Object>> getProductDetail(@PathVariable("productId") String productId,
+	public ResponseEntity<Map<String, Object>> getProductDetail(@PathVariable("productId") int productId,
 			@RequestAttribute("userId") String userId) {
 		logger.info("getProductDetail productId : " + productId + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();

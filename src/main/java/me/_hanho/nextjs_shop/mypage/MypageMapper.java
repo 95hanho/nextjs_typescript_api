@@ -18,11 +18,11 @@ public interface MypageMapper {
 	
 	List<OrderItemWithReviewDTO> getMyOrderListProductWithReview(int orderId);
 	
-	MyOrderDetailDTO getMyOrderDetail(String orderId);
+	MyOrderDetailDTO getMyOrderDetail(@Param("orderId") String orderId, @Param("userId") String userId);
 	
-	List<MyOrderDetailItemDTO> getMyOrderDetailItems(String orderId);
+	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userId") String userId);
 	
-	void insertReview(Review review);
+	void insertReview(@Param("review") Review review, @Param("userId") String userId);
 	
 	void unselectOutOfStockItems(String userId);
 	
@@ -32,9 +32,7 @@ public interface MypageMapper {
 	
 	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
 	
-	int deleteCart(List<Integer> cartId);
-	
-	List<CartOtherOptionDTO> getCartOptionProductOptionList(int productId);
+	int deleteCart(@Param("cartId") List<Integer> cartId, @Param("userId") String userId);
 	
 	List<WishlistItemDTO> getWishlistItems(String userId);
 
