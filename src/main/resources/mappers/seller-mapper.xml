@@ -11,8 +11,8 @@
 		WHERE p.seller_id = #{sellerId}
 	</select>
 	<select id="selectDetailsByProductIds">
-		SELECT product_detail_id, product_id, add_price, stock, created_at, size, sales_count
-		FROM nextjs_shop_product_detail
+		SELECT product_option_id, product_id, add_price, stock, created_at, size, sales_count
+		FROM nextjs_shop_product_option
 		WHERE product_id IN
 		<foreach collection="ids" item="id" open="(" close=")" separator=",">
 			#{id}
@@ -28,14 +28,14 @@
 		SET name = #{name}, color_name = #{colorName}, price = #{price}, sale_stop = #{saleStop}, menu_sub_id = #{menuSubId}
 		WHERE product_id = #{productId}
 	</update>
-	<insert id="addProductDetail">
-		INSERT INTO nextjs_shop_product_detail(product_id, add_price, stock, size)
+	<insert id="addProductOption">
+		INSERT INTO nextjs_shop_product_option(product_id, add_price, stock, size)
 		VALUES(#{productId}, #{addPrice}, #{stock}, #{size})
 	</insert>
-	<update id="updateProductDetail">
-		UPDATE nextjs_shop_product_detail
+	<update id="updateProductOption">
+		UPDATE nextjs_shop_product_option
 		SET add_price = #{addPrice}, stock = #{stock}
-		WHERE product_detail_id = #{productDetailId}
+		WHERE product_option_id = #{productOptionId}
 	</update>
 	<select id="getSellerCouponList">
 		SELECT *
@@ -112,7 +112,7 @@
 			MAX(c.created_at) AS latestDate, COUNT(*) AS inCartCount, c.user_id, u.name AS userName,
 			GROUP_CONCAT(DISTINCT p.name ORDER BY c.created_at DESC SEPARATOR ',') AS productNames
 	    FROM nextjs_shop_cart c
-	    JOIN nextjs_shop_product_detail d ON d.product_detail_id = c.product_detail_id
+	    JOIN nextjs_shop_product_option d ON d.product_option_id = c.product_option_id
 	    JOIN nextjs_shop_product p        ON p.product_id = d.product_id
 	    JOIN nextjs_shop_user u           ON u.user_id = c.user_id
 	    WHERE p.seller_id = #{sellerId}

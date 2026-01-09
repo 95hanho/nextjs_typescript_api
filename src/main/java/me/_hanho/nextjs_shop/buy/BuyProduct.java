@@ -6,7 +6,7 @@ import lombok.Data;
 public class BuyProduct {
 	
 	private int holdId;
-	private int productDetailId;
+	private int productOptionId;
 	private int count;
 	private int couponId;
 }

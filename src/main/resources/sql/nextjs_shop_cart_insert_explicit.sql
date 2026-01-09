@@ -1,4 +1,4 @@
-INSERT INTO nextjs_shop_cart(user_id, product_detail_id, quantity, selected) VALUES
+INSERT INTO nextjs_shop_cart(user_id, product_option_id, quantity, selected) VALUES
 ('user12', 45, 2, 0),
 ('user06', 67, 1, 1),
 ('user25', 108, 2, 1),

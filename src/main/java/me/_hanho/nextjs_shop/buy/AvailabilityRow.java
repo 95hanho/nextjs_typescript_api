@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class AvailabilityRow {
-    private int productDetailId;
+    private int productOptionId;
     private int available; // stock - activeHoldSum
 }

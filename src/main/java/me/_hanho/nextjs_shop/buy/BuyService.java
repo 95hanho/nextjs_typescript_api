@@ -6,27 +6,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.OrderGroup;
 import me._hanho.nextjs_shop.model.StockHold;
 
 @Service
+@RequiredArgsConstructor
 public class BuyService {
 	
 	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
-	@Autowired
-	private BuyMapper buyMapper;
 	
+	private final BuyMapper buyMapper;
 	
     @Transactional
     public HoldTryResult tryHoldUpsertAllOrNothing(BuyCheckRequest req) {
     	// 0. 요청 정리
         Map<Integer, Integer> mergedCountByPd = new HashMap<>();
         for (var x : req.getBuyList()) {
-            int pdId = x.getProductDetailId();
+            int pdId = x.getProductOptionId();
             int cnt  = Math.max(1, x.getCount());
             mergedCountByPd.merge(pdId, cnt, Integer::sum);
         }
@@ -44,13 +44,13 @@ public class BuyService {
             toRelease.add(h.getHoldId());
         }
         if (!toRelease.isEmpty()) {
-            buyMapper.releaseHolds(toRelease); // status='RELEASED', active_hold=NULL
+            buyMapper.releaseHolds(toRelease, req.getUserId()); // status='RELEASED', active_hold=NULL
         }
 
         // 3. 가용수량 체크 (지금 있는 로직과 유사)
         var availableMap = buyMapper.selectAvailability(requestedDetailIds).stream()
             .collect(Collectors.toMap(
-                AvailabilityRow::getProductDetailId,
+                AvailabilityRow::getProductOptionId,
                 AvailabilityRow::getAvailable
             ));
 
@@ -60,10 +60,10 @@ public class BuyService {
             requestedDetailIds
         );
 
-        // product_detail_id -> count 합산
+        // product_option_id -> count 합산
         Map<Integer, Integer> existingCountSum = new HashMap<>();
         for (var h : remainingHolds) {
-            existingCountSum.merge(h.getProductDetailId(), h.getCount(), Integer::sum);
+            existingCountSum.merge(h.getProductOptionId(), h.getCount(), Integer::sum);
         }
 
         for (var entry : mergedCountByPd.entrySet()) {
@@ -109,16 +109,16 @@ public class BuyService {
         }
     }
     
-    public int extendHolds(List<Integer> holdIds) {
+    public int extendHolds(List<Integer> holdIds, String userId) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성)만 NOW()+TTL로 연장
-        return buyMapper.extendHolds(holdIds, HOLD_TTL_SECONDS);
+        return buyMapper.extendHolds(holdIds, userId, HOLD_TTL_SECONDS);
     }
-    // 점유해
-    public int releaseHolds(List<Integer> holdIds) {
+    // 점유해제
+    public int releaseHolds(List<Integer> holdIds, String userId) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성) → RELEASED, activeHold=NULL
-        return buyMapper.releaseHolds(holdIds);
+        return buyMapper.releaseHolds(holdIds, userId);
     }
     
 	public List<OrderStockDTO> getOrderStock(String userId) {
@@ -155,8 +155,8 @@ public class BuyService {
 		buyMapper.insertOrderList(productWithCouponList, orderId, payRequest.getUserId());
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
-		// nextjs_shop_product_detail(상품상세옵션) stock(재고수), sales_count(판매수) 변경
-		buyMapper.updateProductDetailByBuy(productWithCouponList);
+		// nextjs_shop_product_option(상품상세옵션) stock(재고수), sales_count(판매수) 변경
+		buyMapper.updateProductOptionByBuy(productWithCouponList);
 		// nextjs_shop_user_coupon(유저쿠폰) used(사용여부) 변경
 		buyMapper.updateUserCouponUsed(productWithCouponList, payRequest.getUserCouponId());
 		// nextjs_shop_coupon(쿠폰) amount(수량) 변경

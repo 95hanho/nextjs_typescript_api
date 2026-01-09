@@ -9,14 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductQna {
-    private int productQnaId;
-    private String question;
+public class Like {
+    private int likeId;
     private Timestamp createdAt;
-    private String answer;
-    private Timestamp resCreatedAt;
-    private boolean secret;
-    private int productQnaTypeId;
     private int productId;
     private String userId;
 }

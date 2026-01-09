@@ -20,7 +20,7 @@ public class OrderItemWithReviewDTO {
     private BigDecimal finalPrice;
 
     private int holdId;
-    private int productDetailId;
+    private int productOptionId;
     private int addPrice;
     private String size;
     

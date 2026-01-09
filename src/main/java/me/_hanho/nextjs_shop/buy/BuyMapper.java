@@ -27,10 +27,9 @@ public interface BuyMapper {
     java.util.List<HoldBrief> selectLatestHolds(@Param("userId") String userId,
                                                 @Param("detailIds") java.util.List<Integer> detailIds);
 
-    int extendHolds(@Param("holdIds") List<Integer> holdIds,
-            @Param("ttlSeconds") int ttlSeconds);
+    int extendHolds(@Param("holdIds") List<Integer> holdIds, @Param("userId") String userId, @Param("ttlSeconds") int ttlSeconds);
 
-    int releaseHolds(@Param("holdIds") List<Integer> holdIds);
+    int releaseHolds(@Param("holdIds") List<Integer> holdIds, @Param("userId") String userId);
     
 	List<OrderStockDTO> getOrderStock(String userId);
 	
@@ -52,7 +51,7 @@ public interface BuyMapper {
 	
 	void updateCancelStockHold(@Param("productList") List<ProductWithCouponsDTO> items);
 
-	void updateProductDetailByBuy(@Param("productList") List<ProductWithCouponsDTO> items);
+	void updateProductOptionByBuy(@Param("productList") List<ProductWithCouponsDTO> items);
 
 	void updateUserCouponUsed(@Param("productList") List<ProductWithCouponsDTO> items, @Param("userCouponId") int userCouponId);
 

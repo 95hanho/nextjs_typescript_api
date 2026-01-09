@@ -7,22 +7,22 @@ import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
-import me._hanho.nextjs_shop.model.ProductDetail;
+import me._hanho.nextjs_shop.model.ProductOption;
 
 @Mapper
 public interface SellerMapper {
 
 	List<SellerProductDTO> getSellerProductList(String sellerId);
 	
-	List<ProductDetail> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
+	List<ProductOption> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
 	
 	void addProduct(Product product);
 	
 	int updateProduct(Product product);
 
-	void addProductDetail(ProductDetail productDetail);
+	void addProductOption(ProductOption productOption);
 
-	int updateProductDetail(ProductDetail productDetail);
+	int updateProductOption(ProductOption productOption);
 	
 	List<Coupon> getSellerCouponList(String sellerId);
 	

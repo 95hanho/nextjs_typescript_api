@@ -3,6 +3,7 @@ package me._hanho.nextjs_shop.mypage;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Review;
@@ -17,29 +18,40 @@ public interface MypageMapper {
 	
 	List<OrderItemWithReviewDTO> getMyOrderListProductWithReview(int orderId);
 	
-	MyOrderDetailDTO getMyOrderDetail(String orderId);
+	MyOrderDetailDTO getMyOrderDetail(@Param("orderId") String orderId, @Param("userId") String userId);
 	
-	List<MyOrderDetailItemDTO> getMyOrderDetailItems(String orderId);
+	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userId") String userId);
 	
-	void insertReview(Review review);
+	void insertReview(@Param("review") Review review, @Param("userId") String userId);
+	
+	void unselectOutOfStockItems(String userId);
 	
 	List<CartProductDTO> getCartList(String userId);
 	
 	int updateCart(Cart cart);
 	
-	int deleteCart(int cartId);
+	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
+	
+	int deleteCart(@Param("cartId") List<Integer> cartId, @Param("userId") String userId);
 	
 	List<WishlistItemDTO> getWishlistItems(String userId);
 
-	void deleteWish(int wishId);
-	
 	List<UserAddress> getUserAddressList(String userId);
 
 	void insertUserAddress(UserAddress userAddress);
 
+	void clearDefaultAddress(int addressId);
+	
 	int updateUserAddress(UserAddress userAddress);
 
-	int deleteUserAddress(int addressId);
+	int deleteUserAddress(@Param("addressId") int addressId, @Param("userId") String userId);
+
+	
+
+
+	
+
+	
 
 	
 

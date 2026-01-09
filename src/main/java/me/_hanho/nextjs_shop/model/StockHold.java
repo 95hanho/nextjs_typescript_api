@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class StockHold {
 	private int holdId;
 	private String userId;
-	private int productDetailId;
+	private int productOptionId;
 	private int count;
 	private String status;
 	private boolean activeHold;

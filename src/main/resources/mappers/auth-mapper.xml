@@ -20,6 +20,23 @@
 	    ) AS exists_flag
 	</select>
 	
+	<insert id="insertPhoneAuth">
+		INSERT INTO nextjs_shop_phone_auth(user_id, phone_auth_token, phone, verification_code, connect_ip, connect_agent)
+		VALUES(#{userId}, #{phoneAuthToken}, #{phone}, #{verificationCode}, #{connectIp}, #{connectAgent})
+	</insert>
+	
+	<select id="getPhoneAuthCode">
+		SELECT *
+		FROM nextjs_shop_phone_auth
+		WHERE phone_auth_token = #{phoneAuthToken}
+	</select>
+	
+	<update id="markPhoneAuthUsed">
+		UPDATE nextjs_shop_phone_auth
+		SET is_used = 1
+		WHERE phone_auth_id = #{phoneAuthId}
+	</update>
+	
 	<insert id="joinUser">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
 		VALUES(#{userId}, #{password}, #{name}, #{zonecode}, #{address}, #{addressDetail}, #{birthday}, #{phone}, #{email})
@@ -27,7 +44,13 @@
 	
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
-		SET zonecode = #{zonecode}, address = #{address}, address_detail = #{addressDetail}, phone = #{phone}, email = #{email}
+		SET phone = #{phone}, email = #{email}
+		WHERE user_id = #{userId}
+	</update>
+	
+	<update id="changePassword">
+		UPDATE nextjs_shop_user
+		SET password = #{newPassword}
 		WHERE user_id = #{userId}
 	</update>
 	

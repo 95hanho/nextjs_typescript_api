@@ -14,7 +14,7 @@ public class CartProductDTO {
 	private int cartId;
 	private Timestamp createdAt;
 	
-	private int productDetailId;
+	private int productOptionId;
 	private int addPrice;
     private int stock;
     private String size;
@@ -22,6 +22,8 @@ public class CartProductDTO {
     private int productId;
     private String productName;
     private int price;
+    
+    private Integer wishId;
     
     private int fileId;
     private String fileName;

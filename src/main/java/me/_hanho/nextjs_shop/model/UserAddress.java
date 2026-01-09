@@ -12,13 +12,15 @@ import lombok.NoArgsConstructor;
 public class UserAddress {
 	private int addressId;
 	private String addressName;
+	private String recipientName;
 	private String addressPhone;
 	private String zonecode;
 	private String address;
 	private String addressDetail;
 	private String memo;
-	private boolean isDefault;
+	private boolean defaultAddress;
 	private Timestamp createdAt;
+	private Timestamp updatedAt;
 	private Timestamp usedateAt;
 	private String userId;
 	private boolean deleted;

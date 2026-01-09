@@ -5,20 +5,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
-import me._hanho.nextjs_shop.model.ProductDetail;
+import me._hanho.nextjs_shop.model.ProductOption;
 
 @Service
+@RequiredArgsConstructor
 public class SellerService {
 	
-	@Autowired
-	private SellerMapper sellerMapper;
+	private final SellerMapper sellerMapper;
 	
 	public List<SellerProductDTO> getSellerProductList(String sellerId) {
 		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
@@ -29,15 +29,15 @@ public class SellerService {
                 .toList();
         
         // 3) 상세 일괄 조회 (IN (...))
-        List<ProductDetail> details = sellerMapper.selectDetailsByProductIds(ids);
+        List<ProductOption> details = sellerMapper.selectDetailsByProductIds(ids);
         
         // 4) productId -> details 그룹핑
-        Map<Integer, List<ProductDetail>> byProductId = details.stream()
-                .collect(Collectors.groupingBy(ProductDetail::getProductId));
+        Map<Integer, List<ProductOption>> byProductId = details.stream()
+                .collect(Collectors.groupingBy(ProductOption::getProductId));
 
         // 5) 각 상품 DTO에 붙이기
         for (SellerProductDTO p : sellerProductList) {
-            List<ProductDetail> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
+            List<ProductOption> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
             p.setDetailList(list);
         }
         
@@ -52,13 +52,13 @@ public class SellerService {
 	        throw new UserNotFoundException("product not found: " + product.getProductId());
 	    }
 	}
-	public void addProductDetail(ProductDetail productDetail) {
-		sellerMapper.addProductDetail(productDetail);
+	public void addProductOption(ProductOption productOption) {
+		sellerMapper.addProductOption(productOption);
 	}
-	public void updateProductDetail(ProductDetail productDetail) {
-		int updated = sellerMapper.updateProductDetail(productDetail);
+	public void updateProductOption(ProductOption productOption) {
+		int updated = sellerMapper.updateProductOption(productOption);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("productDetail not found: " + productDetail.getProductDetailId());
+	        throw new UserNotFoundException("productOption not found: " + productOption.getProductOptionId());
 	    }
 	}
 	public List<Coupon> getSellerCouponList(String sellerId) {

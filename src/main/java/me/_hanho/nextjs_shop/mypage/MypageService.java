@@ -2,20 +2,21 @@ package me._hanho.nextjs_shop.mypage;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @Service
+@RequiredArgsConstructor
 public class MypageService {
 
 	
-	@Autowired
-	private MypageMapper mypageMapper;
+	private final MypageMapper mypageMapper;
 
 	public List<UserCouponDTO> getUserCoupons(String userId) {
 		return mypageMapper.getUserCoupons(userId);
@@ -29,15 +30,18 @@ public class MypageService {
 		
 		return myOrderList;
 	}
-	public MyOrderDetailDTO getMyOrderDetail(String orderId) {
-		MyOrderDetailDTO myOrderDetail = mypageMapper.getMyOrderDetail(orderId);
-		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId));
+	public MyOrderDetailDTO getMyOrderDetail(String orderId, String userId) {
+		MyOrderDetailDTO myOrderDetail = mypageMapper.getMyOrderDetail(orderId, userId);
+		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId, userId));
 		return myOrderDetail;
 	}
-	public void insertReview(Review review) {
-		mypageMapper.insertReview(review);
+	public void insertReview(Review review, String userId) {
+		mypageMapper.insertReview(review, userId);
 	}
 	public List<CartProductDTO> getCartList(String userId) {
+		// 재고 부족한 얘들 선택 해제
+		mypageMapper.unselectOutOfStockItems(userId);
+		//
 		return mypageMapper.getCartList(userId);
 	}
 	public void updateCart(Cart cart) {
@@ -46,8 +50,14 @@ public class MypageService {
 	        throw new UserNotFoundException("updateCart not found: " + cart.getCartId());
 	    }
 	}
-	public void deleteCart(int cartId) {
-		int updated = mypageMapper.deleteCart(cartId);
+	public void updateSelectedCart(UpdateSelectedCartDTO selectedCart) {
+		int updated = mypageMapper.updateSelectedCart(selectedCart);
+	    if (updated == 0) {
+	        throw new UserNotFoundException("updateSelectedCart not found: " + selectedCart.getCartIdList().toString());
+	    }
+	}
+	public void deleteCart(List<Integer> cartId, String userId) {
+		int updated = mypageMapper.deleteCart(cartId, userId);
 	    if (updated == 0) {
 	        throw new UserNotFoundException("deleteCart not found: " + cartId);
 	    }
@@ -56,31 +66,31 @@ public class MypageService {
 		return mypageMapper.getWishlistItems(userId);
 	}
 
-	public void deleteWish(int wishId) {
-		mypageMapper.deleteWish(wishId);
-	}
 	public List<UserAddress> getUserAddressList(String userId) {
 		return mypageMapper.getUserAddressList(userId);
 	}
 	public void insertUserAddress(UserAddress userAddress) {
 		mypageMapper.insertUserAddress(userAddress);
 	}
-
+	@Transactional
 	public void updateUserAddress(UserAddress userAddress) {
+		if(userAddress.isDefaultAddress()) {
+			mypageMapper.clearDefaultAddress(userAddress.getAddressId());
+		}
 		int updated = mypageMapper.updateUserAddress(userAddress);
 		if (updated == 0) {
 			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddressId());
 	    }
-		
 	}
 
-	public void deleteUserAddress(int addressId) {
-		int updated = mypageMapper.deleteUserAddress(addressId);
+	public void deleteUserAddress(int addressId, String userId) {
+		int updated = mypageMapper.deleteUserAddress(addressId, userId);
 		if(updated == 0) {
 			throw new UserNotFoundException("deleteUserAddress not found: " + addressId);
 		}
 		
 	}
+
 
 
 

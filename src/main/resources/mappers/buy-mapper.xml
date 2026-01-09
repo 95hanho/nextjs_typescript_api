@@ -11,7 +11,7 @@
  <!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
   <select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
 	  SELECT
-	    pd.product_detail_id,
+	    pd.product_option_id,
 	    GREATEST(
 	      pd.stock - IFNULL(SUM(
 	        CASE
@@ -24,24 +24,24 @@
 	      ), 0),
 	      0
 	    ) AS available
-	  FROM nextjs_shop_product_detail pd
+	  FROM nextjs_shop_product_option pd
 	  LEFT JOIN nextjs_shop_stock_hold sh
-	    ON sh.product_detail_id = pd.product_detail_id
-	  WHERE pd.product_detail_id IN
+	    ON sh.product_option_id = pd.product_option_id
+	  WHERE pd.product_option_id IN
 	    <foreach collection="detailIds" item="id" open="(" separator="," close=")">
 	      #{id}
 	    </foreach>
-	  GROUP BY pd.product_detail_id
+	  GROUP BY pd.product_option_id
   </select>
 
   <!-- 본인 미만료 HOLD -->
   <select id="selectExistingHolds" resultType="me._hanho.nextjs_shop.buy.ExistingHold">
-    SELECT hold_id, product_detail_id, count
+    SELECT hold_id, product_option_id, count
     FROM nextjs_shop_stock_hold
     WHERE user_id = #{userId}
       AND status = 'HOLD'
       AND expires_at > NOW()
-      AND product_detail_id IN
+      AND product_option_id IN
         <foreach collection="detailIds" item="id" open="(" separator="," close=")">
           #{id}
         </foreach>
@@ -50,10 +50,10 @@
   <!-- 멱등 업서트: 유니크(UQ_user_pd_status) 충돌 시 count/TTL 갱신 -->
   <insert id="upsertHolds">
 	  INSERT INTO nextjs_shop_stock_hold
-	    (user_id, product_detail_id, count, status, active_hold, expires_at, created_at)
+	    (user_id, product_option_id, count, status, active_hold, expires_at, created_at)
 	  VALUES
 	    <foreach collection="rows" item="r" separator=",">
-	      (#{r.userId}, #{r.productDetailId}, #{r.count},
+	      (#{r.userId}, #{r.productOptionId}, #{r.count},
 	       'HOLD', 1,
 	       DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
 	    </foreach>
@@ -68,10 +68,10 @@
        expires_at를 직접 다시 계산해서 갱신 -->
   <insert id="upsertHolds" databaseId="mysql">
     INSERT INTO nextjs_shop_stock_hold
-      (user_id, product_detail_id, count, status, expires_at, created_at)
+      (user_id, product_option_id, count, status, expires_at, created_at)
     VALUES
       <foreach collection="rows" item="r" separator=",">
-        (#{r.userId}, #{r.productDetailId}, #{r.count}, 'HOLD',
+        (#{r.userId}, #{r.productOptionId}, #{r.count}, 'HOLD',
          DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
       </foreach>
     ON DUPLICATE KEY UPDATE
@@ -90,18 +90,18 @@
 
   <!-- 최신 HOLD (유저+pdId별 1건) -->
   <select id="selectLatestHolds" resultType="me._hanho.nextjs_shop.buy.HoldBrief">
-    SELECT t.product_detail_id, t.hold_id
+    SELECT t.product_option_id, t.hold_id
     FROM nextjs_shop_stock_hold t
     INNER JOIN (
-      SELECT product_detail_id, MAX(hold_id) AS max_id
+      SELECT product_option_id, MAX(hold_id) AS max_id
       FROM nextjs_shop_stock_hold
       WHERE user_id = #{userId}
-        AND product_detail_id IN
+        AND product_option_id IN
           <foreach collection="detailIds" item="id" open="(" separator="," close=")">
             #{id}
           </foreach>
         AND status = 'HOLD'
-      GROUP BY product_detail_id
+      GROUP BY product_option_id
     ) m ON m.max_id = t.hold_id
   </select>
   
@@ -109,7 +109,7 @@
   <update id="extendHolds">
     UPDATE nextjs_shop_stock_hold
     SET expires_at = DATE_ADD(NOW(), INTERVAL #{ttlSeconds} SECOND)
-    WHERE status = 'HOLD'
+    WHERE user_id = #{userId} AND status = 'HOLD'
       AND active_hold = 1
       AND hold_id IN
       <foreach collection="holdIds" item="id" open="(" separator="," close=")">
@@ -122,7 +122,7 @@
     UPDATE nextjs_shop_stock_hold
     SET status = 'RELEASED',
         active_hold = NULL
-    WHERE status = 'HOLD'
+    WHERE user_id = #{userId} AND status = 'HOLD'
       AND active_hold = 1
       AND hold_id IN
       <foreach collection="holdIds" item="id" open="(" separator="," close=")">
@@ -133,12 +133,12 @@
    <!-- 점유하고 있는 상품조회 -->
   <select id="getOrderStock">
   	SELECT sh.hold_id, sh.count, 
-  		 pd.product_detail_id, pd.add_price, pd.size,
+  		 pd.product_option_id, pd.add_price, pd.size,
   		 p.product_id, p.name, p.color_name,
   		 s.seller_id, s.seller_name,
   		 f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
   	FROM nextjs_shop_stock_hold sh
-  	JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+  	JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
   	JOIN nextjs_shop_product p ON p.product_id = pd.product_id
   	JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
   	LEFT JOIN (
@@ -189,7 +189,7 @@
   	  SELECT
       sh.hold_id,
       r.count,
-      pd.product_detail_id,
+      pd.product_option_id,
       IFNULL(pd.add_price, 0)                           AS addPrice,
       uc.user_coupon_id,
       p.product_id,
@@ -207,17 +207,17 @@
         <foreach collection="products" item="p" separator=" UNION ALL ">
           SELECT
               #{p.holdId}         AS hold_id,
-              #{p.productDetailId} AS product_detail_id,
+              #{p.productOptionId} AS product_option_id,
               #{p.count}           AS count,
               #{p.couponId}       AS coupon_id
         </foreach>
       ) AS r
       JOIN nextjs_shop_stock_hold sh ON sh.hold_id = r.hold_id
-       AND sh.product_detail_id = r.product_detail_id
+       AND sh.product_option_id = r.product_option_id
        AND sh.user_id = #{userId}
        AND sh.status = 'HOLD'
        AND sh.active_hold = 1
-      JOIN nextjs_shop_product_detail pd ON pd.product_detail_id = sh.product_detail_id
+      JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
       JOIN nextjs_shop_product p ON p.product_id = pd.product_id
       LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = r.coupon_id
        AND c.status = 'Y'
@@ -287,22 +287,22 @@
 		 </foreach>
 	</update>
 	
-	<update id="updateProductDetailByBuy">
-		UPDATE nextjs_shop_product_detail
+	<update id="updateProductOptionByBuy">
+		UPDATE nextjs_shop_product_option
 	  	SET
-	    stock = stock - CASE product_detail_id
+	    stock = stock - CASE product_option_id
     	<foreach collection="productList" item="item">
-      		WHEN #{item.productDetailId} THEN #{item.count}
+      		WHEN #{item.productOptionId} THEN #{item.count}
 	    </foreach>
     	ELSE 0 END,
-	    sales_count = sales_count + CASE product_detail_id
+	    sales_count = sales_count + CASE product_option_id
 	    <foreach collection="productList" item="item">
-	      WHEN #{item.productDetailId} THEN #{item.count}
+	      WHEN #{item.productOptionId} THEN #{item.count}
 	    </foreach>
 		ELSE 0 END
-	  	WHERE product_detail_id IN
+	  	WHERE product_option_id IN
 	  	<foreach collection="productList" item="item" open="(" separator="," close=")">
-   		  #{item.productDetailId}
+   		  #{item.productOptionId}
 	  	</foreach>
 	</update>
 	

@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import me._hanho.nextjs_shop.model.ProductDetail;
+import me._hanho.nextjs_shop.model.ProductOption;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +26,6 @@ public class SellerProductDTO {
 	private String topMenuName;
 	private String gender;
 	
-	private List<ProductDetail> detailList;
+	private List<ProductOption> detailList;
 	
 }

@@ -1,8 +1,8 @@
-ALTER TABLE `nextjs_shop_product_detail_category` ADD CONSTRAINT `FK_nextjs_shopproduct_detail_TO_product_detail_category_1` FOREIGN KEY (
-	`product_detail_id`
+ALTER TABLE `nextjs_shop_product_option_category` ADD CONSTRAINT `FK_nextjs_shopproduct_option_TO_product_option_category_1` FOREIGN KEY (
+	`product_option_id`
 )
-REFERENCES `nextjs_shop_product_detail` (
-	`product_detail_id`
+REFERENCES `nextjs_shop_product_option` (
+	`product_option_id`
 );
 
 ALTER TABLE `nextjs_shop_coupon` ADD CONSTRAINT `FK_nextjs_shopuser_TO_coupon_1` FOREIGN KEY (
@@ -96,7 +96,7 @@ REFERENCES `nextjs_shop_file` (
 	`file_id`
 );
 
-ALTER TABLE `nextjs_shop_product_detail` ADD CONSTRAINT `FK_nextjs_shopproduct_TO_product_detail_1` FOREIGN KEY (
+ALTER TABLE `nextjs_shop_product_option` ADD CONSTRAINT `FK_nextjs_shopproduct_TO_product_option_1` FOREIGN KEY (
 	`product_id`
 )
 REFERENCES `nextjs_shop_product` (

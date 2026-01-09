@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDetail {
-    private int productDetailId;
+public class ProductOption {
+    private int productOptionId;
     private int productId;
     private int addPrice;
     private int stock;

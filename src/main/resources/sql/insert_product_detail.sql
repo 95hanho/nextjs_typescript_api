@@ -1,4 +1,4 @@
-INSERT INTO `nextjs_shop_product_detail` (`product_id`, `add_price`, `stock`, `size`, `sales_count`) VALUES
+INSERT INTO `nextjs_shop_product_option` (`product_id`, `add_price`, `stock`, `size`, `sales_count`) VALUES
 (2, 10000, 73, 'M', 46),
 (2, 10000, 167, 'L', 48),
 (2, 0, 166, 'S', 35),

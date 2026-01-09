@@ -15,9 +15,11 @@ public class Product {
     private String colorName;
     private int price;
     private Timestamp createdAt;
+    private int likeCount;
     private int viewCount;
     private int wishCount;
-    private boolean saleStop;
+    private boolean saleStop; // 판매 중지여부
     private String sellerId;
     private int menuSubId;
+    
 }

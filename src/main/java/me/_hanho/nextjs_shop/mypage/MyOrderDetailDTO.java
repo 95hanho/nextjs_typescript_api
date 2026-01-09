@@ -44,12 +44,13 @@ public class MyOrderDetailDTO {
 	// 주소
 	private int addressId;
 	private String addressName;
+	private String recipientName;
 	private String addressPhone;
 	private String zonecode;
 	private String address;
 	private String addressDetail;
 	private String memo;
-	private boolean isDefault;
+	private boolean defaultAddress;
 	
 	private List<MyOrderDetailItemDTO> items;
 

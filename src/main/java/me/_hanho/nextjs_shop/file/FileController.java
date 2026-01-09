@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/file")
 public class FileController {
 	
@@ -26,8 +28,7 @@ public class FileController {
 	@Value("${spring.servlet.multipart.location}")
     private String uploadDir;
 	
-	@Autowired
-	private FileService fileService;
+	private final FileService fileService;
 	
 	// 상품이미지 업로드
 	@PostMapping("/product")
