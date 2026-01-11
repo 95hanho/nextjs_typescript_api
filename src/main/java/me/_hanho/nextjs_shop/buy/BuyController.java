@@ -43,6 +43,7 @@ public class BuyController {
 	    buyCheck.setUserId(userId);
 //	    HoldTryResult res = buyService.tryHoldAllOrNothing(buyCheck); // 전부 가능 시 홀드 생성
 	    HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck);
+	   
 	    
 	    if(!res.isOk()) {
 	    	result.put("message", "STOCK_HOLD_FAILED");
