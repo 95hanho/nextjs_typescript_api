@@ -18,4 +18,5 @@ public class Token {
     private String refreshToken;
     private Timestamp createdAt;
     private String userId;
+    private String sellerId;
 }

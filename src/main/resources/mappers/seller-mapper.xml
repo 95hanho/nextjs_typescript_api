@@ -2,6 +2,32 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.seller.SellerMapper">
 
+	<select id="isSeller">
+		SELECT seller_id, password
+		FROM nextjs_shop_seller
+		WHERE seller_id = #{sellerId} AND approval_status = 'APPROVED'
+	</select>
+	<insert id="insertToken">
+		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, seller_id)
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{sellerId})
+	</insert>
+	<select id="getSeller">
+		SELECT seller_id,seller_name,seller_name_en,extension_number,mobile_number,email,
+		business_registration_number,telecom_sales_number,representative_name,
+		business_zipcode,business_address,business_address_detail,
+		updated_at,requested_at,approval_status,approved_at
+		FROM nextjs_shop_seller
+		WHERE seller_id = #{sellerId}
+	</select>
+	<insert id="setSeller">
+		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
+			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,
+			approval_status)
+		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
+			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
+			#{businessZipcode},#{businessAddress},#{businessAddressDetail}, 'PENDING')
+	</insert>
+
 	<select id="getSellerProductList">
 		SELECT p.product_id, p.name, p.color_name, p.price, p.created_at, p.view_count, p.wish_count, p.seller_id,
 			ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender

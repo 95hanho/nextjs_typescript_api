@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,17 +21,77 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.product.ProductController;
+import me._hanho.nextjs_shop.model.Token;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/bapi/seller")
 public class SellerController {
 	
-	private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+	private static final Logger logger = LoggerFactory.getLogger(SellerController.class);
 	
 	private final SellerService sellerService;
 	
+	// 로그인
+	@PostMapping
+	public ResponseEntity<Map<String, Object>> login(@ModelAttribute SellerLoginDTO seller) {
+		logger.info("sellerLogin :" + seller);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		SellerLoginDTO checkSeller = sellerService.isSeller(seller.getSellerId());
+		if (checkSeller == null || !sellerService.passwordCheck(seller.getPassword(), checkSeller.getPassword())) {
+			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
+			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
+			
+			return new ResponseEntity<>(
+					result
+					, HttpStatus.UNAUTHORIZED);
+		} else {
+			result.put("message", "LOGIN_SUCCESS");
+			return new ResponseEntity<>(
+					result
+					, HttpStatus.OK);
+		}
+	}
+	// 로그인 토큰 저장
+	@PostMapping("/token")
+	public ResponseEntity<Map<String, Object>> tokenStore(
+			@RequestAttribute("sellerId") String sellerId, @RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", sellerId : " + sellerId + 
+				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		Token token = Token.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).sellerId(sellerId).build(); 
+		sellerService.insertToken(token);
+		
+		result.put("message", "SELLER_TOKEN_INSERT_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 정보조회
+	@GetMapping
+	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerId") String sellerId) {
+		logger.info("getSeller :" + sellerId);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerId);
+		
+		result.put("sellerInfo", sellerInfo);
+		result.put("message", "SELLER_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 등록요청
+	@PostMapping("/registration")
+	public ResponseEntity<Map<String, Object>> sellerRegister(@ModelAttribute SellerRegisterRequest seller) {
+		logger.info("sellerRegister");
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		sellerService.setSeller(seller);
+		
+		result.put("message", "SELLER_REGISTER_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 판매자 제품 조회
 	@GetMapping("/product")
 	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestParam("sellerId") String sellerId) {

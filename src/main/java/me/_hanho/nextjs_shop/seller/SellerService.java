@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.model.Token;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,24 @@ public class SellerService {
 	
 	private final SellerMapper sellerMapper;
 	
+	private final PasswordEncoder passwordEncoder;
+	
+	public SellerLoginDTO isSeller(String sellerId) {
+		return sellerMapper.isSeller(sellerId);
+	}
+	public boolean passwordCheck(String password, String checkPassword) {
+		return passwordEncoder.matches(password, checkPassword);
+	}
+	public void insertToken(Token token) {
+		sellerMapper.insertToken(token);
+	}
+	public SellerInfoResponse getSeller(String sellerId) {
+		return sellerMapper.getSeller(sellerId);
+	}
+	public void setSeller(SellerRegisterRequest seller) {
+		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
+		sellerMapper.setSeller(seller);
+	}
 	public List<SellerProductDTO> getSellerProductList(String sellerId) {
 		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
 		
@@ -94,6 +114,9 @@ public class SellerService {
 	public List<UserInCartCountDTO> getUserInCartCountList(String sellerId) {
 		return sellerMapper.getUserInCartCountList(sellerId);
 	}
+
+
+
 	//
 
 

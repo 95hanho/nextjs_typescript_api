@@ -28,8 +28,8 @@ public class AuthService {
 	}
 	
     // 패스워드 확인
-    public boolean passwordCheck(String password, String password2) {
-		return passwordEncoder.matches(password, password2);
+    public boolean passwordCheck(String password, String checkPassword) {
+		return passwordEncoder.matches(password, checkPassword);
 	}
 	
 	public boolean getId(String userId) {

@@ -25,26 +25,44 @@ public class JwtInterceptor implements HandlerInterceptor {
 		String authorizationHeader = request.getHeader("Authorization");
 
 //		logger.info(authorizationHeader);
-		String accessToken = null;
+		String token = null;
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			accessToken = authorizationHeader.substring(7); // "Bearer " 이후의 문자열만 추출
+			token = authorizationHeader.substring(7); // "Bearer " 이후의 문자열만 추출
 	    }
+		
+		/* =======판매자 로그인 토큰==================================================================== */
 		logger.info("preHandle ===> url : " + request.getRequestURL());
-		if (accessToken != null && !accessToken.isEmpty()) {
-			logger.info("accessToken : " + accessToken);
+		if (token != null && !token.isEmpty()) {
+			logger.info("token : " + token);
             try {
                 // JWT 파싱 및 복호화
-                Claims claims = tokenService.parseJwtToken(accessToken);
-
+                Claims claims = tokenService.parseJwtToken(token);
+                
                 /* 파싱이 되는지만 확인할거임 */
-                
-                // userId 추출
-                String userId = claims.get("userId", String.class);
-                logger.info("userId : " + userId);
-                
-                // HttpServletRequest에 userId 추가
-                request.setAttribute("userId", userId);
-                
+                // 타입 확인(유저/판매자)
+                String type = claims.get("type", String.class);
+                logger.info("type : " + type);
+                if (type == null) {
+                    throw new IllegalArgumentException("Token type is missing");
+                } else if("ACCESS".equals(type)) {
+                	// userId 추출
+                	String userId = claims.get("userId", String.class);
+                	if (userId == null) {
+                        throw new SecurityException("Invalid ACCESS token: missing userId");
+                    }
+                	logger.info("type : " + type + ", userId : " + userId);
+                	// HttpServletRequest에 userId 추가
+                	request.setAttribute("userId", userId);
+                } else if("SELLER".equals(type)) {
+                	// sellerId 추출
+                    String sellerId = claims.get("sellerId", String.class);
+                    if (sellerId == null) {
+                        throw new SecurityException("Invalid SELLER token: missing sellerId");
+                    }
+                    logger.info("type : " + type + ", sellerId : " + sellerId);
+                    // HttpServletRequest에 sellerId 추가
+                    request.setAttribute("sellerId", sellerId);
+                }
             } catch (Exception e) {
                 // 토큰이 유효하지 않으면 요청을 거부
             	logger.error("token UNAUTHORIZED");
@@ -76,6 +94,7 @@ public class JwtInterceptor implements HandlerInterceptor {
                 return false;
             }
         }
+		/* ===================================================================================== */
         return true;
 	}
 }
