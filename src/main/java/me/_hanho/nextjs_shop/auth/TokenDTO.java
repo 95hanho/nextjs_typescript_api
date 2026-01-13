@@ -19,4 +19,5 @@ public class TokenDTO {
     private String beforeToken;
     private Timestamp createdAt;
     private String userId;
+    private String sellerId;
 }

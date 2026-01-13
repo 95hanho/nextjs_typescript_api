@@ -119,7 +119,7 @@
 	<select id="getProductDetail">
 		SELECT  product_id, name, color_name, price, created_at, 
 		like_count, view_count, wish_count, sale_stop, seller_id, menu_sub_id, 
-		material_info, color_info, size_info, manufacturer_name, country_of_origin, 
+		material_info, manufacturer_name, country_of_origin, 
 		wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone
 		FROM nextjs_shop_product

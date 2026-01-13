@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.admin.AdminMapper">
+	<select id="isAdmin">
+		SELECT login_id, password
+		FROM nextjs_shop_admin
+		WHERE login_id = #{loginId}
+	</select>
 	<insert id="addSeller">
-		INSERT INTO nextjs_shop_seller(seller_id, password, business_registration_number, extension_number, mobile_number, email)
-		VALUES(#{sellerId}, #{password}, #{businessRegistrationNumber}, #{extensionNumber}, #{mobileNumber}, #{email})
+		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
+			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,
+			approval_status)
+		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
+			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
+			#{businessZipcode},#{businessAddress},#{businessAddressDetail}, 'PENDING')
 	</insert>
+	<update id="setSellerApproval">
+		UPDATE nextjs_shop_seller
+		SET approval_status = #{approvalStatus}
+		WHERE seller_id IN
+			<foreach collection="sellerIds" item="sellerId" open="(" separator="," close=")">
+            	#{sellerId}
+          	</foreach>
+	</update>
 </mapper>

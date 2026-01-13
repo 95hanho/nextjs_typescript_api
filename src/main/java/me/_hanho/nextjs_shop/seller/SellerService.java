@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
@@ -32,6 +33,9 @@ public class SellerService {
 	}
 	public void insertToken(Token token) {
 		sellerMapper.insertToken(token);
+	}
+	public String getSellerIdByToken(TokenDTO token) {
+		return sellerMapper.getSellerIdByToken(token);
 	}
 	public SellerInfoResponse getSeller(String sellerId) {
 		return sellerMapper.getSeller(sellerId);

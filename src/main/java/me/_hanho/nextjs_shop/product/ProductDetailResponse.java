@@ -22,8 +22,6 @@ public class ProductDetailResponse {
     private String sellerId;
     private int menuSubId;
     private String materialInfo; // 제품 소재
-    private String colorInfo; // 색상
-    private String sizeInfo; // 치수
     private String manufacturerName; // 제조자
     private String countryOfOrigin; // 제조국
     private String washCareInfo; // 세탁방법 및 주의사항

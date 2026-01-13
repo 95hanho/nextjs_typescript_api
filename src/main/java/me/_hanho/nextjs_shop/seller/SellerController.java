@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.AuthService;
+import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
@@ -31,6 +34,7 @@ public class SellerController {
 	private static final Logger logger = LoggerFactory.getLogger(SellerController.class);
 	
 	private final SellerService sellerService;
+	private final AuthService authService;
 	
 	// 로그인
 	@PostMapping
@@ -69,6 +73,27 @@ public class SellerController {
 		result.put("message", "SELLER_TOKEN_INSERT_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 로그인 토큰 수정(재저장)
+	@PutMapping("/token")
+	public ResponseEntity<Map<String, Object>> updateToken(
+			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
+				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
+				", x-forwarded-for : " + forwardedFor);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
+		authService.updateToken(token);
+		
+		String sellerId = sellerService.getSellerIdByToken(token);
+		
+		result.put("sellerId", sellerId);
+		result.put("message", "TOKEN_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	// 판매자 정보조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerId") String sellerId) {
@@ -77,7 +102,7 @@ public class SellerController {
 		
 		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerId);
 		
-		result.put("sellerInfo", sellerInfo);
+		result.put("seller", sellerInfo);
 		result.put("message", "SELLER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
