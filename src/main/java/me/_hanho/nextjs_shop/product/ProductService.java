@@ -67,6 +67,24 @@ public class ProductService {
 	public List<AvailableProductCouponResponse> getAvailableProductCoupon(int productId, String userId) {
 		return productMapper.getAvailableProductCoupon(productId, userId);
 	}
+	
+	public List<ProductReviewResponse> getProductReviewList(String productId, String userId) {
+		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userId);
+		
+		if (list == null || list.isEmpty()) return list;
+		
+		for (ProductReviewResponse review : list) {
+	        String writerId = review.getUserId();
+	        boolean isOwner = userId != null && writerId != null && writerId.equals(userId);
+
+	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
+	        if (!isOwner) {
+	        	review.setUserId(maskUserId(writerId));
+	        }
+	    }
+
+	    return list;
+	}
 
 	public List<ProductQna> getProductQnaList(String productId, String userId) {
 	    List<ProductQna> list = productMapper.getProductQnaList(productId, userId);
@@ -75,7 +93,7 @@ public class ProductService {
 
 	    for (ProductQna qna : list) {
 	        String writerId = qna.getUserId();
-	        boolean isOwner = writerId != null && writerId.equals(userId);
+	        boolean isOwner = userId != null && writerId != null && writerId.equals(userId);
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
@@ -102,5 +120,6 @@ public class ProductService {
 	    int prefixLen = Math.min(2, id.length());
 	    return id.substring(0, prefixLen) + "*****";
 	}
+
 
 }

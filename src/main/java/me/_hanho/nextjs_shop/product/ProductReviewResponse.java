@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.model;
+package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
 
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Review {
-    private int reviewId;
+public class ProductReviewResponse {
+	private int reviewId;
     private String content;
     private Timestamp createdAt;
     private Timestamp updatedAt;

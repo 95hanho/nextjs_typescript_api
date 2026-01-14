@@ -90,26 +90,32 @@ public class ProductController {
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(@PathVariable("productId") int productId,
-			@RequestAttribute("userId") String userId) {
+			@RequestAttribute(name = "userId", required = false) String userId) {
 		logger.info("getProductDetail productId : " + productId + ", userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
 		List<ProductOption> productOptionList = productService.getProductOptionList(productId);
-		List<AvailableProductCouponResponse> AvailableProductCoupon = productService.getAvailableProductCoupon(productId, userId);
 		
-		result.put("AvailableProductCoupon", AvailableProductCoupon);
+		List<AvailableProductCouponResponse> availableProductCoupon = null;
+		if(userId != null) {
+			availableProductCoupon = productService.getAvailableProductCoupon(productId, userId);
+		}
+		
 		result.put("productDetail", productDetail);
 		result.put("productOptionList", productOptionList);
+		result.put("availableProductCoupon", availableProductCoupon);
 		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 리뷰 조회
 	@GetMapping("/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(@RequestParam("productId") String productId,
-			@RequestAttribute("userId") String userId) {
+			@RequestAttribute(name = "userId", required = false) String userId) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
+		
+		
 		
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -117,7 +123,7 @@ public class ProductController {
 	// 상품 Q&A
 	@GetMapping("/qna")
 	public ResponseEntity<Map<String, Object>> getProductQnaList(@RequestParam("productId") String productId,
-			@RequestAttribute("userId") String userId) {
+			@RequestAttribute(name = "userId", required = false) String userId) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		

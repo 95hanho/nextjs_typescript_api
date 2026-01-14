@@ -118,11 +118,14 @@
 	</insert>
 	<select id="getProductDetail">
 		SELECT  product_id, name, color_name, price, created_at, 
-		like_count, view_count, wish_count, sale_stop, seller_id, menu_sub_id, 
+		like_count, view_count, wish_count, sale_stop, seller_id, 
+		p.menu_sub_id, ms.menu_name AS subName, mt.menu_name AS topName,
 		material_info, manufacturer_name, country_of_origin, 
 		wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone
-		FROM nextjs_shop_product
+		FROM nextjs_shop_product p
+		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
+		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE sale_stop = 0 AND product_id = #{productId}
 	</select>
 	<select id="getProductOptionList">
@@ -142,15 +145,37 @@
 		LEFT JOIN nextjs_shop_seller s ON s.seller_id = c.seller_id
 		WHERE uc.user_id = #{userId} AND uc.used = 0
 	</select>
+	<select id="getProductReviewList">
+		SELECT r.review_id, r.content, r.created_at, r.updated_at, r.rating, r.order_list_id, r.product_id, 
+		r.product_option_id, r.user_id
+		FROM nextjs_shop_review r
+		WHERE product_id = #{productId}
+		ORDER BY
+		<if test="userId != null">
+			CASE WHEN user_id = #{userId} THEN 0 ELSE 1 END ASC,
+		</if>
+		created_at DESC,
+		review_id DESC
+	</select>
 	<select id="getProductQnaList">
-		SELECT product_qna_id, question, created_at, answer, res_created_at, secret, 
-		product_qna_type_id, product_id, user_id
+		SELECT
+			product_qna_id,
+			question,
+			created_at,
+			answer,
+			res_created_at,
+			secret,
+			product_qna_type_id,
+			product_id,
+			user_id
 		FROM nextjs_shop_product_qna
 		WHERE product_id = #{productId}
 		ORDER BY
-		 CASE WHEN user_id = #{userId} THEN 0 ELSE 1 END ASC,
-		 created_at DESC,
-		 product_qna_id DESC;
+		<if test="userId != null">
+			CASE WHEN user_id = #{userId} THEN 0 ELSE 1 END ASC,
+		</if>
+		created_at DESC,
+		product_qna_id DESC
 	</select>
 	
 </mapper>
