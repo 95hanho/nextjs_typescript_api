@@ -74,19 +74,6 @@ public class AuthController {
 					result
 					, HttpStatus.UNAUTHORIZED);
 		} else {
-			 // bbf로 변경하면서 필요없음
-//			User onlyId = new User();
-//			onlyId.setUserId(checkUser.getUserId());
-//			String accessToken = tokenService.makeJwtToken(600, onlyId);
-//			String refreshToken = tokenService.makeJwtToken(1800);
-//			String ipAddress = request.getRemoteAddr();
-//			Token token = Token.builder().connectIp(ipAddress).connectAgent(agent).refreshToken(refreshToken).userId(checkUser.getUserId()).build();
-//			authService.insertToken(token);
-			
-			
-//			result.put("accessToken", accessToken);
-//			result.put("refreshToken", refreshToken);
-			
 			result.put("message", "LOGIN_SUCCESS");
 			return new ResponseEntity<>(
 					result

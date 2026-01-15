@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,10 +22,6 @@ public class ProductListDTO {
 	private String sellerId;
 	private String sellerName;
 	
-	private int fileId;
-	private String fileName;
-	private String storeName;
-	private String filePath;
-	private String copyright;
-	private String copyrightUrl;
+	private List<ProductImageFile> productImageList;
+	
 }

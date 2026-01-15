@@ -5,12 +5,24 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.model.Token;
 
 @Mapper
 public interface SellerMapper {
+	
+	SellerLoginDTO isSeller(String sellerId);
+	
+	void insertToken(Token token);
+
+	String getSellerIdByToken(TokenDTO token);
+	
+	SellerInfoResponse getSeller(String sellerId);
+	
+	void setSeller(SellerRegisterRequest seller);
 
 	List<SellerProductDTO> getSellerProductList(String sellerId);
 	
@@ -45,6 +57,12 @@ public interface SellerMapper {
 	List<userInBookmarkDTO> getBrandBookmarkList(String sellerId);
 
 	List<UserInCartCountDTO> getUserInCartCountList(String sellerId);
+
+
+	
+	
+
+	
 
 	
 

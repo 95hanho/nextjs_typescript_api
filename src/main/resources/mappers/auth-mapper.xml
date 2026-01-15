@@ -4,7 +4,7 @@
 	<select id="getUserExceptPassword">
 		SELECT user_id, name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight, withdrawal_status
 		FROM nextjs_shop_user
-		WHERE user_id = #{userId}
+		WHERE user_id = #{userId} AND withdrawal_status = 'ACTIVE'
 	</select>
 	
 	<select id="getUser">

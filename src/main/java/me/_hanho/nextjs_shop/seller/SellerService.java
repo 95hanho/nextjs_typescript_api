@@ -5,14 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.model.Token;
 
 @Service
 @RequiredArgsConstructor
@@ -20,15 +23,41 @@ public class SellerService {
 	
 	private final SellerMapper sellerMapper;
 	
+	private final PasswordEncoder passwordEncoder;
+	
+	public SellerLoginDTO isSeller(String sellerId) {
+		return sellerMapper.isSeller(sellerId);
+	}
+	public boolean passwordCheck(String password, String checkPassword) {
+		return passwordEncoder.matches(password, checkPassword);
+	}
+	public void insertToken(Token token) {
+		sellerMapper.insertToken(token);
+	}
+	public String getSellerIdByToken(TokenDTO token) {
+		return sellerMapper.getSellerIdByToken(token);
+	}
+	public SellerInfoResponse getSeller(String sellerId) {
+		return sellerMapper.getSeller(sellerId);
+	}
+	public void setSeller(SellerRegisterRequest seller) {
+		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
+		sellerMapper.setSeller(seller);
+	}
 	public List<SellerProductDTO> getSellerProductList(String sellerId) {
 		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
 		
+		if(sellerProductList.size() == 0) {
+			return sellerProductList;
+        }
 		// 2) ID 수집
         List<Integer> ids = sellerProductList.stream()
                 .map(SellerProductDTO::getProductId)
                 .toList();
         
         // 3) 상세 일괄 조회 (IN (...))
+        System.out.println("selectDetailsByProductIds : " + ids);
+       
         List<ProductOption> details = sellerMapper.selectDetailsByProductIds(ids);
         
         // 4) productId -> details 그룹핑
@@ -38,7 +67,7 @@ public class SellerService {
         // 5) 각 상품 DTO에 붙이기
         for (SellerProductDTO p : sellerProductList) {
             List<ProductOption> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
-            p.setDetailList(list);
+            p.setOptionList(list);
         }
         
 		return sellerProductList;
@@ -94,6 +123,9 @@ public class SellerService {
 	public List<UserInCartCountDTO> getUserInCartCountList(String sellerId) {
 		return sellerMapper.getUserInCartCountList(sellerId);
 	}
+
+
+
 	//
 
 
