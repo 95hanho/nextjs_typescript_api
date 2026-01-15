@@ -12,3 +12,12 @@ SET
   after_service_manager    = COALESCE(after_service_manager, '(주)이터널그룹'),
   after_service_phone      = COALESCE(after_service_phone, '080-202-2023')
 WHERE seller_id = 'seller01';
+
+UPDATE nextjs_shop_seller
+SET approval_status = 'APPROVED';
+
+UPDATE nextjs_shop_user
+SET withdrawal_status = 'ACTIVE';
+
+UPDATE nextjs_shop_coupon
+SET `status` = 'ACTIVE';

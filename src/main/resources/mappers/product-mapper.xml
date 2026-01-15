@@ -3,28 +3,17 @@
 <mapper namespace="me._hanho.nextjs_shop.product.ProductMapper">
 	<select id="getProductList">
 	  SELECT
-	    p.product_id, p.name, p.color_name, p.price, p.created_at,
-	    p.view_count, p.wish_count, p.seller_id,
-	    s.seller_name,
-	    f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+	    p.product_id,
+	    p.name,
+	    p.color_name,
+	    p.price,
+	    p.created_at,
+	    p.view_count,
+	    p.wish_count,
+	    p.seller_id,
+	    s.seller_name
 	  FROM nextjs_shop_product p
 	  JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
-	  LEFT JOIN (
-		SELECT 
-		    pi_inner.product_id,
-		    pi_inner.file_id
-		FROM nextjs_shop_product_image pi_inner
-		INNER JOIN (
-		    SELECT 
-		        product_id,
-		        MIN(sort_key) AS min_sort_key
-		    FROM nextjs_shop_product_image
-		    GROUP BY product_id
-		) first_img
-		    ON pi_inner.product_id = first_img.product_id
-		   AND pi_inner.sort_key   = first_img.min_sort_key
-	  ) tpi ON tpi.product_id = p.product_id
-	  LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 	  WHERE p.sale_stop = 0
 	    AND p.menu_sub_id = #{menuSubId}
 	  <choose>
@@ -35,6 +24,7 @@
 	      </if>
 	      ORDER BY p.created_at DESC, p.product_id DESC
 	    </when>
+	
 	    <!-- 인기순 (view+wish) -->
 	    <when test="sort == 'popular'">
 	      <if test="lastPopularity != null and lastCreatedAt != null and lastProductId != null">
@@ -50,13 +40,34 @@
 	               p.created_at DESC,
 	               p.product_id DESC
 	    </when>
+	
 	    <!-- 기본(안전망) -->
 	    <otherwise>
 	      ORDER BY p.product_id DESC
 	    </otherwise>
 	  </choose>
+	
 	  LIMIT 30
 	</select>
+	
+	<select id="getProductImageListByProductIds" parameterType="list" resultType="ProductImageFile">
+	  SELECT
+	    pi.product_id,
+	    f.file_id,
+	    f.file_name,
+	    f.store_name,
+	    f.file_path,
+	    f.copyright,
+	    f.copyright_url
+	  FROM nextjs_shop_product_image pi
+	  JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+	  WHERE pi.product_id IN
+	  <foreach collection="list" item="id" open="(" separator="," close=")">
+	    #{id}
+	  </foreach>
+	  ORDER BY pi.product_id ASC, pi.sort_key ASC
+	</select>
+
 	<select id="isWishExist" resultType="boolean">
 		SELECT EXISTS (
         SELECT 1
@@ -118,8 +129,8 @@
 	</insert>
 	<select id="getProductDetail">
 		SELECT  product_id, name, color_name, price, created_at, 
-		like_count, view_count, wish_count, sale_stop, seller_id, 
-		p.menu_sub_id, ms.menu_name AS subName, mt.menu_name AS topName,
+		like_count, view_count, wish_count, seller_id, 
+		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName,
 		material_info, manufacturer_name, country_of_origin, 
 		wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone
@@ -127,6 +138,20 @@
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE sale_stop = 0 AND product_id = #{productId}
+	</select>
+	<select id="getProductImageList">
+		SELECT
+		    pi.product_id,
+		    f.file_id,
+		    f.file_name,
+		    f.store_name,
+		    f.file_path,
+		    f.copyright,
+		    f.copyright_url
+		FROM nextjs_shop_product_image pi
+		JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+		WHERE product_id = #{productId}
+		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 	<select id="getProductOptionList">
 		SELECT *

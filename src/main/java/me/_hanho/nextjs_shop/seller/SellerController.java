@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -43,6 +44,7 @@ public class SellerController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerLoginDTO checkSeller = sellerService.isSeller(seller.getSellerId());
+		System.out.println("checkSeller : " + checkSeller);
 		if (checkSeller == null || !sellerService.passwordCheck(seller.getPassword(), checkSeller.getPassword())) {
 			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
@@ -93,7 +95,6 @@ public class SellerController {
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
 	// 판매자 정보조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerId") String sellerId) {
@@ -106,7 +107,7 @@ public class SellerController {
 		result.put("message", "SELLER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 등록요청
+	// 판매자 등록요청(회원가입)
 	@PostMapping("/registration")
 	public ResponseEntity<Map<String, Object>> sellerRegister(@ModelAttribute SellerRegisterRequest seller) {
 		logger.info("sellerRegister");
@@ -119,8 +120,8 @@ public class SellerController {
 	}
 	// 판매자 제품 조회
 	@GetMapping("/product")
-	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestParam("sellerId") String sellerId) {
-		logger.info("getSellerProductList");
+	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestAttribute("sellerId") String sellerId) {
+		logger.info("getSellerProductList sellerId=" + sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<SellerProductDTO> sellerProductList = sellerService.getSellerProductList(sellerId);
@@ -129,19 +130,40 @@ public class SellerController {
 		result.put("message", "SELLER_PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 추가 / 수정
+	// 판매자 제품 추가
 	@PostMapping("/product")
-	public ResponseEntity<Map<String, Object>> addProduct(@ModelAttribute Product product) {
+	public ResponseEntity<Map<String, Object>> addProduct(@RequestAttribute("sellerId") String sellerId, 
+			@ModelAttribute Product product) {
 		logger.info("sellerAddProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
-
-		if(product.getProductId() == 0) {
-			sellerService.addProduct(product);
-		} else {
-			sellerService.updateProduct(product);
-		}
+		
+		product.setSellerId(sellerId);
+		sellerService.addProduct(product);
 
 		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 제품 수정
+	@PutMapping("/product")
+	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute("sellerId") String sellerId, 
+			@ModelAttribute Product product) {
+		logger.info("sellerUpdateProduct " + product);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		product.setSellerId(sellerId);
+		sellerService.updateProduct(product);
+
+		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 제품 상세보기
+	@GetMapping("/product/detail/{productId}")
+	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute("sellerId") String sellerId, 
+			@PathVariable("productId") int productId) {
+		logger.info("getProductDetail " + productId);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 제품 옵션보기
@@ -160,7 +182,7 @@ public class SellerController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	// 판매자 제품 상세 추가 / 수정
+	// 판매자 제품 옵션 추가 / 수정
 	@PostMapping("/product/option")
 	public ResponseEntity<Map<String, Object>> setSellerProductOption(@ModelAttribute ProductOption productOption) {
 		logger.info("setProductOption " + productOption);

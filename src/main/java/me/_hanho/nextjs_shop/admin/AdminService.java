@@ -14,6 +14,11 @@ public class AdminService {
 	
 	private final AdminMapper adminMapper;
 	
+
+	public String getEncryptionPassword(String password) {
+		return passwordEncoder.encode(password);
+	}
+	
 	public AdminLoginDTO isAdmin(String loginId) {
 		return adminMapper.isAdmin(loginId);
 	}
@@ -31,7 +36,6 @@ public class AdminService {
 	public void setSellerApproval(SellerApprovalRequest sellerApproval) {
 		adminMapper.setSellerApproval(sellerApproval);
 	}
-
 
 	
 }

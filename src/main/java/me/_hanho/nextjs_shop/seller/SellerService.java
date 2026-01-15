@@ -47,12 +47,17 @@ public class SellerService {
 	public List<SellerProductDTO> getSellerProductList(String sellerId) {
 		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
 		
+		if(sellerProductList.size() == 0) {
+			return sellerProductList;
+        }
 		// 2) ID 수집
         List<Integer> ids = sellerProductList.stream()
                 .map(SellerProductDTO::getProductId)
                 .toList();
         
         // 3) 상세 일괄 조회 (IN (...))
+        System.out.println("selectDetailsByProductIds : " + ids);
+       
         List<ProductOption> details = sellerMapper.selectDetailsByProductIds(ids);
         
         // 4) productId -> details 그룹핑
@@ -62,7 +67,7 @@ public class SellerService {
         // 5) 각 상품 DTO에 붙이기
         for (SellerProductDTO p : sellerProductList) {
             List<ProductOption> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
-            p.setDetailList(list);
+            p.setOptionList(list);
         }
         
 		return sellerProductList;

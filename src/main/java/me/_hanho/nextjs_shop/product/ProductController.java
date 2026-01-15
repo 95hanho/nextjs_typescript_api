@@ -115,8 +115,9 @@ public class ProductController {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userId);
 		
-		
+		result.put("productReviewList", productReviewList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

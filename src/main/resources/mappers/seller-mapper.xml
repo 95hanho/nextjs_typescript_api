@@ -35,8 +35,10 @@
 	</insert>
 	<!-- 제품 관련 -->
 	<select id="getSellerProductList">
-		SELECT p.product_id, p.name, p.color_name, p.price, p.created_at, p.view_count, p.wish_count, p.seller_id,
-			ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender
+		SELECT p.product_id, p.name, p.color_name, p.price, p.created_at, p.view_count, p.wish_count, p.sale_stop, p.seller_id,
+			ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
+			p.material_info, p.manufacturer_name, p.country_of_origin, p.wash_care_info, p.manufactured_ym, 
+			p.quality_guarantee_info, p.after_service_contact, p.after_service_manager, p.after_service_phone
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_menu_sub ms ON p.menu_sub_id = ms.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
@@ -52,13 +54,20 @@
 		ORDER BY product_id, size
 	</select>
 	<insert id="addProduct">
-		INSERT INTO nextjs_shop_product(name, color_name, price, seller_id, menu_sub_id)
-		VALUES(#{name}, #{colorName}, #{price}, #{sellerId}, #{menuSubId})
+		INSERT INTO nextjs_shop_product(name, color_name, price, seller_id, menu_sub_id, material_info, manufacturer_name, 
+		country_of_origin, wash_care_info, manufactured_ym, quality_guarantee_info, 
+		after_service_contact, after_service_manager, after_service_phone)
+		VALUES(#{name}, #{colorName}, #{price}, #{sellerId}, #{menuSubId}, 
+			#{materialInfo}, #{manufacturerName}, #{countryOfOrigin}, #{washCareInfo}, #{manufacturedYm}, #{qualityGuaranteeInfo}, 
+			#{afterServiceContact}, #{afterServiceManager}, #{afterServicePhone})
 	</insert>
 	<update id="updateProduct">
 		UPDATE nextjs_shop_product
-		SET name = #{name}, color_name = #{colorName}, price = #{price}, sale_stop = #{saleStop}, menu_sub_id = #{menuSubId}
-		WHERE product_id = #{productId}
+		SET name = #{name}, color_name = #{colorName}, price = #{price}, sale_stop = #{saleStop}, menu_sub_id = #{menuSubId},
+		material_info = #{materialInfo}, manufacturer_name = #{manufacturerName}, country_of_origin = #{countryOfOrigin}, 
+		wash_care_info = #{washCareInfo}, manufactured_ym = #{manufacturedYm}, quality_guarantee_info = #{qualityGuaranteeInfo},
+		after_service_contact = #{afterServiceContact}, after_service_manager = #{afterServiceManager}, after_service_phone = #{afterServicePhone}
+		WHERE product_id = #{productId} AND seller_id = #{sellerId}
 	</update>
 	<insert id="addProductOption">
 		INSERT INTO nextjs_shop_product_option(product_id, add_price, stock, size)

@@ -18,6 +18,8 @@ public interface ProductMapper {
 	List<ProductListDTO> getProductList(@Param("sort") String sort, @Param("menuSubId") int menuSubId, @Param("lastCreatedAt") Timestamp lastCreatedAt, 
 			@Param("lastProductId") Integer lastProductId, @Param("lastPopularity") Integer lastPopularity);
 	
+	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
+	
 	boolean isWishExist(Wish wish);
 	
 	void upProductWish(int productId);
@@ -41,6 +43,8 @@ public interface ProductMapper {
 	void putCart(Cart cart);
 
 	ProductDetailResponse getProductDetail(int productId);
+	
+	List<ProductImageFile> getProductImageList(int productId);
 
 	List<ProductOption> getProductOptionList(int productId);
 
@@ -49,6 +53,10 @@ public interface ProductMapper {
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") String productId, @Param("userId")  String userId);
 
 	List<ProductQna> getProductQnaList(@Param("productId") String productId, @Param("userId") String userId);
+
+	
+
+	
 
 	
 }

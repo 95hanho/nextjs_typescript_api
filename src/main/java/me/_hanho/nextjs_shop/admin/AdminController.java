@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 
 @RestController
@@ -28,6 +27,19 @@ public class AdminController {
 	
 	private final AdminService adminService;
 	
+	// 암호화 비번 출력
+	@PostMapping("/hash-password")
+	public ResponseEntity<Map<String, Object>> getEncryptionPassword(@RequestParam("password") String password) {
+		logger.info("getEncryptionPassword :" + password);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String encryptionPassword = adminService.getEncryptionPassword(password);
+		
+		result.put("password", password);
+		result.put("encryptionPassword", encryptionPassword);
+		result.put("message", "SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 로그인
 	@PostMapping
 	public ResponseEntity<Map<String, Object>> login(@ModelAttribute AdminLoginDTO adminLogin) {
