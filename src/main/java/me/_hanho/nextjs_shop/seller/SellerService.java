@@ -37,8 +37,8 @@ public class SellerService {
 	public String getSellerIdByToken(TokenDTO token) {
 		return sellerMapper.getSellerIdByToken(token);
 	}
-	public SellerInfoResponse getSeller(String sellerId) {
-		return sellerMapper.getSeller(sellerId);
+	public SellerInfoResponse getSeller(int sellerNo) {
+		return sellerMapper.getSeller(sellerNo);
 	}
 	public void setSeller(SellerRegisterRequest seller) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));

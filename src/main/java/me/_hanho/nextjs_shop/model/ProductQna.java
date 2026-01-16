@@ -18,5 +18,6 @@ public class ProductQna {
     private boolean secret;
     private int productQnaTypeId;
     private int productId;
-    private String userId;
+    private int userNo;
+    private boolean isDeleted;
 }

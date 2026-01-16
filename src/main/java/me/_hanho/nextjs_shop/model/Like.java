@@ -13,5 +13,5 @@ public class Like {
     private int likeId;
     private Timestamp createdAt;
     private int productId;
-    private String userId;
+    private int userNo;
 }

@@ -44,24 +44,39 @@ public class JwtInterceptor implements HandlerInterceptor {
                 logger.info("type : " + type);
                 if (type == null) {
                     throw new IllegalArgumentException("Token type is missing");
-                } else if("ACCESS".equals(type)) {
-                	// userId 추출
-                	String userId = claims.get("userId", String.class);
-                	if (userId == null) {
-                        throw new SecurityException("Invalid ACCESS token: missing userId");
+                } 
+                // 유저 a토큰
+                else if("ACCESS".equals(type)) {
+                	// userNo 추출
+                	String userNo = claims.get("userNo", String.class);
+                	if (userNo == null) {
+                        throw new SecurityException("Invalid ACCESS token: missing userNo");
                     }
-                	logger.info("type : " + type + ", userId : " + userId);
-                	// HttpServletRequest에 userId 추가
-                	request.setAttribute("userId", userId);
-                } else if("SELLER".equals(type)) {
-                	// sellerId 추출
-                    String sellerId = claims.get("sellerId", String.class);
-                    if (sellerId == null) {
-                        throw new SecurityException("Invalid SELLER token: missing sellerId");
+                	logger.info("type : " + type + ", userNo : " + userNo);
+                	// HttpServletRequest에 userNo 추가
+                	request.setAttribute("userNo", userNo);
+                } 
+                // 판매자 토큰
+                else if("SELLER".equals(type)) {
+                	// sellerNo 추출
+                    String sellerNo = claims.get("sellerNo", String.class);
+                    if (sellerNo == null) {
+                        throw new SecurityException("Invalid SELLER token: missing sellerNo");
                     }
-                    logger.info("type : " + type + ", sellerId : " + sellerId);
-                    // HttpServletRequest에 sellerId 추가
-                    request.setAttribute("sellerId", sellerId);
+                    logger.info("type : " + type + ", sellerNo : " + sellerNo);
+                    // HttpServletRequest에 sellerNo 추가
+                    request.setAttribute("sellerNo", sellerNo);
+                }
+                // 관리자 토큰
+                else if("ADMIN".equals(type)) {
+                	// adminNo 추출
+                    String adminNo = claims.get("adminNo", String.class);
+                    if (adminNo == null) {
+                        throw new SecurityException("Invalid ADMIN token: missing adminNo");
+                    }
+                    logger.info("type : " + type + ", adminNo : " + adminNo);
+                    // HttpServletRequest에 sellerNo 추가
+                    request.setAttribute("adminNo", adminNo);
                 }
             } catch (Exception e) {
                 // 토큰이 유효하지 않으면 요청을 거부
@@ -80,12 +95,12 @@ public class JwtInterceptor implements HandlerInterceptor {
                 Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 
                 /* 파싱이 되는지만 확인할거임 */
-                // userId 추출
-                String userId = claims.get("phoneUserId", String.class);
-                logger.info("userId : " + userId);
+                // userNo 추출
+                String phoneUserId = claims.get("phoneUserId", String.class);
+                logger.info("phoneUserId : " + phoneUserId);
                 
-                // HttpServletRequest에 userId 추가
-                request.setAttribute("userId", userId);
+                // HttpServletRequest에 userNo 추가
+                request.setAttribute("phoneUserId", phoneUserId);
                 
             } catch (Exception e) {
                 // 토큰이 유효하지 않으면 요청을 거부

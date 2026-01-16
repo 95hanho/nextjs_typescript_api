@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 전체 필드 생성자
 public class AdminLoginDTO {
-	private String loginId;
+	private int adminNo;
+	private String adminId;
 	private String password;
 }

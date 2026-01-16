@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.admin.AdminMapper">
-	<select id="isAdmin">
-		SELECT login_id, password
+
+	<select id="getAdminInfo">
+		SELECT admin_name, last_login_at
 		FROM nextjs_shop_admin
-		WHERE login_id = #{loginId}
+		WHERE admin_no = #{adminNo} AND status = 'ACTIVE'
+	</select>
+	<select id="isAdmin">
+		SELECT admin_no, admin_id, password
+		FROM nextjs_shop_admin
+		WHERE admin_id = #{adminId} AND status = 'ACTIVE'
+	</select>
+	<update id="updateLastLoginAt">
+		UPDATE nextjs_shop_admin
+		SET last_login_at = NOW()
+		WHERE admin_no = #{adminNo}
+	</update>
+	<insert id="insertToken">
+		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, admin_no)
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{adminNo})
+	</insert>
+	<select id="getAdminIdByToken">
+		SELECT a.admin_id
+		FROM nextjs_shop_token t
+		JOIN nextjs_shop_admin a ON t.admin_no = a.admin_no
+		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+		ORDER BY created_at DESC, token_id DESC
+		LIMIT 1
+	</select>
+	<select id="hasSeller" resultType="int">
+		SELECT EXISTS (
+	        SELECT 1 FROM nextjs_shop_seller
+	        WHERE seller_id = #{sellerId}
+	    ) AS exists_flag
 	</select>
 	<insert id="addSeller">
 		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
-			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,
+			business_registration_number,telecom_sales_number,representative_name,
+			business_zipcode,business_address,business_address_detail,
 			approval_status)
 		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
 			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
@@ -16,10 +46,26 @@
 	</insert>
 	<update id="setSellerApproval">
 		UPDATE nextjs_shop_seller
-		SET approval_status = #{approvalStatus}
-		WHERE seller_id IN
-			<foreach collection="sellerIds" item="sellerId" open="(" separator="," close=")">
-            	#{sellerId}
-          	</foreach>
+		<set>
+        	approval_status = #{approvalStatus},
+        	<choose>
+            	<when test="approvalStatus == 'APPROVED'">
+                	approved_at = NOW(),
+                	approved_by = #{approvedBy}
+            	</when>
+            	<when test="approvalStatus == 'REJECTED'">
+                	rejected_at = NOW(),
+                	reject_reason = #{rejectReason}
+            	</when>
+            	<when test="approvalStatus == 'SUSPENDED'">
+                	suspended_at = NOW()
+            	</when>
+        	</choose>
+    	</set>
+    	WHERE seller_no IN
+    	<foreach collection="sellerNoList" item="sellerNo" open="(" separator="," close=")">
+        	#{sellerNo}
+    	</foreach>
 	</update>
+
 </mapper>

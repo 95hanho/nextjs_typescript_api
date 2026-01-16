@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.auth.AuthMapper">
-	<select id="getUserExceptPassword">
-		SELECT user_id, name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight, withdrawal_status
+	<select id="getUserInfo">
+		SELECT name, zonecode, address, address_detail, birthday, phone, email, mileage, tall, weight
+		FROM nextjs_shop_user
+		WHERE user_no = #{userNo} AND withdrawal_status = 'ACTIVE'
+	</select>
+	
+	<select id="getUserForPassword">
+		SELECT user_no, user_id, password
 		FROM nextjs_shop_user
 		WHERE user_id = #{userId} AND withdrawal_status = 'ACTIVE'
 	</select>
 	
-	<select id="getUser">
-		SELECT *
+	<select id="getUserId">
+		SELECT user_id
 		FROM nextjs_shop_user
-		WHERE user_id = #{userId}
+		WHERE user_no = #{userNo} AND withdrawal_status = 'ACTIVE'
 	</select>
 	
-	<select id="getId" resultType="int">
+	<select id="hasId" resultType="int">
 	    SELECT EXISTS (
 	        SELECT 1 FROM nextjs_shop_user
 	        WHERE user_id = #{userId}
@@ -66,9 +72,12 @@
 	</update>
 	
 	<select id="getUserIdByToken">
-		SELECT user_id
-		FROM nextjs_shop_token
+		SELECT u.user_id
+		FROM nextjs_shop_token t
+		JOIN nextjs_shop_user u ON t.user_no = u.user_no
 		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+		ORDER BY created_at DESC, token_id DESC
+		LIMIT 1
 	</select>
 	
 </mapper>

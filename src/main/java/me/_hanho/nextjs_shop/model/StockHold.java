@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StockHold {
 	private int holdId;
-	private String userId;
+	private int userNo;
 	private int productOptionId;
 	private int count;
-	private String status;
+	private String status; // 'HOLD','PAY','RELEASED'
 	private boolean activeHold;
 	private Timestamp expiresAt;
 	private Timestamp createdAt;

@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 전체 필드 생성자
 public class Admin {
-	private int adminId;
-	private String loginId;
+	private int adminNo;
+	private String adminId;
 	private String password;
 	private String adminName;
-	private String role;
-	private String status;
+	private String role; // 'SUPER','OPERATOR'
+	private String status; // 'ACTIVE','SUSPENDED'
 	private Timestamp lastLoginAt;
 	private Timestamp createdAt;
 	private Timestamp updatedAt;
