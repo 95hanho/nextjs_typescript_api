@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.auth.TokenService;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
@@ -36,6 +37,7 @@ public class SellerController {
 	
 	private final SellerService sellerService;
 	private final AuthService authService;
+	private final TokenService tokenService;
 	
 	// 로그인
 	@PostMapping
@@ -53,6 +55,7 @@ public class SellerController {
 					result
 					, HttpStatus.UNAUTHORIZED);
 		} else {
+			result.put("sellerNo", checkSeller.getSellerNo());
 			result.put("message", "LOGIN_SUCCESS");
 			return new ResponseEntity<>(
 					result
@@ -76,7 +79,7 @@ public class SellerController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 로그인 토큰 수정(재저장)
-	@PutMapping("/token")
+	@PostMapping("/token/refresh")
 	public ResponseEntity<Map<String, Object>> updateToken(
 			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
@@ -85,11 +88,25 @@ public class SellerController {
 				", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		try {
+			tokenService.parseJwtRefreshToken(beforeToken);
+			tokenService.parseJwtRefreshToken(refreshToken);
+		} catch (Exception e) {
+            // 토큰이 유효하지 않으면 요청을 거부
+        	logger.error("token UNAUTHORIZED");
+        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+        }
+		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		authService.updateToken(token);
 		
 		String sellerId = sellerService.getSellerIdByToken(token);
+		
+		if(sellerId == null) {
+			result.put("message", "WRONG_TOKEN");
+			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+		}
 		
 		result.put("sellerId", sellerId);
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
@@ -97,11 +114,11 @@ public class SellerController {
 	}
 	// 판매자 정보조회
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerId") String sellerId) {
+	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerNo") int sellerNo) {
 		logger.info("getSeller :" + sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerId);
+		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerNo);
 		
 		result.put("seller", sellerInfo);
 		result.put("message", "SELLER_FETCH_SUCCESS");

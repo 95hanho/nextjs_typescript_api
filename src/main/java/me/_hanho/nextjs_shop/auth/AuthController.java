@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.Token;
@@ -37,12 +39,12 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userId") String userId) {
-		logger.info("getUserInfo : userId=" + userId);
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userNo") int userNo) {
+		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		try {
-			User user = authService.getUserExceptPassword(userId);
+			UserInfo user = authService.getUserInfo(userNo);
 			if(user == null) {
 				result.put("message", "USER_NOT_FOUND"); // 존재하지 않는 사용자 (로그인 실패 때와 동일)
 				return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
@@ -65,7 +67,7 @@ public class AuthController {
 		logger.info("login :" + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		User checkUser = authService.getUser(user.getUserId());
+		UserLoginResponse checkUser = authService.getUserForPassword(user.getUserId());
 		if (checkUser == null || !authService.passwordCheck(user.getPassword(), checkUser.getPassword())) {
 			result.put("message", "USER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
@@ -74,6 +76,7 @@ public class AuthController {
 					result
 					, HttpStatus.UNAUTHORIZED);
 		} else {
+			result.put("userNo", checkUser.getUserNo());
 			result.put("message", "LOGIN_SUCCESS");
 			return new ResponseEntity<>(
 					result
@@ -81,13 +84,27 @@ public class AuthController {
 		}
 	}
 	
-	// 아이디 중복확인 
+	// 유저아이디 조회 By인증토큰
 	@GetMapping("/id")
+	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute("userNo") String userNo) {
+		logger.info("getUserId userNo : " + userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		String userId = authService.getUserId(userNo);
+//		logger.info("userId : " + userId);
+		
+		result.put("userId", userId);
+		result.put("message", "ID_AVAILABLE");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	// 아이디 중복확인
+	@PostMapping("/id")
 	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("userId") String userId) {
 		logger.info("idDuplcheck userId : " + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		boolean hasId = authService.getId(userId);
+		boolean hasId = authService.hasId(userId);
 		logger.info("hasId : " + hasId);
 		
 		if(!hasId) {
@@ -101,9 +118,8 @@ public class AuthController {
 	// 휴대폰인증
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestParam(required = false, name = "userId") String userId,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("phoneAuth - phone : " + phone + ", userId : " + userId);
+		logger.info("phoneAuth - phone : " + phone + ", phoneAuthToken : " + phoneAuthToken);
 		Map<String, Object> result = new HashMap<String, Object>();
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		
@@ -238,7 +254,7 @@ public class AuthController {
 		// 현재 비밀번호가 있다면 비밀번호 확인(없으면 비밀번호찾기에서 바꾸는거)
 		String curPassword = pwdChangeDTO.getCurPassword();
 		if(curPassword != null) {
-			User checkUser = authService.getUser(userId);
+			User checkUser = authService.getUserForPassword(userId);
 			if(!authService.passwordCheck(curPassword, checkUser.getPassword())) {
 				result.put("message", "CURRENT_PASSWORD_MISMATCH");
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
@@ -274,7 +290,7 @@ public class AuthController {
 	}
 	
 	// 로그인 토큰 수정(재저장)
-	@PutMapping("/token")
+	@PostMapping("/token/refresh")
 	public ResponseEntity<Map<String, Object>> updateToken(
 			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
@@ -283,16 +299,41 @@ public class AuthController {
 				", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		try {
+			tokenService.parseJwtRefreshToken(beforeToken);
+			tokenService.parseJwtRefreshToken(refreshToken);
+		} catch (Exception e) {
+            // 토큰이 유효하지 않으면 요청을 거부
+        	logger.error("token UNAUTHORIZED");
+        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+        }
+		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		authService.updateToken(token);
 		
 		String userId = authService.getUserIdByToken(token);
 		
+		if(userId == null) {
+			result.put("message", "WRONG_TOKEN");
+			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+		}
+		
 		result.put("userId", userId);
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	
+	// 회원탈퇴 요청
+	@DeleteMapping
+	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute("userNo") String userNo) {
+		logger.info("withDrawalUser userNo : " + userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		result.put("message", "USER_WITHDRAWAL_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 
 	
 }

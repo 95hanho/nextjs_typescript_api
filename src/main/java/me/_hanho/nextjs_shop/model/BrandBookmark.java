@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class BrandBookmark {
 	private int brandBookmarkId;
 	private Timestamp createdAt;
-	private String userId;
-	private String sellerId;
+	private int userNo;
+	private int sellerNo;
 }

@@ -17,21 +17,25 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
 	
-	public User getUserExceptPassword(String userId) {
-		return authMapper.getUserExceptPassword(userId);
+	public UserInfo getUserInfo(int userNo) {
+		return authMapper.getUserInfo(userNo);
 	}
 	
-	public User getUser(String userId) {
-		return authMapper.getUser(userId);
+	public UserLoginResponse getUserForPassword(String userId) {
+		return authMapper.getUserForPassword(userId);
 	}
 	
     // 패스워드 확인
     public boolean passwordCheck(String password, String checkPassword) {
 		return passwordEncoder.matches(password, checkPassword);
 	}
+    
+    public String getUserId(String userNo) {
+		return authMapper.getUserId(userNo);
+	}
 	
-	public boolean getId(String userId) {
-		return authMapper.getId(userId) == 1;
+	public boolean hasId(String userId) {
+		return authMapper.hasId(userId) == 1;
 	}
 	
 	public void insertPhoneAuth(PhoneAuth phoneAuth) {
@@ -76,6 +80,8 @@ public class AuthService {
 	public String getUserIdByToken(TokenDTO token) {
 		return authMapper.getUserIdByToken(token);
 	}
+
+	
 
 
 

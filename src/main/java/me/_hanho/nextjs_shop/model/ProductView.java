@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 전체 필드 생성자
 public class ProductView {
-
 	private int productViewId;
 	private Timestamp viewDate;
-	private String userId;
+	private int userNo;
 	private int productId;
 }

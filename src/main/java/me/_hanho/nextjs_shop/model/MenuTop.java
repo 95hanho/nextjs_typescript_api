@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class MenuTop {
     private int menuTopId;
     private String menuName;
-    private String gender;
+    private String gender; // 'M','F'
 }

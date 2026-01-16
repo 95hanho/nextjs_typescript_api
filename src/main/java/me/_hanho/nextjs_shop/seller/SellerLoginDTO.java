@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SellerLoginDTO {
+	private int sellerNo;
     private String sellerId; // 아이디
     private String password; // 비밀번호
 }

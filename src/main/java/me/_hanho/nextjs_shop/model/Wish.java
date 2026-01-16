@@ -13,5 +13,5 @@ public class Wish {
     private int wishId;
     private Timestamp createdAt;
     private int productId;
-    private String userId;
+    private int userNo;
 }

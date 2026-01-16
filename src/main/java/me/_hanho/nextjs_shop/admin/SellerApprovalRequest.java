@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SellerApprovalRequest {
-	private List<String> sellerIds;
-	private String approvalStatus;
+	private List<Integer> sellerNoList;
+	private String approvalStatus; // PENDING / APPROVED / REJECTED / SUSPENDED
+	private int approvedBy; // APPROVED 시 필수
+	private String rejectReason;   // REJECTED 시 필수
 }

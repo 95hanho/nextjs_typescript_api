@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Seller {
+	private int sellerNo;
     private String sellerId; // 아이디
     private String password; // 비밀번호
     private String sellerName; // 판매자 이름(한글)
@@ -23,12 +24,13 @@ public class Seller {
     private String businessZipcode; // 사업장 소재지 우편번호
     private String businessAddress; // 사업장 소재지 주소
     private String businessAddressDetail; // 사업장 소재지 상세주소 
-    private String appovalStatus; // 승인 상태
     private Timestamp updatedAt; // 업데이트 시
     private Timestamp requestedAt; // 판매자 가입 신청 시각
+    private String appovalStatus; // 승인 상태 'PENDING','APPROVED','REJECTED','SUSPENDED'
     private Timestamp approvedAt; // 요청/승인 날짜
-    private String approvedBy; // 처리자 관리자id
+    private int approvedBy; // 처리자 관리자id
     private Timestamp rejectedAt; // 반려 시각
     private String rejectReason; // 반려 사유
+    private Timestamp suspendedAt; // 정지 날짜
     
 }

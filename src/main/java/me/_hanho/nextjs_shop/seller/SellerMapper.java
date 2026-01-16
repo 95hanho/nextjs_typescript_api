@@ -20,7 +20,7 @@ public interface SellerMapper {
 
 	String getSellerIdByToken(TokenDTO token);
 	
-	SellerInfoResponse getSeller(String sellerId);
+	SellerInfoResponse getSeller(int sellerNo);
 	
 	void setSeller(SellerRegisterRequest seller);
 

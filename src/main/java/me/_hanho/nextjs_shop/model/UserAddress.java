@@ -22,6 +22,6 @@ public class UserAddress {
 	private Timestamp createdAt;
 	private Timestamp updatedAt;
 	private Timestamp usedateAt;
-	private String userId;
-	private boolean deleted;
+	private int userNo;
+	private boolean isDeleted;
 }

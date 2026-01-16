@@ -21,3 +21,85 @@ SET withdrawal_status = 'ACTIVE';
 
 UPDATE nextjs_shop_coupon
 SET `status` = 'ACTIVE';
+
+UPDATE nextjs_shop_brand_bookmark bb
+JOIN nextjs_shop_seller s
+  ON bb.seller_id = s.seller_id
+SET bb.seller_no = s.seller_no;
+
+UPDATE nextjs_shop_brand_bookmark bb
+JOIN nextjs_shop_user s
+  ON bb.user_id = s.user_id
+SET bb.user_no = s.user_no;
+
+UPDATE nextjs_shop_coupon c
+JOIN nextjs_shop_seller s
+  ON c.seller_id = s.seller_id
+SET c.seller_no = s.seller_no;
+
+
+UPDATE nextjs_shop_phone_auth pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_product c
+JOIN nextjs_shop_seller s
+  ON c.seller_id = s.seller_id
+SET c.seller_no = s.seller_no;
+
+UPDATE nextjs_shop_product_qna pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_product_view pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_review pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_stock_hold pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_user_address pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_user_coupon pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_wish pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_cart pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+UPDATE nextjs_shop_order_group pa
+JOIN nextjs_shop_user u
+  ON pa.user_id = u.user_id
+SET pa.user_no = u.user_no;
+
+SELECT refresh_token, COUNT(*) cnt
+FROM nextjs_shop_token
+WHERE refresh_token IS NOT NULL
+GROUP BY refresh_token
+HAVING cnt > 1;
+
+CREATE INDEX idx_token_lookup
+ON nextjs_shop_token (refresh_token, connect_ip, connect_agent(50), created_at, token_id);
+CREATE UNIQUE INDEX uq_refresh_token
+ON nextjs_shop_token (refresh_token);

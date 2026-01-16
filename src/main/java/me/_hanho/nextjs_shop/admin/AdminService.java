@@ -4,6 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 
 @Service
@@ -19,14 +21,35 @@ public class AdminService {
 		return passwordEncoder.encode(password);
 	}
 	
-	public AdminLoginDTO isAdmin(String loginId) {
-		return adminMapper.isAdmin(loginId);
+	public AdminInfo getAdminInfo(int adminNo) {
+		return adminMapper.getAdminInfo(adminNo);
+	}
+	
+	public AdminLoginDTO isAdmin(String adminId) {
+		return adminMapper.isAdmin(adminId);
+	}
+	
+	public void updateLastLoginAt(int adminNo) {
+		adminMapper.updateLastLoginAt(adminNo);
 	}
 
     // 패스워드 확인
     public boolean passwordCheck(String password, String checkPassword) {
 		return passwordEncoder.matches(password, checkPassword);
 	}
+    
+	public void insertToken(Token token) {
+		adminMapper.insertToken(token);
+	}
+	
+	public String getAdminIdByToken(TokenDTO token) {
+		return adminMapper.getAdminIdByToken(token);
+	}
+	
+	public boolean hasSeller(String sellerId) {
+		return adminMapper.hasSeller(sellerId) == 1;
+	}
+
     
 	public void addSeller(SellerRegisterRequest seller) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
@@ -36,6 +59,15 @@ public class AdminService {
 	public void setSellerApproval(SellerApprovalRequest sellerApproval) {
 		adminMapper.setSellerApproval(sellerApproval);
 	}
+
+
+
+
+
+
+
+
+
 
 	
 }

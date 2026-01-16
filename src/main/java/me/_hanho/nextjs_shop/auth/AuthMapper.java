@@ -10,11 +10,13 @@ import me._hanho.nextjs_shop.model.User;
 @Mapper
 public interface AuthMapper {
 
-	User getUserExceptPassword(String userId);
+	UserInfo getUserInfo(int userNo);
 	
-	User getUser(String userId);
+	UserLoginResponse getUserForPassword(String userId);
 	
-	int getId(String userId);
+	String getUserId(String userNo);
+	
+	int hasId(String userId);
 	
 	void insertPhoneAuth(PhoneAuth phoneAuth);
 	
@@ -33,6 +35,8 @@ public interface AuthMapper {
 	int updateToken(TokenDTO token);
 
 	String getUserIdByToken(TokenDTO token);
+
+	
 
 	
 

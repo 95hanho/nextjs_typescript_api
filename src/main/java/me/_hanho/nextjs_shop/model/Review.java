@@ -18,5 +18,6 @@ public class Review {
     private int orderListId;
     private int productId;
     private int productOptionId;
-    private String userId;
+    private int userNo;
+    private boolean isdeleted;
 }

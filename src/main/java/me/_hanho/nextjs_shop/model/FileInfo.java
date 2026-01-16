@@ -18,4 +18,6 @@ public class FileInfo {
     private Timestamp createdAt;
     private String copyright;
     private String copyrightUrl;
+    private boolean isDeleted;
+    private Timestamp deletedAt;
 }

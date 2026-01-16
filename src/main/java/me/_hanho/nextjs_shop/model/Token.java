@@ -17,6 +17,8 @@ public class Token {
     private String connectAgent;
     private String refreshToken;
     private Timestamp createdAt;
-    private String userId;
-    private String sellerId;
+    private Timestamp updatedAt;
+    private int userNo;
+    private int sellerNo;
+    private int adminNo;
 }

@@ -4,7 +4,7 @@
 
 	<!-- 로그인 관련 -->
 	<select id="isSeller">
-		SELECT seller_id, password
+		SELECT seller_no, seller_id, password
 		FROM nextjs_shop_seller
 		WHERE seller_id = #{sellerId} AND approval_status = 'APPROVED'
 	</select>
@@ -13,17 +13,27 @@
 		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{sellerId})
 	</insert>
 	<select id="getSellerIdByToken">
-		SELECT seller_id
-		FROM nextjs_shop_token
+		SELECT s.seller_id
+		FROM nextjs_shop_token t
+		JOIN nextjs_shop_seller s ON t.seller_no = s.seller_no 
 		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+		ORDER BY created_at DESC, token_id DESC
+		LIMIT 1
 	</select>
 	<select id="getSeller">
-		SELECT seller_id,seller_name,seller_name_en,extension_number,mobile_number,email,
-		business_registration_number,telecom_sales_number,representative_name,
-		business_zipcode,business_address,business_address_detail,
-		updated_at,requested_at,approval_status,approved_at
+		SELECT seller_name,
+			seller_name_en,
+			extension_number,
+			mobile_number,
+			email,
+			business_registration_number,
+			telecom_sales_number,
+			representative_name,
+			business_zipcode,
+			business_address,
+			business_address_detail
 		FROM nextjs_shop_seller
-		WHERE seller_id = #{sellerId}
+		WHERE seller_no = #{sellerNo}
 	</select>
 	<insert id="setSeller">
 		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
