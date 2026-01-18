@@ -103,3 +103,15 @@ CREATE INDEX idx_token_lookup
 ON nextjs_shop_token (refresh_token, connect_ip, connect_agent(50), created_at, token_id);
 CREATE UNIQUE INDEX uq_refresh_token
 ON nextjs_shop_token (refresh_token);
+
+CREATE UNIQUE INDEX uq_refresh_token
+ON nextjs_shop_token (refresh_token);
+
+DROP INDEX idx_token_lookup ON nextjs_shop_token;
+
+
+SELECT EXISTS (
+     SELECT 1 FROM nextjs_shop_seller
+     WHERE seller_id = 'expert'
+ ) AS exists_flag;
+
