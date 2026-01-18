@@ -27,8 +27,8 @@
 	</select>
 	
 	<insert id="insertPhoneAuth">
-		INSERT INTO nextjs_shop_phone_auth(user_id, phone_auth_token, phone, verification_code, connect_ip, connect_agent)
-		VALUES(#{userId}, #{phoneAuthToken}, #{phone}, #{verificationCode}, #{connectIp}, #{connectAgent})
+		INSERT INTO nextjs_shop_phone_auth(user_no, phone_auth_token, phone, verification_code, connect_ip, connect_agent)
+		VALUES(#{userNo}, #{phoneAuthToken}, #{phone}, #{verificationCode}, #{connectIp}, #{connectAgent})
 	</insert>
 	
 	<select id="getPhoneAuthCode">
@@ -43,6 +43,12 @@
 		WHERE phone_auth_id = #{phoneAuthId}
 	</update>
 	
+	<select id="getUserIdByPhone">
+		SELECT user_id
+		FROM nextjs_shop_user
+		WHERE phone = #{phone}
+	</select>
+	
 	<insert id="joinUser">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
 		VALUES(#{userId}, #{password}, #{name}, #{zonecode}, #{address}, #{addressDetail}, #{birthday}, #{phone}, #{email})
@@ -51,7 +57,7 @@
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
 		SET phone = #{phone}, email = #{email}
-		WHERE user_id = #{userId}
+		WHERE user_no = #{userNo}
 	</update>
 	
 	<update id="changePassword">

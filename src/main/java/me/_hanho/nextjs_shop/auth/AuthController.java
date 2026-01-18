@@ -123,13 +123,16 @@ public class AuthController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		
-		String phoneUserId = null;
+		Integer phoneUserNo = null;
 		try {
 			// JWT 파싱 및 복호화
 	        Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-	        // 휴대폰인증토큰 userId 추출
-	        phoneUserId = claims.get("userId", String.class);
-	        System.out.println("phoneUserId : " + phoneUserId);
+	        // 휴대폰인증토큰 userNo 추출(로그인 상태면 있음.)
+	        String userNoStr = claims.get("userNo", String.class);
+	        if(userNoStr != null) {
+	        	phoneUserNo = Integer.parseInt(userNoStr);
+	        }
+	        System.out.println("phoneUserNo : " + phoneUserNo);
 		} catch(Exception e) {
 			result.put("message", "VERIFICATION_EXPIRED");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
@@ -140,7 +143,7 @@ public class AuthController {
 		logger.info("phoneAuth-verificationCode : " + verificationCode);
 		
         // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
-		PhoneAuth phoneAuth = PhoneAuth.builder().userId(phoneUserId).phoneAuthToken(phoneAuthToken)
+		PhoneAuth phoneAuth = PhoneAuth.builder().userNo(phoneUserNo).phoneAuthToken(phoneAuthToken)
 				.phone(phone).verificationCode(verificationCode).connectIp(ipAddress).connectAgent(userAgent).build();
 		authService.insertPhoneAuth(phoneAuth);
 		
@@ -154,17 +157,13 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
 			@RequestParam("authNumber") String authNumber, 
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestParam(required = false, name = "userId") String userId) {
-		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", userId : " + userId);
+			@RequestParam(required = false, name = "userId") String requestId) {
+		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", requestId : " + requestId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		String phoneUserId = null;
 		try {
-			// JWT 파싱 및 복호화
-	        Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-	        // 토큰의 userId 추출
-	        phoneUserId = claims.get("userId", String.class);
-	        System.out.println("phoneUserId : " + phoneUserId);
+			// JWT 파싱 및 복호화 인증확인
+	        tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 		} catch(Exception e) {
 			result.put("message", "VERIFICATION_EXPIRED");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
@@ -183,23 +182,23 @@ public class AuthController {
 		// 인증번호 검증 성공(사용토큰으로 변경)
 		authService.markPhoneAuthUsed(phoneAuth.getPhoneAuthId());
         
-    	String userIdOfToken = phoneAuth.getUserId();
-        if(userId == null) {
+		String hasId = authService.getUserIdByPhone(phoneAuth.getPhone());
+        if(requestId == null) {
         	// 1. userId가 없고, phoneUserId에 id도 없다. = 회원가입
-        	if(userIdOfToken == null) {
+        	if(hasId == null) {
         		result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
     			return new ResponseEntity<>(result, HttpStatus.OK);
-        	} 
+        	}
         	// 2. userId가 없고, phoneUserId가 존재하는 유저이다.  = 아이디찾기
         	else {
-        		result.put("userId", userIdOfToken);
+        		result.put("userId", hasId);
         		result.put("message", "IDFIND_SUCCESS"); // 인증 성공
         		return new ResponseEntity<>(result, HttpStatus.OK);
         	}
-        } 
+        }
         // 3. userId가 있고, phoneUserId와 일치한다. = 비밀번호 찾기
-        else if(userId != null && userId.equals(phoneUserId) && phoneUserId.equals(userIdOfToken)) {
-        	result.put("userId", userIdOfToken);
+        else if(requestId != null && requestId.equals(hasId)) {
+        	result.put("userId", hasId);
         	result.put("message", "PWDFIND_SUCCESS"); // 인증 성공
     		return new ResponseEntity<>(result, HttpStatus.OK);
         }
@@ -215,18 +214,18 @@ public class AuthController {
 		logger.info("join : " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-//		authService.joinUser(user);
+		authService.joinUser(user);
 		
 		result.put("message", "JOIN_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user, @RequestAttribute("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user, @RequestAttribute("userNo") int userNo) {
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		user.setUserId(userId);
+		user.setUserNo(userNo);
 		authService.userInfoUpdate(user);
 		
 //		"USER_UPDATE_FAILED" : 변경 중 오류 발생 (DB 문제 등)

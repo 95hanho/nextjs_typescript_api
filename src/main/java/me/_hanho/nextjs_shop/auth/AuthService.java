@@ -49,6 +49,10 @@ public class AuthService {
 	public void markPhoneAuthUsed(int phoneAuthId) {
 		authMapper.markPhoneAuthUsed(phoneAuthId);
 	}
+	
+	public String getUserIdByPhone(String phone) {
+		return authMapper.getUserIdByPhone(phone);
+	}
 
 	public void joinUser(User user) {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -80,6 +84,7 @@ public class AuthService {
 	public String getUserIdByToken(TokenDTO token) {
 		return authMapper.getUserIdByToken(token);
 	}
+
 
 	
 

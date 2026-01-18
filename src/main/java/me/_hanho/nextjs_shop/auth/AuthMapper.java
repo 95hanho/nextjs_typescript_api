@@ -23,6 +23,8 @@ public interface AuthMapper {
 	PhoneAuth getPhoneAuthCode(String phoneAuthToken);
 
 	void markPhoneAuthUsed(int phoneAuthId);
+	
+	String getUserIdByPhone(String phone);
 
 	void joinUser(User user);
 	
@@ -35,6 +37,8 @@ public interface AuthMapper {
 	int updateToken(TokenDTO token);
 
 	String getUserIdByToken(TokenDTO token);
+
+	
 
 	
 
