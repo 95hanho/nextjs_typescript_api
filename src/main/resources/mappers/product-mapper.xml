@@ -6,14 +6,14 @@
 	    p.product_id,
 	    p.name,
 	    p.color_name,
-	    p.price,
+	    p.origin_price,
+	    p.final_price,
 	    p.created_at,
 	    p.view_count,
 	    p.wish_count,
-	    p.seller_id,
 	    s.seller_name
 	  FROM nextjs_shop_product p
-	  JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 	  WHERE p.sale_stop = 0
 	    AND p.menu_sub_id = #{menuSubId}
 	  <choose>
@@ -73,7 +73,7 @@
         SELECT 1
         FROM nextjs_shop_wish
         WHERE product_id = #{productId}
-          AND user_id = #{userId}
+          AND user_no = #{userNo}
 	    )
 	</select>
 	<update id="upProductWish">
@@ -82,8 +82,8 @@
 		WHERE product_id = #{productId} 
 	</update>
 	<insert id="insertWish">
-		INSERT INTO nextjs_shop_wish(product_id, user_id)
-		VALUES(#{productId}, #{userId})
+		INSERT INTO nextjs_shop_wish(product_id, user_no)
+		VALUES(#{productId}, #{userNo})
 	</insert>
 	<update id="downProductWish">
 		UPDATE nextjs_shop_product
@@ -93,7 +93,7 @@
 	<delete id="deleteWish">
 		DELETE FROM nextjs_shop_wish
 		WHERE product_id = #{productId}
-          AND user_id = #{userId}
+          AND user_no = #{userNo}
 	</delete>
 	<!--  -->
 	<select id="isLikeExist" resultType="boolean">
@@ -101,7 +101,7 @@
         SELECT 1
         FROM nextjs_shop_like
         WHERE product_id = #{productId}
-          AND user_id = #{userId}
+          AND user_no = #{userNo}
 	    )
 	</select>
 	<update id="upProductLike">
@@ -110,8 +110,8 @@
 		WHERE product_id = #{productId} 
 	</update>
 	<insert id="insertLike">
-		INSERT INTO nextjs_shop_like(product_id, user_id)
-		VALUES(#{productId}, #{userId})
+		INSERT INTO nextjs_shop_like(product_id, user_no)
+		VALUES(#{productId}, #{userNo})
 	</insert>
 	<update id="downProductLike">
 		UPDATE nextjs_shop_product
@@ -121,20 +121,21 @@
 	<delete id="deleteLike">
 		DELETE FROM nextjs_shop_like
 		WHERE product_id = #{productId}
-          AND user_id = #{userId}
+          AND user_no = #{userNo}
 	</delete>
-	<insert id="putCart">
-		INSERT INTO nextjs_shop_cart(product_option_id, user_id, quantity)
-		VALUES(#{productOptionId}, #{userId}, #{quantity})
+	<insert id="addCart">
+		INSERT INTO nextjs_shop_cart(product_option_id, user_no, quantity)
+		VALUES(#{productOptionId}, #{userNo}, #{quantity})
 	</insert>
 	<select id="getProductDetail">
-		SELECT  product_id, name, color_name, price, created_at, 
-		like_count, view_count, wish_count, seller_id, 
+		SELECT  p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
+		p.like_count, p.view_count, p.wish_count, s.seller_name,
 		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName,
 		material_info, manufacturer_name, country_of_origin, 
 		wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone
 		FROM nextjs_shop_product p
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE sale_stop = 0 AND product_id = #{productId}
@@ -163,44 +164,47 @@
 			c.coupon_id, c.description, c.coupon_code, c.discount_type, c.discount_value,
 			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
 			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
-			c.seller_id, s.seller_name
+			s.seller_name
 		FROM nextjs_shop_user_coupon uc
 		JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id AND product_id = #{productId}
-		LEFT JOIN nextjs_shop_seller s ON s.seller_id = c.seller_id
-		WHERE uc.user_id = #{userId} AND uc.used = 0
+		LEFT JOIN nextjs_shop_seller s ON s.seller_no = c.seller_no
+		WHERE uc.user_no = #{userNo} AND uc.used = 0
 	</select>
 	<select id="getProductReviewList">
 		SELECT r.review_id, r.content, r.created_at, r.updated_at, r.rating, r.order_list_id, r.product_id, 
-		r.product_option_id, r.user_id
+		r.product_option_id, r.user_no, u.name AS userName
 		FROM nextjs_shop_review r
-		WHERE product_id = #{productId}
+		JOIN userjs_shop_user u ON r.user_no = u.user_no
+		WHERE r.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
 		ORDER BY
 		<if test="userId != null">
-			CASE WHEN user_id = #{userId} THEN 0 ELSE 1 END ASC,
+			CASE WHEN r.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
 		</if>
-		created_at DESC,
-		review_id DESC
+		r.created_at DESC,
+		r.review_id DESC
 	</select>
 	<select id="getProductQnaList">
 		SELECT
-			product_qna_id,
-			question,
-			created_at,
-			answer,
-			res_created_at,
-			secret,
-			product_qna_type_id,
-			product_id,
-			user_id
-		FROM nextjs_shop_product_qna
-		WHERE product_id = #{productId}
+			pq.product_qna_id,
+			pq.question,
+			pq.created_at,
+			pq.answer,
+			pq.res_created_at,
+			pq.secret,
+			pq.product_qna_type_id,
+			pq.product_id,
+			pq.user_no,
+			u.name AS userName
+		FROM nextjs_shop_product_qna pq
+		JOIN userjs_shop_user u ON pq.user_no = u.user_no
+		WHERE pq.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
 		ORDER BY
 		<if test="userId != null">
-			CASE WHEN user_id = #{userId} THEN 0 ELSE 1 END ASC,
+			CASE WHEN pq.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
 		</if>
-		created_at DESC,
-		product_qna_id DESC
+		pq.created_at DESC,
+		pq.product_qna_id DESC
 	</select>
 	
 </mapper>

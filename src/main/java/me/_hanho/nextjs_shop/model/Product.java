@@ -13,7 +13,8 @@ public class Product {
     private int productId;
     private String name;
     private String colorName;
-    private int price;
+    private int originPrice;
+    private int finalPrice;
     private Timestamp createdAt;
     private int likeCount;
     private int viewCount;

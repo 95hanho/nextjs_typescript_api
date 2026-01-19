@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
-import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 
 @Service
@@ -21,7 +20,7 @@ public class AdminService {
 		return passwordEncoder.encode(password);
 	}
 	
-	public AdminInfo getAdminInfo(int adminNo) {
+	public AdminInfo getAdminInfo(Integer adminNo) {
 		return adminMapper.getAdminInfo(adminNo);
 	}
 	
@@ -29,7 +28,7 @@ public class AdminService {
 		return adminMapper.isAdmin(adminId);
 	}
 	
-	public void updateLastLoginAt(int adminNo) {
+	public void updateLastLoginAt(Integer adminNo) {
 		adminMapper.updateLastLoginAt(adminNo);
 	}
 
@@ -38,7 +37,7 @@ public class AdminService {
 		return passwordEncoder.matches(password, checkPassword);
 	}
     
-	public void insertToken(Token token) {
+	public void insertToken(AdminToken token) {
 		adminMapper.insertToken(token);
 	}
 	

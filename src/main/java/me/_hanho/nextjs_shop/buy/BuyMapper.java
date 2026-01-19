@@ -6,48 +6,47 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.OrderGroup;
-import me._hanho.nextjs_shop.model.StockHold;
 
 @Mapper
 public interface BuyMapper {
 	
-	List<StockHold> selectAllActiveHoldsByUser(String userId);
+	List<Integer> selectAllActiveHoldsByUser(Integer userNo);
+	
+	int releaseHolds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
 	
     // 전역 가용수량 (stock - 모든 유저 미만료 HOLD 합)
     java.util.List<AvailabilityRow> selectAvailability(@Param("detailIds") java.util.List<Integer> detailIds);
 
     // 본인 미만료 HOLD (있으면 재사용/덮어쓰기)
-    java.util.List<ExistingHold> selectExistingHolds(@Param("userId") String userId,
+    java.util.List<ExistingHold> selectExistingHolds(@Param("userNo") Integer userNo,
                                                      @Param("detailIds") java.util.List<Integer> detailIds);
 
     // 멱등 업서트 (유니크 충돌 시 count/expiresAt 갱신)
     int upsertHolds(@Param("rows") java.util.List<UpsertHoldRow> rows);
 
     // 하트비트용 holdId 매핑
-    java.util.List<HoldBrief> selectLatestHolds(@Param("userId") String userId,
+    java.util.List<HoldBrief> selectLatestHolds(@Param("userNo") Integer userNo,
                                                 @Param("detailIds") java.util.List<Integer> detailIds);
 
-    int extendHolds(@Param("holdIds") List<Integer> holdIds, @Param("userId") String userId, @Param("ttlSeconds") int ttlSeconds);
-
-    int releaseHolds(@Param("holdIds") List<Integer> holdIds, @Param("userId") String userId);
+    int extendHolds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo, @Param("ttlSeconds") int ttlSeconds);
     
-	List<OrderStockDTO> getOrderStock(String userId);
+	List<OrderStockDTO> getOrderStock(Integer userNo);
 	
-	List<AvailableCoupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("userId") String userId);
+	List<AvailableCoupon> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	
-	List<ProductWithCouponsDTO> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("userId") String userId);
+	List<ProductWithCouponsDTO> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("userNo") Integer userNo);
 	
 	// --------------------------
 	void updateUserMileageByBuy(PayRequest payRequest);
 	
-	int getUserMileage(String userId);
+	int getUserMileage(Integer userNo);
     
-	void insertOrderGroup(OrderGroup orderGroup);
+	void insertOrderGroup(BuyOrderGroupDAO orderGroup);
 	
-	int getOrderId(String userId);
+	int getOrderId(Integer userNo);
 
 	void insertOrderList(@Param("productList") List<ProductWithCouponsDTO> items, @Param("orderId") int orderId,
-			@Param("userId") String userId);
+			@Param("userNo") Integer userNo);
 	
 	void updateCancelStockHold(@Param("productList") List<ProductWithCouponsDTO> items);
 

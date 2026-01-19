@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductReviewResponse {
-	private int reviewId;
-    private String content;
+public class ProductQnaResponse {
+    private int productQnaId;
+    private String question;
     private Timestamp createdAt;
-    private Timestamp updatedAt;
-    private int rating;
-    private int orderListId;
+    private String answer;
+    private Timestamp resCreatedAt;
+    private boolean secret;
+    private int productQnaTypeId;
     private int productId;
-    private int productOptionId;
     private Integer userNo;
     private String userName;
 }

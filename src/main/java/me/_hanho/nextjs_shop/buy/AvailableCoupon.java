@@ -31,7 +31,5 @@ public class AvailableCoupon {
     //
     private int userCouponId; 
 	private boolean used; 
-	private String userId;
-    
 	
 }

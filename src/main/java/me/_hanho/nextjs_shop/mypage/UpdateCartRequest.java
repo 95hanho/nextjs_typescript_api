@@ -1,7 +1,5 @@
 package me._hanho.nextjs_shop.mypage;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data // getter/setter, toString, equals, hashCode 자동 생성
 @NoArgsConstructor // 기본 생성자
 @AllArgsConstructor // 전체 필드 생성자
-public class UpdateSelectedCartDTO {
-
-	private List<Integer> cartIdList;
-	private boolean selected;
+public class UpdateCartRequest {
+	private Integer cartId;
+	private Integer productOptionId;
 	private Integer userNo;
+	private Integer quantity;
 }

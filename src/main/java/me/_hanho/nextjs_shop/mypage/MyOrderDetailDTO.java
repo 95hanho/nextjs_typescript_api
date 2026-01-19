@@ -15,7 +15,6 @@ public class MyOrderDetailDTO {
 	
 	private int orderId;
 	private Timestamp orderDate;
-	private String userId;
 	private BigDecimal eachCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
 	private BigDecimal commonCouponDiscountTotal; // 공용쿠폰 할인액수
 	private int shippingFee;

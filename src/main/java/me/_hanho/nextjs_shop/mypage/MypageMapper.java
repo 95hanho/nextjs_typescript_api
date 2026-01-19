@@ -5,62 +5,44 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.model.Cart;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @Mapper
 public interface MypageMapper {
 
-	List<UserCouponDTO> getUserCoupons(String userId);
+	List<UserCouponDTO> getUserCoupons(Integer userNo);
 
-	List<MyOrderGroupDTO> getMyOrderListGroupList(String userId);
+	List<MyOrderGroupDTO> getMyOrderListGroupList(Integer userNo);
 	
 	List<OrderItemWithReviewDTO> getMyOrderListProductWithReview(int orderId);
 	
-	MyOrderDetailDTO getMyOrderDetail(@Param("orderId") String orderId, @Param("userId") String userId);
+	MyOrderDetailDTO getMyOrderDetail(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
-	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userId") String userId);
+	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
-	void insertReview(@Param("review") Review review, @Param("userId") String userId);
+	void insertReview(@Param("review") Review review, @Param("userNo") Integer userNo);
 	
-	void unselectOutOfStockItems(String userId);
+	void unselectOutOfStockItems(Integer userNo);
 	
-	List<CartProductDTO> getCartList(String userId);
+	List<CartProductDTO> getCartList(Integer userNo);
 	
-	int updateCart(Cart cart);
+	int updateCart(UpdateCartRequest cart);
 	
 	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
 	
-	int deleteCart(@Param("cartId") List<Integer> cartId, @Param("userId") String userId);
+	int deleteCart(@Param("cartId") List<Integer> cartId, @Param("userNo") Integer userNo);
 	
-	List<WishlistItemDTO> getWishlistItems(String userId);
+	List<WishlistItemDTO> getWishlistItems(Integer userNo);
 
-	List<UserAddress> getUserAddressList(String userId);
+	List<UserAddress> getUserAddressList(Integer userNo);
 
-	void insertUserAddress(UserAddress userAddress);
+	void insertUserAddress(AddUserAddressRequest userAddress);
 
-	void clearDefaultAddress(int addressId);
+	void clearDefaultAddress(@Param("addressId") Integer addressId, @Param("userNo") Integer userNo);
 	
-	int updateUserAddress(UserAddress userAddress);
+	int updateUserAddress(UpdateUserAddressRequest userAddress);
 
-	int deleteUserAddress(@Param("addressId") int addressId, @Param("userId") String userId);
-
-	
-
-
-	
-
-	
-
-	
-
-	
-
-
-	
-
-	
-	
+	int deleteUserAddress(@Param("addressId") int addressId, @Param("userNo") Integer userNo);
 	
 }

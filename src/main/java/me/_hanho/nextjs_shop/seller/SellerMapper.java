@@ -7,36 +7,34 @@ import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.model.Coupon;
-import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.Token;
 
 @Mapper
 public interface SellerMapper {
 	
 	SellerLoginDTO isSeller(String sellerId);
 	
-	void insertToken(Token token);
+	void insertToken(SellerToken token);
 
-	String getSellerIdByToken(TokenDTO token);
+	Integer getSellerNoByToken(TokenDTO token);
 	
-	SellerInfoResponse getSeller(int sellerNo);
+	SellerInfoResponse getSeller(Integer sellerNo);
 	
 	void setSeller(SellerRegisterRequest seller);
 
-	List<SellerProductDTO> getSellerProductList(String sellerId);
+	List<SellerProductDTO> getSellerProductList(Integer sellerNo);
 	
 	List<ProductOption> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
 	
-	void addProduct(Product product);
+	void addProduct(AddProductRequest product);
 	
-	int updateProduct(Product product);
+	int updateProduct(UpdateProductRequest product);
 
 	void addProductOption(ProductOption productOption);
 
 	int updateProductOption(ProductOption productOption);
 	
-	List<Coupon> getSellerCouponList(String sellerId);
+	List<Coupon> getSellerCouponList(Integer sellerNo);
 	
 	void addCoupon(Coupon coupon);
 
@@ -50,13 +48,13 @@ public interface SellerMapper {
 	
 	void issueCouponsToUsers(@Param("couponId") String couponId, @Param("userIds") List<String> userIds);
 	
-	List<ProductViewCountDTO> getProductViewCountList(String sellerId);
+	List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo);
 	
-	List<ProductWishCountDTO> getProductWishCountList(String sellerId);
+	List<ProductWishCountDTO> getProductWishCountList(Integer sellerNo);
 	
-	List<userInBookmarkDTO> getBrandBookmarkList(String sellerId);
+	List<userInBookmarkDTO> getBrandBookmarkList(Integer sellerNo);
 
-	List<UserInCartCountDTO> getUserInCartCountList(String sellerId);
+	List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo);
 
 
 	

@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.auth;
+package me._hanho.nextjs_shop.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TokenDTO {
-	private int tokenId;
+public class AdminToken {
     private String connectIp;
     private String connectAgent;
     private String refreshToken;
-    private String beforeToken;
-    private Integer userNo;
+    private int adminNo;
 }

@@ -1,7 +1,6 @@
 package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,11 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.ProductQna;
-import me._hanho.nextjs_shop.model.Wish;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +50,7 @@ public class ProductService {
 	    return productList;
 	}
 	@Transactional
-	public void setLike(Like like) {
+	public void setLike(AddLikeRequest like) {
 		boolean hasLike = productMapper.isLikeExist(like);
 		if(!hasLike) {
 			productMapper.upProductLike(like.getProductId());
@@ -67,7 +62,7 @@ public class ProductService {
 	}
 	
 	@Transactional
-	public void setWish(Wish wish) {
+	public void setWish(AddWishRequest wish) {
 		boolean hasWish = productMapper.isWishExist(wish);
 		if(!hasWish) {
 			productMapper.upProductWish(wish.getProductId());
@@ -78,8 +73,8 @@ public class ProductService {
 		}
 	}
 
-	public void putCart(Cart cart) {
-		productMapper.putCart(cart);
+	public void addCart(AddCartRequest cart) {
+		productMapper.addCart(cart);
 	}
 
 	public ProductDetailResponse getProductDetail(int productId) {
@@ -96,40 +91,42 @@ public class ProductService {
 		return productMapper.getProductOptionList(productId);
 	}
 
-	public List<AvailableProductCouponResponse> getAvailableProductCoupon(int productId, String userId) {
-		return productMapper.getAvailableProductCoupon(productId, userId);
+	public List<AvailableProductCouponResponse> getAvailableProductCoupon(int productId, Integer userNo) {
+		return productMapper.getAvailableProductCoupon(productId, userNo);
 	}
 	
-	public List<ProductReviewResponse> getProductReviewList(String productId, String userId) {
-		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userId);
+	public List<ProductReviewResponse> getProductReviewList(String productId, Integer userNo) {
+		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userNo);
 		
 		if (list == null || list.isEmpty()) return list;
 		
 		for (ProductReviewResponse review : list) {
-	        String writerId = review.getUserId();
-	        boolean isOwner = userId != null && writerId != null && writerId.equals(userId);
+	        Integer writerNo = review.getUserNo();
+	        review.setUserNo(null);
+	        boolean isOwner = userNo != null && writerNo != null && writerNo.equals(userNo);
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	        	review.setUserId(maskUserId(writerId));
+	        	review.setUserName(maskUserId(review.getUserName()));
 	        }
 	    }
 
 	    return list;
 	}
 
-	public List<ProductQna> getProductQnaList(String productId, String userId) {
-	    List<ProductQna> list = productMapper.getProductQnaList(productId, userId);
+	public List<ProductQnaResponse> getProductQnaList(String productId, Integer userNo) {
+	    List<ProductQnaResponse> list = productMapper.getProductQnaList(productId, userNo);
 
 	    if (list == null || list.isEmpty()) return list;
 
-	    for (ProductQna qna : list) {
-	        String writerId = qna.getUserId();
-	        boolean isOwner = userId != null && writerId != null && writerId.equals(userId);
+	    for (ProductQnaResponse qna : list) {
+	        Integer writerNo = qna.getUserNo();
+	        qna.setUserNo(null);
+	        boolean isOwner = userNo != null && writerNo != null && writerNo.equals(userNo);
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	            qna.setUserId(maskUserId(writerId));
+	        	qna.setUserName(maskUserId(qna.getUserName()));
 	        }
 
 	        // 2) 비밀글(secret=1)인데 작성자가 아니면 질문/답변 null 처리
@@ -145,12 +142,12 @@ public class ProductService {
 	    return list;
 	}
 
-	private String maskUserId(String id) {
-	    if (id == null) return null;
+	private String maskUserId(String userName) {
+	    if (userName == null) return null;
 
 	    // 길이가 2 미만이면 있는 만큼만 + ***** 붙임
-	    int prefixLen = Math.min(2, id.length());
-	    return id.substring(0, prefixLen) + "*****";
+	    int prefixLen = Math.min(2, userName.length());
+	    return userName.substring(0, prefixLen) + "*****";
 	}
 
 

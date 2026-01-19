@@ -39,7 +39,7 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userNo") int userNo) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userNo") Integer userNo) {
 		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -62,13 +62,14 @@ public class AuthController {
 	}
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@ModelAttribute User user, @RequestHeader("User-Agent") String agent
+	public ResponseEntity<Map<String, Object>> login(@RequestParam("userId") String userId, @RequestParam("password") String password, 
+			@RequestHeader("User-Agent") String agent
 			, HttpServletRequest request) {
-		logger.info("login :" + user);
+		logger.info("login :" + userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		UserLoginResponse checkUser = authService.getUserForPassword(user.getUserId());
-		if (checkUser == null || !authService.passwordCheck(user.getPassword(), checkUser.getPassword())) {
+		UserLoginResponse checkUser = authService.getUserForPassword(userId);
+		if (checkUser == null || !authService.passwordCheck(password, checkUser.getPassword())) {
 			result.put("message", "USER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
 			
@@ -86,7 +87,7 @@ public class AuthController {
 	
 	// 유저아이디 조회 By인증토큰
 	@GetMapping("/id")
-	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute("userNo") String userNo) {
+	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute("userNo") Integer userNo) {
 		logger.info("getUserId userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -115,24 +116,18 @@ public class AuthController {
 			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
 		}
 	}
-	// 휴대폰인증
+	// 휴대폰인증 - 회원가입, 아이디찾기, 비밀번호 찾기 또는 휴대폰번호 바꾸기
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("phoneAuth - phone : " + phone + ", phoneAuthToken : " + phoneAuthToken);
+			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor,
+			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
+		logger.info("phoneAuth - phone : " + phone + ", phoneAuthToken : " + phoneAuthToken + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		
-		Integer phoneUserNo = null;
 		try {
 			// JWT 파싱 및 복호화
-	        Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-	        // 휴대폰인증토큰 userNo 추출(로그인 상태면 있음.)
-	        String userNoStr = claims.get("userNo", String.class);
-	        if(userNoStr != null) {
-	        	phoneUserNo = Integer.parseInt(userNoStr);
-	        }
-	        System.out.println("phoneUserNo : " + phoneUserNo);
+	        tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 		} catch(Exception e) {
 			result.put("message", "VERIFICATION_EXPIRED");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
@@ -143,7 +138,7 @@ public class AuthController {
 		logger.info("phoneAuth-verificationCode : " + verificationCode);
 		
         // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
-		PhoneAuth phoneAuth = PhoneAuth.builder().userNo(phoneUserNo).phoneAuthToken(phoneAuthToken)
+		PhoneAuthDAO phoneAuth = PhoneAuthDAO.builder().userNo(userNo).phoneAuthToken(phoneAuthToken)
 				.phone(phone).verificationCode(verificationCode).connectIp(ipAddress).connectAgent(userAgent).build();
 		authService.insertPhoneAuth(phoneAuth);
 		
@@ -184,19 +179,19 @@ public class AuthController {
         
 		String hasId = authService.getUserIdByPhone(phoneAuth.getPhone());
         if(requestId == null) {
-        	// 1. userId가 없고, phoneUserId에 id도 없다. = 회원가입
+        	// 1. requestId가 없고,hasId에 id도 없다. = 회원가입
         	if(hasId == null) {
         		result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
     			return new ResponseEntity<>(result, HttpStatus.OK);
         	}
-        	// 2. userId가 없고, phoneUserId가 존재하는 유저이다.  = 아이디찾기
+        	// 2. requestId가 없고, hasId가 존재하는 유저이다.  = 아이디찾기
         	else {
         		result.put("userId", hasId);
         		result.put("message", "IDFIND_SUCCESS"); // 인증 성공
         		return new ResponseEntity<>(result, HttpStatus.OK);
         	}
         }
-        // 3. userId가 있고, phoneUserId와 일치한다. = 비밀번호 찾기
+        // 3. requestId가 있고, hasId와 일치한다. = 비밀번호 찾기
         else if(requestId != null && requestId.equals(hasId)) {
         	result.put("userId", hasId);
         	result.put("message", "PWDFIND_SUCCESS"); // 인증 성공
@@ -221,7 +216,7 @@ public class AuthController {
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute User user, @RequestAttribute("userNo") int userNo) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute("userNo") Integer userNo) {
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -234,7 +229,7 @@ public class AuthController {
 		result.put("message", "USER_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 비밀번호 변경
+	// 비밀번호 변경 - 비밀번호찾기 또는 마이페이지 비번변경
 	@PostMapping("/password")
 	public ResponseEntity<Map<String, Object>> passwordChange(@ModelAttribute PasswordChangeDTO pwdChangeDTO) {
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -250,18 +245,25 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
 		
-		// 현재 비밀번호가 있다면 비밀번호 확인(없으면 비밀번호찾기에서 바꾸는거)
+		if(userId == null) {
+			result.put("message", "NO_USERID");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		
+		// 비밀번호 확인을 위한 유저 조회
+		UserLoginResponse checkUser = authService.getUserForPassword(userId);
 		String curPassword = pwdChangeDTO.getCurPassword();
+		// 현재 비밀번호가 있다면 마이페이지 비번변경(없으면 비밀번호찾기에서 바꾸는거)
 		if(curPassword != null) {
-			User checkUser = authService.getUserForPassword(userId);
 			if(!authService.passwordCheck(curPassword, checkUser.getPassword())) {
 				result.put("message", "CURRENT_PASSWORD_MISMATCH");
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 			}
-			if(authService.passwordCheck(pwdChangeDTO.getNewPassword(), checkUser.getPassword())) {
-				result.put("message", "CURRENT_PASSWORD_EQUAL");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-			}
+		}
+		// 현재비밀번호와 새 비밀번호 같은지 검사
+		if(authService.passwordCheck(pwdChangeDTO.getNewPassword(), checkUser.getPassword())) {
+			result.put("message", "CURRENT_PASSWORD_EQUAL");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
 		}
 		
 		// 비밀번호 변경
@@ -274,14 +276,14 @@ public class AuthController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> insertToken(
-			@RequestAttribute("userId") String userId, @RequestParam("refreshToken") String refreshToken,
+			@RequestAttribute("userNo") Integer userNo, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userId : " + userId + 
+		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		Token token = Token.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userId(userId).build(); 
+		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
 		authService.insertToken(token);
 		
 		result.put("message", "TOKEN_INSERT_SUCCESS");
@@ -311,23 +313,25 @@ public class AuthController {
 		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		authService.updateToken(token);
 		
-		String userId = authService.getUserIdByToken(token);
+		Integer userNo = authService.getUserNoByToken(token);
 		
-		if(userId == null) {
+		if(userNo == null) {
 			result.put("message", "WRONG_TOKEN");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
 		
-		result.put("userId", userId);
+		result.put("userNo", userNo);
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 	// 회원탈퇴 요청
 	@DeleteMapping
-	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute("userNo") String userNo) {
+	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute("userNo") Integer userNo) {
 		logger.info("withDrawalUser userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
+		
+		authService.withDrawalUser(userNo);
 		
 		result.put("message", "USER_WITHDRAWAL_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);

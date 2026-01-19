@@ -17,7 +17,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
 	
-	public UserInfo getUserInfo(int userNo) {
+	public UserInfo getUserInfo(Integer userNo) {
 		return authMapper.getUserInfo(userNo);
 	}
 	
@@ -30,7 +30,7 @@ public class AuthService {
 		return passwordEncoder.matches(password, checkPassword);
 	}
     
-    public String getUserId(String userNo) {
+    public String getUserId(Integer userNo) {
 		return authMapper.getUserId(userNo);
 	}
 	
@@ -38,7 +38,7 @@ public class AuthService {
 		return authMapper.hasId(userId) == 1;
 	}
 	
-	public void insertPhoneAuth(PhoneAuth phoneAuth) {
+	public void insertPhoneAuth(PhoneAuthDAO phoneAuth) {
 		authMapper.insertPhoneAuth(phoneAuth);
 	}
 	
@@ -59,10 +59,10 @@ public class AuthService {
 		authMapper.joinUser(user);
 	}
 
-	public void userInfoUpdate(User user) {
+	public void userInfoUpdate(UpdateUserRequest user) {
 		int updated = authMapper.userInfoUpdate(user);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("User not found: " + user.getUserId());
+	        throw new UserNotFoundException("User not found: " + user.getUserNo());
 	    }
 	}
 	
@@ -70,7 +70,7 @@ public class AuthService {
 		authMapper.changePassword(userId, passwordEncoder.encode(newPassword));
 	}
 	
-	public void insertToken(Token token) {
+	public void insertToken(TokenDTO token) {
 		authMapper.insertToken(token);
 	}
 	
@@ -81,8 +81,12 @@ public class AuthService {
 	    }
 	}
 
-	public String getUserIdByToken(TokenDTO token) {
-		return authMapper.getUserIdByToken(token);
+	public Integer getUserNoByToken(TokenDTO token) {
+		return authMapper.getUserNoByToken(token);
+	}
+
+	public void withDrawalUser(Integer userNo) {
+		authMapper.withDrawalUser(userNo);
 	}
 
 
