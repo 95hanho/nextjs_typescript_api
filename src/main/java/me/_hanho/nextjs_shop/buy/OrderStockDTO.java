@@ -19,7 +19,6 @@ public class OrderStockDTO {
 	private String name;
 	private String colorName;
 	
-	private String sellerId;
 	private String sellerName;
 	
 	private String fileName;

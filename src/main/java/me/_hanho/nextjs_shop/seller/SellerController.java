@@ -41,13 +41,13 @@ public class SellerController {
 	
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@ModelAttribute SellerLoginDTO seller) {
-		logger.info("sellerLogin :" + seller);
+	public ResponseEntity<Map<String, Object>> login(@RequestParam("sellerId") String sellerId, @RequestParam("password") String password) {
+		logger.info("sellerLogin :" + sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		SellerLoginDTO checkSeller = sellerService.isSeller(seller.getSellerId());
+		SellerLoginDTO checkSeller = sellerService.isSeller(sellerId);
 		System.out.println("checkSeller : " + checkSeller);
-		if (checkSeller == null || !sellerService.passwordCheck(seller.getPassword(), checkSeller.getPassword())) {
+		if (checkSeller == null || !sellerService.passwordCheck(password, checkSeller.getPassword())) {
 			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
 			
@@ -65,14 +65,14 @@ public class SellerController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> tokenStore(
-			@RequestAttribute("sellerId") String sellerId, @RequestParam("refreshToken") String refreshToken,
+			@RequestAttribute("sellerNo") Integer sellerNo, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", sellerId : " + sellerId + 
+		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", sellerNo : " + sellerNo + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		Token token = Token.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).sellerId(sellerId).build(); 
+		SellerToken token = SellerToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).sellerNo(sellerNo).build(); 
 		sellerService.insertToken(token);
 		
 		result.put("message", "SELLER_TOKEN_INSERT_SUCCESS");
@@ -101,21 +101,21 @@ public class SellerController {
 		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		authService.updateToken(token);
 		
-		String sellerId = sellerService.getSellerIdByToken(token);
+		Integer sellerNo = sellerService.getSellerNoByToken(token);
 		
-		if(sellerId == null) {
+		if(sellerNo == null) {
 			result.put("message", "WRONG_TOKEN");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
 		
-		result.put("sellerId", sellerId);
+		result.put("sellerNo", sellerNo);
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 정보조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerNo") int sellerNo) {
-		logger.info("getSeller :" + sellerId);
+		logger.info("getSeller :" + sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerNo);
@@ -137,11 +137,11 @@ public class SellerController {
 	}
 	// 판매자 제품 조회
 	@GetMapping("/product")
-	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestAttribute("sellerId") String sellerId) {
-		logger.info("getSellerProductList sellerId=" + sellerId);
+	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestAttribute("sellerNo") Integer sellerNo) {
+		logger.info("getSellerProductList sellerNo=" + sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<SellerProductDTO> sellerProductList = sellerService.getSellerProductList(sellerId);
+		List<SellerProductDTO> sellerProductList = sellerService.getSellerProductList(sellerNo);
 		
 		result.put("sellerProductList", sellerProductList);
 		result.put("message", "SELLER_PRODUCT_FETCH_SUCCESS");
@@ -149,12 +149,12 @@ public class SellerController {
 	}
 	// 판매자 제품 추가
 	@PostMapping("/product")
-	public ResponseEntity<Map<String, Object>> addProduct(@RequestAttribute("sellerId") String sellerId, 
-			@ModelAttribute Product product) {
+	public ResponseEntity<Map<String, Object>> addProduct(@RequestAttribute("sellerNo") Integer sellerNo, 
+			@ModelAttribute AddProductRequest product) {
 		logger.info("sellerAddProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		product.setSellerId(sellerId);
+		product.setSellerNo(sellerNo);
 		sellerService.addProduct(product);
 
 		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
@@ -162,12 +162,12 @@ public class SellerController {
 	}
 	// 판매자 제품 수정
 	@PutMapping("/product")
-	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute("sellerId") String sellerId, 
-			@ModelAttribute Product product) {
+	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute("sellerNo") Integer sellerNo, 
+			@ModelAttribute UpdateProductRequest product) {
 		logger.info("sellerUpdateProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		product.setSellerId(sellerId);
+		product.setSellerNo(sellerNo);
 		sellerService.updateProduct(product);
 
 		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
@@ -175,7 +175,7 @@ public class SellerController {
 	}
 	// 판매자 제품 상세보기
 	@GetMapping("/product/detail/{productId}")
-	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute("sellerId") String sellerId, 
+	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute("sellerNo") Integer sellerNo, 
 			@PathVariable("productId") int productId) {
 		logger.info("getProductDetail " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -216,11 +216,11 @@ public class SellerController {
 	}
 	// 판매자 쿠폰 조회
 	@GetMapping("/coupon")
-	public ResponseEntity<Map<String, Object>> getSellerCouponList(@RequestParam("sellerId") String sellerId) {
-		logger.info("getSellerCoupon "+ sellerId);
+	public ResponseEntity<Map<String, Object>> getSellerCouponList(@RequestAttribute("sellerNo") Integer sellerNo) {
+		logger.info("getSellerCoupon "+ sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<Coupon> couponList = sellerService.getSellerCouponList(sellerId);
+		List<Coupon> couponList = sellerService.getSellerCouponList(sellerNo);
 		
 		result.put("couponList", couponList);
 		result.put("message", "SELLER_COUPON_FETCH_SUCCESS");
@@ -284,17 +284,17 @@ public class SellerController {
 	}
 	// 판매자와 관련된 회원 조회(내 상품을 보거나 위시하거나 장바구니에 넣거나 즐겨찾기한) 
 	@GetMapping("/user/interesting")
-	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestParam("sellerId") String sellerId) {
-		logger.info("getSellerInterestingUser "+ sellerId);
+	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestAttribute("sellerNo") Integer sellerNo) {
+		logger.info("getSellerInterestingUser "+ sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductViewCountDTO> productViewCountList = sellerService.getProductViewCountList(sellerId);
+		List<ProductViewCountDTO> productViewCountList = sellerService.getProductViewCountList(sellerNo);
 		
-		List<ProductWishCountDTO> productWishCountList = sellerService.getProductWishCountList(sellerId);
+		List<ProductWishCountDTO> productWishCountList = sellerService.getProductWishCountList(sellerNo);
 		
-		List<userInBookmarkDTO> brandBookmarkList = sellerService.getBrandBookmarkList(sellerId);
+		List<userInBookmarkDTO> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
 		
-		List<UserInCartCountDTO> userInCartCountList = sellerService.getUserInCartCountList(sellerId);
+		List<UserInCartCountDTO> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
 		
 		// 주문액수, 주문 갯수 가져오기
 		
@@ -307,8 +307,8 @@ public class SellerController {
 	}
 	// 유저쿠폰사용내역 조회
 	@GetMapping("/coupon/user-coupon")
-	public ResponseEntity<Map<String, Object>> getSellerUsercouponUsed(@RequestParam("sellerId") String sellerId) {
-		logger.info("getSellerUsercouponUsed "+ sellerId);
+	public ResponseEntity<Map<String, Object>> getSellerUsercouponUsed(@RequestAttribute("sellerNo") String sellerNo) {
+		logger.info("getSellerUsercouponUsed "+ sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");

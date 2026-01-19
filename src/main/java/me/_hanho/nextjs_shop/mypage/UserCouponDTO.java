@@ -31,7 +31,6 @@ public class UserCouponDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     
-    private String sellerId;
     private String sellerName;
 	
 }

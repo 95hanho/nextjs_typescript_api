@@ -13,9 +13,7 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.auth.UserNotFoundException;
 import me._hanho.nextjs_shop.model.Coupon;
-import me._hanho.nextjs_shop.model.Product;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.Token;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +29,11 @@ public class SellerService {
 	public boolean passwordCheck(String password, String checkPassword) {
 		return passwordEncoder.matches(password, checkPassword);
 	}
-	public void insertToken(Token token) {
+	public void insertToken(SellerToken token) {
 		sellerMapper.insertToken(token);
 	}
-	public String getSellerIdByToken(TokenDTO token) {
-		return sellerMapper.getSellerIdByToken(token);
+	public Integer getSellerNoByToken(TokenDTO token) {
+		return sellerMapper.getSellerNoByToken(token);
 	}
 	public SellerInfoResponse getSeller(int sellerNo) {
 		return sellerMapper.getSeller(sellerNo);
@@ -44,8 +42,8 @@ public class SellerService {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
 		sellerMapper.setSeller(seller);
 	}
-	public List<SellerProductDTO> getSellerProductList(String sellerId) {
-		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerId);
+	public List<SellerProductDTO> getSellerProductList(Integer sellerNo) {
+		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerNo);
 		
 		if(sellerProductList.size() == 0) {
 			return sellerProductList;
@@ -72,10 +70,10 @@ public class SellerService {
         
 		return sellerProductList;
 	}
-	public void addProduct(Product product) {
+	public void addProduct(AddProductRequest product) {
 		sellerMapper.addProduct(product);
 	}
-	public void updateProduct(Product product) {
+	public void updateProduct(UpdateProductRequest product) {
 		int updated = sellerMapper.updateProduct(product);
 	 if (updated == 0) {
 	        throw new UserNotFoundException("product not found: " + product.getProductId());
@@ -90,8 +88,8 @@ public class SellerService {
 	        throw new UserNotFoundException("productOption not found: " + productOption.getProductOptionId());
 	    }
 	}
-	public List<Coupon> getSellerCouponList(String sellerId) {
-		return sellerMapper.getSellerCouponList(sellerId);
+	public List<Coupon> getSellerCouponList(Integer sellerNo) {
+		return sellerMapper.getSellerCouponList(sellerNo);
 	}
 	public void addCoupon(Coupon coupon) {
 		sellerMapper.addCoupon(coupon);
@@ -111,17 +109,17 @@ public class SellerService {
 		sellerMapper.issueCouponsToUsers(couponId, userIds);
 	}
 	// 
-	public List<ProductViewCountDTO> getProductViewCountList(String sellerId) {
-		return sellerMapper.getProductViewCountList(sellerId);
+	public List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo) {
+		return sellerMapper.getProductViewCountList(sellerNo);
 	}
-	public List<ProductWishCountDTO> getProductWishCountList(String sellerId) {
-		return sellerMapper.getProductWishCountList(sellerId);
+	public List<ProductWishCountDTO> getProductWishCountList(Integer sellerNo) {
+		return sellerMapper.getProductWishCountList(sellerNo);
 	}
-	public List<userInBookmarkDTO> getBrandBookmarkList(String sellerId) {
-		return sellerMapper.getBrandBookmarkList(sellerId);
+	public List<userInBookmarkDTO> getBrandBookmarkList(Integer sellerNo) {
+		return sellerMapper.getBrandBookmarkList(sellerNo);
 	}
-	public List<UserInCartCountDTO> getUserInCartCountList(String sellerId) {
-		return sellerMapper.getUserInCartCountList(sellerId);
+	public List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo) {
+		return sellerMapper.getUserInCartCountList(sellerNo);
 	}
 
 

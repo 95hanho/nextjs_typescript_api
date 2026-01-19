@@ -3,17 +3,30 @@
 <mapper namespace="me._hanho.nextjs_shop.buy.BuyMapper">
 
 	<select id="selectAllActiveHoldsByUser">
-		SELECT *
-		FROM nextjs_shop_stock_hold
-		WHERE user_id = #{userId} AND status = 'HOLD' AND active_hold = 1 
+		SELECT sh.hold_id
+		FROM nextjs_shop_stock_hold sh
+		WHERE sh.user_no = #{userNo} AND sh.status = 'HOLD' AND sh.active_hold = 1
 	</select>
+	<!-- 점유 해제: 활성(HOLD & active_hold=1) → RELEASED, active_hold=NULL -->
+	<update id="releaseHolds">
+	    UPDATE nextjs_shop_stock_hold
+	    SET status = 'RELEASED',
+	        active_hold = NULL
+	    WHERE user_no = #{userNo} AND status = 'HOLD'
+			AND active_hold = 1
+			AND hold_id IN
+			<foreach collection="holdIds" item="id" open="(" separator="," close=")">
+			  #{id}
+			</foreach>
+ 	</update>
+	  
 	
  <!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
   <select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
 	  SELECT
-	    pd.product_option_id,
+	    po.product_option_id,
 	    GREATEST(
-	      pd.stock - IFNULL(SUM(
+	      po.stock - IFNULL(SUM(
 	        CASE
 	          WHEN sh.status = 'HOLD'
 	           AND sh.active_hold = 1
@@ -24,21 +37,24 @@
 	      ), 0),
 	      0
 	    ) AS available
-	  FROM nextjs_shop_product_option pd
+	  FROM nextjs_shop_product_option po
+	  JOIN nextjs_shop_product p ON p.product_id = po.product_id
+	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no 
 	  LEFT JOIN nextjs_shop_stock_hold sh
-	    ON sh.product_option_id = pd.product_option_id
-	  WHERE pd.product_option_id IN
+	    ON sh.product_option_id = po.product_option_id
+	  WHERE s.approval_status = 'APPROVED' AND p.sale_stop = 0 AND
+	  	po.product_option_id IN
 	    <foreach collection="detailIds" item="id" open="(" separator="," close=")">
 	      #{id}
 	    </foreach>
-	  GROUP BY pd.product_option_id
+	  GROUP BY po.product_option_id
   </select>
 
   <!-- 본인 미만료 HOLD -->
   <select id="selectExistingHolds" resultType="me._hanho.nextjs_shop.buy.ExistingHold">
     SELECT hold_id, product_option_id, count
     FROM nextjs_shop_stock_hold
-    WHERE user_id = #{userId}
+    WHERE user_no = #{userNo}
       AND status = 'HOLD'
       AND expires_at > NOW()
       AND product_option_id IN
@@ -47,31 +63,49 @@
         </foreach>
   </select>
 
-  <!-- 멱등 업서트: 유니크(UQ_user_pd_status) 충돌 시 count/TTL 갱신 -->
-  <insert id="upsertHolds">
+	<!-- 멱등 업서트: 유니크(UQ_user_pd_status) 충돌 시 count/TTL 갱신 -->
+	<!-- 판매가능 조건을 통과한 옵션만 upsert -->
+	<insert id="upsertHolds" parameterType="map">
 	  INSERT INTO nextjs_shop_stock_hold
-	    (user_id, product_option_id, count, status, active_hold, expires_at, created_at)
-	  VALUES
-	    <foreach collection="rows" item="r" separator=",">
-	      (#{r.userId}, #{r.productOptionId}, #{r.count},
-	       'HOLD', 1,
-	       DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
+	    (user_no, product_option_id, count, status, active_hold, expires_at, created_at)
+	  SELECT
+	    x.user_no,
+	    x.product_option_id,
+	    x.count,
+	    'HOLD',
+	    1,
+	    DATE_ADD(NOW(), INTERVAL x.ttl_seconds SECOND),
+	    NOW()
+	  FROM (
+	    <foreach collection="rows" item="r" separator=" UNION ALL ">
+	      SELECT
+	        #{r.userNo}          AS user_no,
+	        #{r.productOptionId} AS product_option_id,
+	        #{r.count}           AS count,
+	        #{r.ttlSeconds}      AS ttl_seconds
 	    </foreach>
+	  ) x
+	  JOIN nextjs_shop_product_option po ON po.product_option_id = x.product_option_id
+	  JOIN nextjs_shop_product p ON p.product_id = po.product_id
+	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+	  WHERE s.approval_status = 'APPROVED'
+	    AND p.sale_stop = 0
 	  ON DUPLICATE KEY UPDATE
-	    count = VALUES(count),
-	    expires_at = DATE_ADD(NOW(), INTERVAL #{rows[0].ttlSeconds} SECOND),
-	    status = 'HOLD',
-	    active_hold = 1
-  </insert>
+	    count      = VALUES(count),
+	    expires_at = VALUES(expires_at),
+	    status     = 'HOLD',
+	    active_hold= 1
+	</insert>
+
 
   <!-- ↑ MySQL에서 VALUES(expires_at) 사용 불가 이슈 회피:
        expires_at를 직접 다시 계산해서 갱신 -->
   <insert id="upsertHolds" databaseId="mysql">
     INSERT INTO nextjs_shop_stock_hold
-      (user_id, product_option_id, count, status, expires_at, created_at)
+      (user_no, product_option_id, count, status, expires_at, created_at)
     VALUES
       <foreach collection="rows" item="r" separator=",">
-        (#{r.userId}, #{r.productOptionId}, #{r.count}, 'HOLD',
+        (#{r.userNo}, #{r.productOptionId}, #{r.count}, 'HOLD',
          DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
       </foreach>
     ON DUPLICATE KEY UPDATE
@@ -90,12 +124,15 @@
 
   <!-- 최신 HOLD (유저+pdId별 1건) -->
   <select id="selectLatestHolds" resultType="me._hanho.nextjs_shop.buy.HoldBrief">
-    SELECT t.product_option_id, t.hold_id
+    SELECT t.product_option_id, t.hold_id, t.count
     FROM nextjs_shop_stock_hold t
     INNER JOIN (
       SELECT product_option_id, MAX(hold_id) AS max_id
       FROM nextjs_shop_stock_hold
-      WHERE user_id = #{userId}
+      WHERE user_no = #{userNo}
+      	AND status = 'HOLD'
+		AND active_hold = 1
+		AND expires_at > NOW()
         AND product_option_id IN
           <foreach collection="detailIds" item="id" open="(" separator="," close=")">
             #{id}
@@ -105,42 +142,37 @@
     ) m ON m.max_id = t.hold_id
   </select>
   
-    <!-- 점유 연장: 활성(HOLD & active_hold=1) 인 것만 NOW()+TTL 로 갱신 -->
-  <update id="extendHolds">
-    UPDATE nextjs_shop_stock_hold
-    SET expires_at = DATE_ADD(NOW(), INTERVAL #{ttlSeconds} SECOND)
-    WHERE user_id = #{userId} AND status = 'HOLD'
-      AND active_hold = 1
-      AND hold_id IN
-      <foreach collection="holdIds" item="id" open="(" separator="," close=")">
-        #{id}
-      </foreach>
-  </update>
+	<!-- 점유 연장: 활성(HOLD & active_hold=1) 인 것만 NOW()+TTL 로 갱신 -->
+	<update id="extendHolds">
+	  UPDATE nextjs_shop_stock_hold sh
+	  JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+	  JOIN nextjs_shop_product p ON p.product_id = po.product_id
+	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+	  SET sh.expires_at = DATE_ADD(NOW(), INTERVAL #{ttlSeconds} SECOND)
+	  WHERE sh.user_no = #{userNo}
+	    AND sh.status = 'HOLD'
+	    AND sh.active_hold = 1
+	    AND sh.expires_at > NOW()
+	    AND s.approval_status = 'APPROVED'
+	    AND p.sale_stop = 0
+	    AND sh.hold_id IN
+	    <foreach collection="holdIds" item="id" open="(" separator="," close=")">
+	      #{id}
+	    </foreach>
+	</update>
 
-  <!-- 점유 해제: 활성(HOLD & active_hold=1) → RELEASED, active_hold=NULL -->
-  <update id="releaseHolds">
-    UPDATE nextjs_shop_stock_hold
-    SET status = 'RELEASED',
-        active_hold = NULL
-    WHERE user_id = #{userId} AND status = 'HOLD'
-      AND active_hold = 1
-      AND hold_id IN
-      <foreach collection="holdIds" item="id" open="(" separator="," close=")">
-        #{id}
-      </foreach>
-  </update>
-  
+
    <!-- 점유하고 있는 상품조회 -->
   <select id="getOrderStock">
   	SELECT sh.hold_id, sh.count, 
   		 pd.product_option_id, pd.add_price, pd.size,
   		 p.product_id, p.name, p.color_name,
-  		 s.seller_id, s.seller_name,
+  		 s.seller_name,
   		 f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
   	FROM nextjs_shop_stock_hold sh
   	JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
   	JOIN nextjs_shop_product p ON p.product_id = pd.product_id
-  	JOIN nextjs_shop_seller s ON s.seller_id = p.seller_id
+  	JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
   	LEFT JOIN (
         SELECT 
             pi.product_id, 
@@ -157,23 +189,24 @@
         AND pi.sort_key = min_pi.min_sort_key
     ) tpi ON tpi.product_id = p.product_id
  	LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-  	WHERE sh.user_id = #{userId} 
+  	WHERE sh.user_no = #{userNo} 
     AND sh.status = 'HOLD'
     AND sh.active_hold = 1
     AND sh.expires_at > NOW()
+    AND s.approval_status = 'APPROVED'
+  	AND p.sale_stop = 0
     ORDER BY sh.created_at DESC
   </select>
   
   <!-- 점유상품에 사용가능한 쿠폰조회 -->
   <select id="getAvailableCoupon">
-  	SELECT c.*,
+  	SELECT c.coupon_id, c.description, c.discount_type, c.discount_value, c.max_discount, c.minimum_order_before_amount,
   		uc.user_coupon_id, 
-		uc.used, 
-		uc.user_id
+		uc.used
 	FROM nextjs_shop_coupon c
 	JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id
 	LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
-	WHERE uc.user_id = #{userId} 
+	WHERE uc.user_no = #{userNo} AND c.status = 'ACTIVE'
 	AND uc.used = 0
 	AND (
 		ca.product_id IN 
@@ -181,7 +214,7 @@
 	      #{id}
 	    </foreach>
 	    OR ca.product_id IS NULL
-		OR seller_id is NULL
+		OR seller_no is NULL
 	)
   </select>
   
@@ -214,7 +247,7 @@
       ) AS r
       JOIN nextjs_shop_stock_hold sh ON sh.hold_id = r.hold_id
        AND sh.product_option_id = r.product_option_id
-       AND sh.user_id = #{userId}
+       AND sh.user_no = #{userNo}
        AND sh.status = 'HOLD'
        AND sh.active_hold = 1
       JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
@@ -229,24 +262,24 @@
   	<update id="updateUserMileageByBuy">
   		UPDATE nextjs_shop_user
   		SET mileage = mileage - #{usedMileage}
-		WHERE user_id = #{userId} AND mileage >= mileage + #{usedMileage} 
+		WHERE user_no = #{userNo} AND mileage >= mileage + #{usedMileage} 
   	</update>
   	
   	<select id="getUserMileage">
   		SELECT mileage
   		FROM nextjs_shop_user
-  		WHERE user_id = #{userId}
+  		WHERE user_no = #{userNo}
   	</select>
   
 	 <insert id="insertOrderGroup">
 		INSERT INTO nextjs_shop_order_group (
-			user_id, each_coupon_discount_total, common_coupon_discount_total, shipping_fee, 
+			user_no, each_coupon_discount_total, common_coupon_discount_total, shipping_fee, 
 			used_mileage, remaining_mileage,
 			total_price, payment_method, payment_code, status,
 			user_coupon_id, address_id
 		)
 		VALUES (
-			#{userId}, #{eachCouponDiscountTotal}, #{commonCouponDiscountTotal}, #{shippingFee}, 
+			#{userNo}, #{eachCouponDiscountTotal}, #{commonCouponDiscountTotal}, #{shippingFee}, 
 			#{usedMileage}, #{remainingMileage},
 			#{totalPrice}, #{paymentMethod}, #{paymentCode}, #{status},
 			#{userCouponId}, #{addressId}
@@ -256,7 +289,7 @@
 	 <select id="getOrderId">
 	 	SELECT order_id
 	 	FROM nextjs_shop_order_group
-	 	WHERE user_id = #{userId}
+	 	WHERE user_no = #{userNo}
 	 	ORDER BY order_id DESC
 	 	LIMIT 1
 	 </select>

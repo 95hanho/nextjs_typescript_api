@@ -19,11 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.ProductQna;
-import me._hanho.nextjs_shop.model.Wish;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,11 +49,11 @@ public class ProductController {
 	}
 	// 좋아요/취소
 	@PostMapping("like")
-	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute Like like, @RequestAttribute("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute AddLikeRequest like, @RequestAttribute("userNo") Integer userNo) {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		like.setUserId(userId);
+		like.setUserNo(userNo);
 		productService.setLike(like);
 
 		result.put("message", "WISH_SET_SUCCESS");
@@ -65,11 +61,11 @@ public class ProductController {
 	}
 	// 위시 등록/해제
 	@PostMapping("/wish")
-	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute Wish wish, @RequestAttribute("userId") String userId) {
+	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute AddWishRequest wish, @RequestAttribute("userNo") Integer userNo) {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		wish.setUserId(userId);
+		wish.setUserNo(userNo);
 		productService.setWish(wish);
 
 		result.put("message", "WISH_SET_SUCCESS");
@@ -77,12 +73,12 @@ public class ProductController {
 	}
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute Cart cart, @RequestAttribute("userId") String userId) {
-		logger.info("putCart");
+	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute AddCartRequest cart, @RequestAttribute("userNo") Integer userNo) {
+		logger.info("addCart");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		cart.setUserId(userId);
-		productService.putCart(cart);
+		cart.setUserNo(userNo);
+		productService.addCart(cart);
 
 		result.put("message", "CART_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -90,16 +86,16 @@ public class ProductController {
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(@PathVariable("productId") int productId,
-			@RequestAttribute(name = "userId", required = false) String userId) {
-		logger.info("getProductDetail productId : " + productId + ", userId : " + userId);
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		logger.info("getProductDetail productId : " + productId + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
 		List<ProductOption> productOptionList = productService.getProductOptionList(productId);
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = null;
-		if(userId != null) {
-			availableProductCoupon = productService.getAvailableProductCoupon(productId, userId);
+		if(userNo != null) {
+			availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);
 		}
 		
 		result.put("productDetail", productDetail);
@@ -111,11 +107,11 @@ public class ProductController {
 	// 리뷰 조회
 	@GetMapping("/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(@RequestParam("productId") String productId,
-			@RequestAttribute(name = "userId", required = false) String userId) {
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userId);
+		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
 		
 		result.put("productReviewList", productReviewList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
@@ -124,11 +120,11 @@ public class ProductController {
 	// 상품 Q&A
 	@GetMapping("/qna")
 	public ResponseEntity<Map<String, Object>> getProductQnaList(@RequestParam("productId") String productId,
-			@RequestAttribute(name = "userId", required = false) String userId) {
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductQna> ProductQnaList = productService.getProductQnaList(productId, userId);
+		List<ProductQnaResponse> ProductQnaList = productService.getProductQnaList(productId, userNo);
 		
 		result.put("ProductQnaList", ProductQnaList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");

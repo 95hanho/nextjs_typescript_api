@@ -6,11 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.model.Cart;
-import me._hanho.nextjs_shop.model.Like;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.ProductQna;
-import me._hanho.nextjs_shop.model.Wish;
 
 @Mapper
 public interface ProductMapper {
@@ -20,27 +16,27 @@ public interface ProductMapper {
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
 	
-	boolean isWishExist(Wish wish);
+	boolean isWishExist(AddWishRequest wish);
 	
 	void upProductWish(int productId);
 	
-	void insertWish(Wish wish);
+	void insertWish(AddWishRequest wish);
 	
 	void downProductWish(int productId);
 
-	void deleteWish(Wish wish);
+	void deleteWish(AddWishRequest wish);
 	//
-	boolean isLikeExist(Like like);
+	boolean isLikeExist(AddLikeRequest like);
 
 	void upProductLike(int productId);
 
-	void insertLike(Like like);
+	void insertLike(AddLikeRequest like);
 
 	void downProductLike(int productId);
 
-	void deleteLike(Like like);
+	void deleteLike(AddLikeRequest like);
 	
-	void putCart(Cart cart);
+	void addCart(AddCartRequest cart);
 
 	ProductDetailResponse getProductDetail(int productId);
 	
@@ -48,11 +44,11 @@ public interface ProductMapper {
 
 	List<ProductOption> getProductOptionList(int productId);
 
-	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userId") String userId);
+	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	
-	List<ProductReviewResponse> getProductReviewList(@Param("productId") String productId, @Param("userId")  String userId);
+	List<ProductReviewResponse> getProductReviewList(@Param("productId") String productId, @Param("userNo") Integer userNo);
 
-	List<ProductQna> getProductQnaList(@Param("productId") String productId, @Param("userId") String userId);
+	List<ProductQnaResponse> getProductQnaList(@Param("productId") String productId, @Param("userNo") Integer userNo);
 
 	
 

@@ -29,7 +29,6 @@ public class OrderItemWithReviewDTO {
     private String colorName;
     private int price;
     
-    private String sellerId;
     private String sellerName;
     
     private int reviewId;

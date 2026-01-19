@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class WishlistItemDTO {
 	private int wishId;
 	private Timestamp createdAt;
-	private String userId;
 	
 	private int productId;
 	private String name;
@@ -29,7 +28,6 @@ public class WishlistItemDTO {
 	private String copyright;
 	private String copyrightUrl;
 	
-	private String sellerId;
 	private String sellerName;
 	
 	

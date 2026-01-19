@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.auth.TokenService;
-import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 
 @RestController
@@ -49,7 +48,7 @@ public class AdminController {
 	}
 	// 관리자 정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getAdminInfo(@RequestAttribute("adminNo") int adminNo) {
+	public ResponseEntity<Map<String, Object>> getAdminInfo(@RequestAttribute("adminNo") Integer adminNo) {
 		logger.info("getAdminNoInfo : adminNo=" + adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -72,12 +71,12 @@ public class AdminController {
 	}
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@ModelAttribute AdminLoginDTO adminLogin) {
-		logger.info("adminLogin :" + adminLogin);
+	public ResponseEntity<Map<String, Object>> login(@RequestParam("adminId") String adminId, @RequestParam("password") String password) {
+		logger.info("adminLogin :" + adminId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		AdminLoginDTO checkAdmin = adminService.isAdmin(adminLogin.getAdminId());
-		if (checkAdmin == null || !adminService.passwordCheck(adminLogin.getPassword(), checkAdmin.getPassword())) {
+		AdminLoginDTO checkAdmin = adminService.isAdmin(adminId);
+		if (checkAdmin == null || !adminService.passwordCheck(password, checkAdmin.getPassword())) {
 			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
 			
@@ -98,14 +97,14 @@ public class AdminController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> tokenStore(
-			@RequestAttribute("adminNo") int adminNo, @RequestParam("refreshToken") String refreshToken,
+			@RequestAttribute("adminNo") Integer adminNo, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
 		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", adminNo : " + adminNo + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		Token token = Token.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).adminNo(adminNo).build(); 
+		AdminToken token = AdminToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).adminNo(adminNo).build(); 
 		adminService.insertToken(token);
 		
 		result.put("message", "ADMIN_TOKEN_INSERT_SUCCESS");
@@ -148,7 +147,7 @@ public class AdminController {
 	// 판매자 추가
 	@PostMapping("/seller")
 	public ResponseEntity<Map<String, Object>> addSeller(@ModelAttribute SellerRegisterRequest seller,
-			@RequestAttribute("adminNo") int adminNo) {
+			@RequestAttribute("adminNo") Integer adminNo) {
 		logger.info("addSeller " + seller);
 		Map<String, Object> result = new HashMap<String, Object>();
 

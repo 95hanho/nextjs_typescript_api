@@ -9,11 +9,11 @@
 		WHERE seller_id = #{sellerId} AND approval_status = 'APPROVED'
 	</select>
 	<insert id="insertToken">
-		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, seller_id)
-		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{sellerId})
+		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, seller_no)
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{sellerNo})
 	</insert>
-	<select id="getSellerIdByToken">
-		SELECT s.seller_id
+	<select id="getSellerNoByToken">
+		SELECT s.seller_no
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_seller s ON t.seller_no = s.seller_no 
 		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
@@ -36,10 +36,10 @@
 		WHERE seller_no = #{sellerNo}
 	</select>
 	<insert id="setSeller">
-		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
+		INSERT INTO nextjs_shop_seller(seller_no,password,seller_name,seller_name_en,extension_number,mobile_number,email,
 			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,
 			approval_status)
-		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
+		VALUES(#{sellerNo},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
 			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
 			#{businessZipcode},#{businessAddress},#{businessAddressDetail}, 'PENDING')
 	</insert>
@@ -52,7 +52,7 @@
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_menu_sub ms ON p.menu_sub_id = ms.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
-		WHERE p.seller_id = #{sellerId}
+		WHERE p.seller_no = #{sellerNo}
 	</select>
 	<select id="selectDetailsByProductIds">
 		SELECT product_option_id, product_id, add_price, stock, created_at, size, sales_count
@@ -64,20 +64,21 @@
 		ORDER BY product_id, size
 	</select>
 	<insert id="addProduct">
-		INSERT INTO nextjs_shop_product(name, color_name, price, seller_id, menu_sub_id, material_info, manufacturer_name, 
+		INSERT INTO nextjs_shop_product(name, color_name, origin_price, final_price, seller_no, menu_sub_id, material_info, manufacturer_name, 
 		country_of_origin, wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone)
-		VALUES(#{name}, #{colorName}, #{price}, #{sellerId}, #{menuSubId}, 
+		VALUES(#{name}, #{colorName}, #{originPrice}, #{finalPrice}, #{sellerNo}, #{menuSubId}, 
 			#{materialInfo}, #{manufacturerName}, #{countryOfOrigin}, #{washCareInfo}, #{manufacturedYm}, #{qualityGuaranteeInfo}, 
 			#{afterServiceContact}, #{afterServiceManager}, #{afterServicePhone})
 	</insert>
 	<update id="updateProduct">
 		UPDATE nextjs_shop_product
-		SET name = #{name}, color_name = #{colorName}, price = #{price}, sale_stop = #{saleStop}, menu_sub_id = #{menuSubId},
+		SET name = #{name}, color_name = #{colorName}, origin_price = #{originPrice}, final_price = #{finalPrice}, 
+		sale_stop = #{saleStop}, menu_sub_id = #{menuSubId},
 		material_info = #{materialInfo}, manufacturer_name = #{manufacturerName}, country_of_origin = #{countryOfOrigin}, 
 		wash_care_info = #{washCareInfo}, manufactured_ym = #{manufacturedYm}, quality_guarantee_info = #{qualityGuaranteeInfo},
 		after_service_contact = #{afterServiceContact}, after_service_manager = #{afterServiceManager}, after_service_phone = #{afterServicePhone}
-		WHERE product_id = #{productId} AND seller_id = #{sellerId}
+		WHERE product_id = #{productId} AND seller_no = #{sellerNo}
 	</update>
 	<insert id="addProductOption">
 		INSERT INTO nextjs_shop_product_option(product_id, add_price, stock, size)
@@ -91,14 +92,13 @@
 	<select id="getSellerCouponList">
 		SELECT *
 		FROM nextjs_shop_coupon
-		WHERE seller_id = #{sellerId} OR seller_id IS NULL
 	</select>
 	<insert id="addCoupon">
     	INSERT INTO nextjs_shop_coupon(description, coupon_code, discount_type, discount_value, max_discount,
-        	minimum_order_before_amount, status, is_stackable, is_product_restricted, amount, start_date, end_date, seller_id)
+        	minimum_order_before_amount, status, is_stackable, is_product_restricted, amount, start_date, end_date, seller_no)
     	VALUES(#{description}, #{couponCode}, #{discountType}, #{discountValue}, #{maxDiscount},
 	        #{minimumOrderBeforeAmount}, #{status}, #{isStackable}, #{isProductRestricted}, #{amount}, #{startDate},
-	        #{endDate}, #{sellerId})
+	        #{endDate}, #{sellerNo})
 	</insert>
 	<update id="updateCouponStatus">
 		UPDATE nextjs_shop_coupon
@@ -137,7 +137,7 @@
 	    FROM nextjs_shop_product_view pv
     	JOIN nextjs_shop_product p ON p.product_id = pv.product_id
 	    JOIN nextjs_shop_user u ON u.user_id = pv.user_id
-	    WHERE p.seller_id = #{sellerId}
+	    WHERE p.seller_no = #{sellerNo}
 	    GROUP BY pv.user_id, pv.product_id, u.name, p.name
 	    ORDER BY pv.view_date DESC, view_count DESC
 	</select>
@@ -147,7 +147,7 @@
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON p.product_id = w.product_id
 		JOIN nextjs_shop_user u    ON u.user_id = w.user_id
-		WHERE p.seller_id = #{sellerId}
+		WHERE p.seller_no = #{sellerNo}
 		GROUP BY w.user_id, u.name
 		ORDER BY w.created_at DESC
 	</select>
@@ -155,7 +155,7 @@
 		SELECT bb.created_at, bb.user_id, u.name AS userName
 		FROM nextjs_shop_brand_bookmark bb
 		JOIN nextjs_shop_user u ON u.user_id = bb.user_id
-		WHERE seller_id = #{sellerId}
+		WHERE seller_no = #{sellerNo}
 		ORDER BY bb.created_at DESC
 	</select>
 	<select id="getUserInCartCountList">
@@ -166,7 +166,7 @@
 	    JOIN nextjs_shop_product_option d ON d.product_option_id = c.product_option_id
 	    JOIN nextjs_shop_product p        ON p.product_id = d.product_id
 	    JOIN nextjs_shop_user u           ON u.user_id = c.user_id
-	    WHERE p.seller_id = #{sellerId}
+	    WHERE p.seller_no = #{sellerNo}
 	    GROUP BY c.user_id, u.name
 	    ORDER BY c.created_at DESC
 	</select>

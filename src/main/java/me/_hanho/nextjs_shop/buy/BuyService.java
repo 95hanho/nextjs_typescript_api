@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.buy;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.OrderGroup;
-import me._hanho.nextjs_shop.model.StockHold;
 
 @Service
 @RequiredArgsConstructor
@@ -35,16 +35,16 @@ public class BuyService {
         var requestedDetailIds = new ArrayList<>(mergedCountByPd.keySet());
 
         // 1. 유저의 모든 현재 HOLD(미만료) 다 가져오기 (※ 여기서는 detailIds 필터 걸지 말고 전체)
-        List<StockHold> allExistingHolds = buyMapper.selectAllActiveHoldsByUser(req.getUserId());
+        List<Integer> allExistingHolds = buyMapper.selectAllActiveHoldsByUser(req.getUserNo());
         // ↑ 새로 하나 만들어야 돼. selectExistingHolds(userId, detailIds) 말고.
 
         // 2. 이번 요청에 포함되지 않은 hold 들은 RELEASE
         List<Integer> toRelease = new ArrayList<>();
-        for (var h : allExistingHolds) {
-            toRelease.add(h.getHoldId());
+        for (Integer h : allExistingHolds) {
+            toRelease.add(h);
         }
         if (!toRelease.isEmpty()) {
-            buyMapper.releaseHolds(toRelease, req.getUserId()); // status='RELEASED', active_hold=NULL
+            buyMapper.releaseHolds(toRelease, req.getUserNo()); // status='RELEASED', active_hold=NULL
         }
 
         // 3. 가용수량 체크 (지금 있는 로직과 유사)
@@ -56,7 +56,7 @@ public class BuyService {
 
         // 요청된 detailId 중 아직 남아 있는 active HOLD만 다시 조회
         var remainingHolds = buyMapper.selectExistingHolds(
-            req.getUserId(),
+            req.getUserNo(),
             requestedDetailIds
         );
 
@@ -82,7 +82,7 @@ public class BuyService {
         var upserts = new ArrayList<UpsertHoldRow>();
         for (var entry : mergedCountByPd.entrySet()) {
             upserts.add(new UpsertHoldRow(
-                req.getUserId(),
+                req.getUserNo(),
                 entry.getKey(),
                 entry.getValue(), // 최종 수량
                 HOLD_TTL_SECONDS
@@ -91,7 +91,26 @@ public class BuyService {
         buyMapper.upsertHolds(upserts);
 
         // 5. 최종 결과 반환
-        var holds = buyMapper.selectLatestHolds(req.getUserId(), requestedDetailIds);
+        var holds = buyMapper.selectLatestHolds(req.getUserNo(), requestedDetailIds);
+        
+	     // optionId -> heldCount
+	        Map<Integer, Integer> heldCountMap = new HashMap<>();
+	        for (var h : holds) {
+	            heldCountMap.put(h.getProductOptionId(), h.getCount());
+	        }
+	
+	        // 요청한 옵션이 전부 존재 + 수량이 일치하는지 체크
+	        for (var e : mergedCountByPd.entrySet()) {
+	            int optionId = e.getKey();
+	            int expected = e.getValue();
+	            Integer actual = heldCountMap.get(optionId);
+	
+	            if (actual == null || actual != expected) {
+	                // 판매중단/판매금지로 필터되었거나, 중간에 상태가 바뀌었거나, upsert가 일부만 반영된 케이스
+	                throw new HoldFailedException("HOLD_UPSERT_INCOMPLETE");
+	            }
+	        }
+
         return HoldTryResult.ok(holds);
     }
 
@@ -109,50 +128,50 @@ public class BuyService {
         }
     }
     
-    public int extendHolds(List<Integer> holdIds, String userId) {
+    public int extendHolds(List<Integer> holdIds, Integer userNo) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성)만 NOW()+TTL로 연장
-        return buyMapper.extendHolds(holdIds, userId, HOLD_TTL_SECONDS);
+        return buyMapper.extendHolds(holdIds, userNo, HOLD_TTL_SECONDS);
     }
     // 점유해제
-    public int releaseHolds(List<Integer> holdIds, String userId) {
+    public int releaseHolds(List<Integer> holdIds, Integer userNo) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성) → RELEASED, activeHold=NULL
-        return buyMapper.releaseHolds(holdIds, userId);
+        return buyMapper.releaseHolds(holdIds, userNo);
     }
     
-	public List<OrderStockDTO> getOrderStock(String userId) {
-		List<OrderStockDTO> orderStock = buyMapper.getOrderStock(userId);
-		return orderStock;
+	public List<OrderStockDTO> getOrderStock(Integer userNo) {
+//		List<OrderStockDTO> orderStock = buyMapper.getOrderStock(userNo);
+		return buyMapper.getOrderStock(userNo);
 	}
 	
-	public List<AvailableCoupon> getAvailableCoupon(List<Integer> productIds, String userId) {
-		return buyMapper.getAvailableCoupon(productIds, userId);
+	public List<AvailableCoupon> getAvailableCoupon(List<Integer> productIds, Integer userNo) {
+		return buyMapper.getAvailableCoupon(productIds, userNo);
 	}
 	
-	public List<ProductWithCouponsDTO> getProductWithCoupons(List<BuyProduct> products, String userId) {
-		return buyMapper.getProductWithCoupons(products, userId);
+	public List<ProductWithCouponsDTO> getProductWithCoupons(List<BuyProduct> products, Integer userNo) {
+		return buyMapper.getProductWithCoupons(products, userNo);
 	}
 	
 	@Transactional
 	public void pay(PayRequest payRequest) {
 		// nextjs_shop_user UPDATE 마일리지 사용한거 없애고, 빠진 마일리지 조회
 		buyMapper.updateUserMileageByBuy(payRequest);
-		int remainingMileage = buyMapper.getUserMileage(payRequest.getUserId());
+		int remainingMileage = buyMapper.getUserMileage(payRequest.getUserNo());
 		
 		// nextjs_shop_order_group(주문프로세스) INSERT
-		OrderGroup orderGroup = OrderGroup.builder().userId(payRequest.getUserId()).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
-				.commonCouponDiscountTotal(payRequest.getCommonCouponDiscountTotal()).shippingFee(payRequest.getShippingFee())
+		BuyOrderGroupDAO orderGroup = BuyOrderGroupDAO.builder().userNo(payRequest.getUserNo()).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
+				.commonCouponDiscountTotal(payRequest.getCommonCouponDiscountTotal()).shippingFee(BigDecimal.valueOf(payRequest.getShippingFee()))
 				.usedMileage(payRequest.getUsedMileage()).remainingMileage(remainingMileage)
 				.totalPrice(payRequest.getTotalFinal()).paymentMethod(payRequest.getPaymentMethod())
 				.userCouponId(payRequest.getUserCouponId()).addressId(payRequest.getAddressId())
 				.paymentCode("0000").status("PAID").build();
 		buyMapper.insertOrderGroup(orderGroup);
-		int orderId = buyMapper.getOrderId(payRequest.getUserId());
+		int orderId = buyMapper.getOrderId(payRequest.getUserNo());
 		// 
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_item(주문목록) INSERT
-		buyMapper.insertOrderList(productWithCouponList, orderId, payRequest.getUserId());
+		buyMapper.insertOrderList(productWithCouponList, orderId, payRequest.getUserNo());
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
 		// nextjs_shop_product_option(상품상세옵션) stock(재고수), sales_count(판매수) 변경

@@ -32,7 +32,6 @@ public class CartProductDTO {
     private String copyright;
     private String copyrightUrl;
     
-    private String sellerId;
     private String sellerName;
 	
 	private int quantity;

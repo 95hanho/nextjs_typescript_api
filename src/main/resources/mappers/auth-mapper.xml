@@ -32,9 +32,11 @@
 	</insert>
 	
 	<select id="getPhoneAuthCode">
-		SELECT *
-		FROM nextjs_shop_phone_auth
-		WHERE phone_auth_token = #{phoneAuthToken}
+	    SELECT *
+	    FROM nextjs_shop_phone_auth
+	    WHERE phone_auth_token = #{phoneAuthToken}
+	      AND is_used = 0
+	      AND created_at >= DATE_SUB(NOW(), INTERVAL 190 SECOND)
 	</select>
 	
 	<update id="markPhoneAuthUsed">
@@ -67,8 +69,8 @@
 	</update>
 	
 	<insert id="insertToken">
-		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_id)
-		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userId})
+		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, user_no)
+		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{userNo})
 	</insert>
 	
 	<update id="updateToken">
@@ -77,13 +79,19 @@
 		WHERE refresh_token = #{beforeToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
 	</update>
 	
-	<select id="getUserIdByToken">
-		SELECT u.user_id
+	<select id="getUserNoByToken">
+		SELECT u.user_no
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_user u ON t.user_no = u.user_no
 		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
 		ORDER BY created_at DESC, token_id DESC
 		LIMIT 1
 	</select>
+	
+	<update id="withDrawalUser">
+		UPDATE nextjs_shop_user
+		SET withdrawal_status = 'REQUESTED', withdrawal_requested_at = NOW()
+		WHERE user_no = #{userNo} 
+	</update>
 	
 </mapper>
