@@ -20,10 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.model.PhoneAuth;
-import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
 
 @RestController
@@ -118,7 +116,8 @@ public class AuthController {
 	}
 	// 휴대폰인증 - 회원가입, 아이디찾기, 비밀번호 찾기 또는 휴대폰번호 바꾸기
 	@PostMapping("/phone")
-	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, @RequestParam("phoneAuthToken") String phoneAuthToken,
+	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, 
+			@RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor,
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
 		logger.info("phoneAuth - phone : " + phone + ", phoneAuthToken : " + phoneAuthToken + ", userNo : " + userNo);
