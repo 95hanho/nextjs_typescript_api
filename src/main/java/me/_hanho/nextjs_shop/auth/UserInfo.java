@@ -17,6 +17,7 @@ public class UserInfo {
     private Timestamp birthday;
     private String phone;
     private String email;
+    private Timestamp createdAt;
     private int mileage;
     private int tall;
     private int weight;

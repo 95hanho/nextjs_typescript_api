@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.auth.AuthMapper">
 	<select id="getUserInfo">
-		SELECT name, zonecode, address, address_detail, birthday, phone, email, mileage, tall, weight
+		SELECT name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight
 		FROM nextjs_shop_user
 		WHERE user_no = #{userNo} AND withdrawal_status = 'ACTIVE'
 	</select>
@@ -83,8 +83,8 @@
 		SELECT u.user_no
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_user u ON t.user_no = u.user_no
-		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
-		ORDER BY created_at DESC, token_id DESC
+		WHERE t.refresh_token = #{refreshToken} AND t.connect_ip = #{connectIp} AND t.connect_agent = #{connectAgent}
+		ORDER BY t.created_at DESC, t.token_id DESC
 		LIMIT 1
 	</select>
 	

@@ -77,7 +77,7 @@ public class AuthService {
 	public void updateToken(TokenDTO token) {
 		int updated = authMapper.updateToken(token);
 		if (updated == 0) {
-	        throw new UserNotFoundException("Token not found: " + token.getTokenId());
+	        throw new UserNotFoundException("Token not found");
 	    }
 	}
 

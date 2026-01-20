@@ -31,9 +31,10 @@ public class JwtInterceptor implements HandlerInterceptor {
 	    }
 		
 		/* =======판매자 로그인 토큰==================================================================== */
-		logger.info("preHandle ===> url : " + request.getRequestURL());
+		logger.info("token : " + token);
+		logger.info("preHandle ===> method: " + request.getMethod() + ", url : " + request.getRequestURL());
 		if (token != null && !token.isEmpty()) {
-			logger.info("token : " + token);
+			
             try {
                 // JWT 파싱 및 복호화
                 Claims claims = tokenService.parseJwtToken(token);
@@ -44,22 +45,22 @@ public class JwtInterceptor implements HandlerInterceptor {
                 logger.info("type : " + type);
                 if (type == null) {
                     throw new IllegalArgumentException("Token type is missing");
-                } 
+                }
                 // 유저 a토큰
                 else if("ACCESS".equals(type)) {
                 	// userNo 추출
-                	String userNo = claims.get("userNo", String.class);
+                	Integer userNo = claims.get("userNo", Integer.class);
                 	if (userNo == null) {
                         throw new SecurityException("Invalid ACCESS token: missing userNo");
                     }
                 	logger.info("type : " + type + ", userNo : " + userNo);
                 	// HttpServletRequest에 userNo 추가
                 	request.setAttribute("userNo", userNo);
-                } 
+                }
                 // 판매자 토큰
                 else if("SELLER".equals(type)) {
                 	// sellerNo 추출
-                    String sellerNo = claims.get("sellerNo", String.class);
+                	Integer sellerNo = claims.get("sellerNo", Integer.class);
                     if (sellerNo == null) {
                         throw new SecurityException("Invalid SELLER token: missing sellerNo");
                     }
@@ -70,7 +71,7 @@ public class JwtInterceptor implements HandlerInterceptor {
                 // 관리자 토큰
                 else if("ADMIN".equals(type)) {
                 	// adminNo 추출
-                    String adminNo = claims.get("adminNo", String.class);
+                	Integer adminNo = claims.get("adminNo", Integer.class);
                     if (adminNo == null) {
                         throw new SecurityException("Invalid ADMIN token: missing adminNo");
                     }
