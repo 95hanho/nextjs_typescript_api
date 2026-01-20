@@ -14,25 +14,27 @@ public interface SellerMapper {
 	
 	SellerLoginDTO isSeller(String sellerId);
 	
-	void insertToken(SellerToken token);
+	void insertToken(@Param("t") SellerToken token, @Param("sellerNo") Integer sellerNo);
 
 	Integer getSellerNoByToken(TokenDTO token);
 	
 	SellerInfoResponse getSeller(Integer sellerNo);
+
+	int hasId(String sellerId);
 	
 	void setSeller(SellerRegisterRequest seller);
 
-	List<SellerProductDTO> getSellerProductList(Integer sellerNo);
+	List<SellerProductResponse> getSellerProductList(Integer sellerNo);
 	
 	List<ProductOption> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
 	
-	void addProduct(AddProductRequest product);
+	void addProduct(@Param("p") AddProductRequest product, @Param("sellerNo") Integer sellerNo);
 	
-	int updateProduct(UpdateProductRequest product);
+	int updateProduct(@Param("p") UpdateProductRequest product, @Param("sellerNo") Integer sellerNo);
 
-	void addProductOption(ProductOption productOption);
+	int addProductOption(@Param("po") AddProductOptionRequest productOption, @Param("sellerNo") Integer sellerNo);
 
-	int updateProductOption(ProductOption productOption);
+	int updateProductOption(UpdateProductOptionRequest productOption);
 	
 	List<Coupon> getSellerCouponList(Integer sellerNo);
 	
@@ -55,6 +57,7 @@ public interface SellerMapper {
 	List<userInBookmarkDTO> getBrandBookmarkList(Integer sellerNo);
 
 	List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo);
+
 
 
 	

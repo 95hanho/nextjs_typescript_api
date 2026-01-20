@@ -4,8 +4,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
-import me._hanho.nextjs_shop.model.Token;
 import me._hanho.nextjs_shop.model.User;
 
 @Service
@@ -60,9 +61,9 @@ public class AuthService {
 	}
 
 	public void userInfoUpdate(UpdateUserRequest user) {
-		int updated = authMapper.userInfoUpdate(user);
+	    int updated = authMapper.userInfoUpdate(user);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("User not found: " + user.getUserNo());
+	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + user.getUserNo());
 	    }
 	}
 	
@@ -75,9 +76,9 @@ public class AuthService {
 	}
 	
 	public void updateToken(TokenDTO token) {
-		int updated = authMapper.updateToken(token);
-		if (updated == 0) {
-	        throw new UserNotFoundException("Token not found");
+	    int updated = authMapper.updateToken(token);
+	    if (updated == 0) {
+	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "Token not found");
 	    }
 	}
 

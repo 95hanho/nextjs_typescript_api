@@ -103,6 +103,14 @@ public class AdminController {
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		try {
+			tokenService.parseJwtRefreshToken(refreshToken);
+		} catch (Exception e) {
+            // 토큰이 유효하지 않으면 요청을 거부
+        	logger.error("token UNAUTHORIZED");
+        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+        }
+		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		AdminToken token = AdminToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).adminNo(adminNo).build(); 
 		adminService.insertToken(token);

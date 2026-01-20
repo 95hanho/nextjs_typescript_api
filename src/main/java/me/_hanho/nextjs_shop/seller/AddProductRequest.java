@@ -2,6 +2,8 @@ package me._hanho.nextjs_shop.seller;
 
 import java.sql.Timestamp;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,15 +12,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddProductRequest {
-    private String name;
-    private String colorName;
-    private int originPrice;
-    private int finalPrice;
-    private int sellerNo;
-    private int menuSubId;
-    private String materialInfo; // 제품 소재
-    private String manufacturerName; // 제조자
-    private String countryOfOrigin; // 제조국
+    @NotBlank private String name;
+    @NotBlank private String colorName;
+    @NotNull private Integer originPrice;
+    @NotNull private Integer finalPrice;
+    @NotNull private Integer menuSubId;
+    @NotBlank private String materialInfo; // 제품 소재
+    @NotBlank private String manufacturerName; // 제조자
+    @NotBlank private String countryOfOrigin; // 제조국
     private String washCareInfo; // 세탁방법 및 주의사항
     private Timestamp manufacturedYm; // 제조연월
     private String qualityGuaranteeInfo; // 품질보증기준s

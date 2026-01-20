@@ -11,18 +11,17 @@ import me._hanho.nextjs_shop.model.ProductOption;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SellerProductDTO {
+public class SellerProductResponse {
 	private int productId;
 	private String name;
 	private String colorName;
-	private int price;
+	private int originPrice;
+	private int finalPrice;
 	private Timestamp createdAt;
 	private int viewCount;
 	private int wishCount;
 	
 	private boolean saleStop; // 판매 중지여부
-    private String sellerId;
-    private int menuSubId;
     private String subMenuName;
 	private String topMenuName;
     private String gender;

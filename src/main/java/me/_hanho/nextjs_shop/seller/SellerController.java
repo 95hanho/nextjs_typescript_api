@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.auth.TokenService;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.Coupon;
-import me._hanho.nextjs_shop.model.Product;
-import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.Token;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,56 +65,58 @@ public class SellerController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> tokenStore(
-			@RequestAttribute("sellerNo") Integer sellerNo, @RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", sellerNo : " + sellerNo + 
-				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		SellerToken token = SellerToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).sellerNo(sellerNo).build(); 
-		sellerService.insertToken(token);
-		
-		result.put("message", "SELLER_TOKEN_INSERT_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
+	        @RequestAttribute("sellerNo") Integer sellerNo,
+	        @RequestParam("refreshToken") String refreshToken,
+	        @RequestHeader("user-agent") String userAgent,
+	        @RequestHeader("x-forwarded-for") String forwardedFor
+	) {
+	    tokenService.parseJwtRefreshToken(refreshToken); // 여기서 유효하지 않으면 예외 던지게
+	
+	    String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+	    SellerToken token = SellerToken.builder()
+	            .connectIp(ipAddress)
+	            .connectAgent(userAgent)
+	            .refreshToken(refreshToken)
+	            .build();
+	
+	    sellerService.insertToken(token, sellerNo);
+	
+	    return ResponseEntity.ok(Map.of("message", "SELLER_TOKEN_INSERT_SUCCESS"));
 	}
 	// 로그인 토큰 수정(재저장)
 	@PostMapping("/token/refresh")
 	public ResponseEntity<Map<String, Object>> updateToken(
-			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
-				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
-				", x-forwarded-for : " + forwardedFor);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		try {
-			tokenService.parseJwtRefreshToken(beforeToken);
-			tokenService.parseJwtRefreshToken(refreshToken);
-		} catch (Exception e) {
-            // 토큰이 유효하지 않으면 요청을 거부
-        	logger.error("token UNAUTHORIZED");
-        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-        }
-		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
-		authService.updateToken(token);
-		
-		Integer sellerNo = sellerService.getSellerNoByToken(token);
-		
-		if(sellerNo == null) {
-			result.put("message", "WRONG_TOKEN");
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-		}
-		
-		result.put("sellerNo", sellerNo);
-		result.put("message", "TOKEN_UPDATE_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
+	        @RequestParam("beforeToken") String beforeToken,
+	        @RequestParam("refreshToken") String refreshToken,
+	        @RequestHeader("user-agent") String userAgent,
+	        @RequestHeader("x-forwarded-for") String forwardedFor
+	) {
+	    tokenService.parseJwtRefreshToken(beforeToken);
+	    tokenService.parseJwtRefreshToken(refreshToken);
+
+	    String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+	    TokenDTO token = TokenDTO.builder()
+	            .connectIp(ipAddress)
+	            .connectAgent(userAgent)
+	            .refreshToken(refreshToken)
+	            .beforeToken(beforeToken)
+	            .build();
+
+	    authService.updateToken(token);
+
+	    Integer sellerNo = sellerService.getSellerNoByToken(token);
+	    if (sellerNo == null) {
+	        throw new BusinessException(ErrorCode.WRONG_TOKEN);
+	    }
+
+	    return ResponseEntity.ok(Map.of(
+	            "sellerNo", sellerNo,
+	            "message", "TOKEN_UPDATE_SUCCESS"
+	    ));
 	}
 	// 판매자 정보조회
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerNo") int sellerNo) {
+	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute("sellerNo") Integer sellerNo) {
 		logger.info("getSeller :" + sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -124,9 +126,26 @@ public class SellerController {
 		result.put("message", "SELLER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 판매자id 중복확인
+	@PostMapping("/id")
+	public ResponseEntity<Map<String, Object>> sellerIdDuplCheck(@RequestParam("sellerId") String sellerId) {
+		logger.info("sellerIdDuplCheck sellerId=" + sellerId);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		boolean hasId = sellerService.hasId(sellerId);
+		logger.info("hasId : " + hasId);
+		
+		if(hasId) {
+			result.put("message", "SELLER_ID_DUPLICATED");
+			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+		} else {
+			result.put("message", "SELLER_ID_AVAILABLE");
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+	}
 	// 판매자 등록요청(회원가입)
 	@PostMapping("/registration")
-	public ResponseEntity<Map<String, Object>> sellerRegister(@ModelAttribute SellerRegisterRequest seller) {
+	public ResponseEntity<Map<String, Object>> sellerRegister(@Valid @ModelAttribute SellerRegisterRequest seller) {
 		logger.info("sellerRegister");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -135,58 +154,47 @@ public class SellerController {
 		result.put("message", "SELLER_REGISTER_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 조회
+	// 제품 조회
 	@GetMapping("/product")
 	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestAttribute("sellerNo") Integer sellerNo) {
 		logger.info("getSellerProductList sellerNo=" + sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<SellerProductDTO> sellerProductList = sellerService.getSellerProductList(sellerNo);
+		List<SellerProductResponse> sellerProductList = sellerService.getSellerProductList(sellerNo);
 		
 		result.put("sellerProductList", sellerProductList);
 		result.put("message", "SELLER_PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 추가
+	// 제품 추가
 	@PostMapping("/product")
 	public ResponseEntity<Map<String, Object>> addProduct(@RequestAttribute("sellerNo") Integer sellerNo, 
-			@ModelAttribute AddProductRequest product) {
+		 	@Valid @ModelAttribute AddProductRequest product) {
 		logger.info("sellerAddProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		product.setSellerNo(sellerNo);
-		sellerService.addProduct(product);
+		sellerService.addProduct(product, sellerNo);
 
 		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 수정
+	// 제품 수정
 	@PutMapping("/product")
 	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute("sellerNo") Integer sellerNo, 
-			@ModelAttribute UpdateProductRequest product) {
+			@Valid @ModelAttribute UpdateProductRequest product) {
 		logger.info("sellerUpdateProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		product.setSellerNo(sellerNo);
-		sellerService.updateProduct(product);
+		sellerService.updateProduct(product, sellerNo);
 
 		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 제품 상세보기
+	// 제품 상세보기
 	@GetMapping("/product/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute("sellerNo") Integer sellerNo, 
 			@PathVariable("productId") int productId) {
 		logger.info("getProductDetail " + productId);
-		Map<String, Object> result = new HashMap<String, Object>();
-
-		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-	// 판매자 제품 옵션보기
-	@GetMapping("/product/option")
-	public ResponseEntity<Map<String, Object>> getSellerProductOption(@RequestParam("productId") String productId) {
-		logger.info("getSellerProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// 실제리스트에 뜨는 예시도 보여주고
@@ -194,27 +202,44 @@ public class SellerController {
 		// 해당 QnA 보여주고
 		// 판매자 제품에 적용 가능한 쿠폰조회 getProductAvailableCoupons
 
-//		result.put("sellerProductList", sellerProductList);
 		result.put("message", "SELLER_PRODUCT_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
-	// 판매자 제품 옵션 추가 / 수정
+	// 제품 상세 사진수정
+//	@GetMapping("/product/detail")
+//	public ResponseEntity<Map<String, Object>> setProductDetailImages(@RequestParam("productId") String productId) {
+//		logger.info("getSellerProductList");
+//		Map<String, Object> result = new HashMap<String, Object>();
+//		
+//
+////		result.put("sellerProductList", sellerProductList);
+//		result.put("message", "SELLER_PRODUCT_DETAIL_FETCH_SUCCESS");
+//		return new ResponseEntity<>(result, HttpStatus.OK);
+//	}
+	// 제품 옵션 추가
 	@PostMapping("/product/option")
-	public ResponseEntity<Map<String, Object>> setSellerProductOption(@ModelAttribute ProductOption productOption) {
-		logger.info("setProductOption " + productOption);
+	public ResponseEntity<Map<String, Object>> setSellerProductOption(@Valid @ModelAttribute AddProductOptionRequest productOption,
+			@RequestAttribute("sellerNo") Integer sellerNo) {
+		logger.info("setSellerProductOption " + productOption);
 		Map<String, Object> result = new HashMap<String, Object>();
+		
+		sellerService.addProductOption(productOption, sellerNo);
 
-		if(productOption.getProductOptionId() == 0) { 
-			sellerService.addProductOption(productOption);	
-		} else {
-			sellerService.updateProductOption(productOption);
-		}
-
-		result.put("message", "SELLER_PRODUCT_DETAIL_SAVE_SUCCESS");
+		result.put("message", "SELLER_PRODUCT_OPTION_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 판매자 쿠폰 조회
+	// 제품 옵션 수정
+	@PutMapping("/product/option")
+	public ResponseEntity<Map<String, Object>> updateSellerProductOption(@ModelAttribute UpdateProductOptionRequest productOption) {
+		logger.info("updateSellerProductOption " + productOption);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		sellerService.updateProductOption(productOption);
+
+		result.put("message", "SELLER_PRODUCT_OPTION_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 쿠폰 조회
 	@GetMapping("/coupon")
 	public ResponseEntity<Map<String, Object>> getSellerCouponList(@RequestAttribute("sellerNo") Integer sellerNo) {
 		logger.info("getSellerCoupon "+ sellerNo);

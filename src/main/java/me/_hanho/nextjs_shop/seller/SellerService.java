@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
-import me._hanho.nextjs_shop.auth.UserNotFoundException;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.ProductOption;
 
@@ -29,8 +31,8 @@ public class SellerService {
 	public boolean passwordCheck(String password, String checkPassword) {
 		return passwordEncoder.matches(password, checkPassword);
 	}
-	public void insertToken(SellerToken token) {
-		sellerMapper.insertToken(token);
+	public void insertToken(SellerToken token, Integer sellerNo) {
+		sellerMapper.insertToken(token, sellerNo);
 	}
 	public Integer getSellerNoByToken(TokenDTO token) {
 		return sellerMapper.getSellerNoByToken(token);
@@ -38,19 +40,22 @@ public class SellerService {
 	public SellerInfoResponse getSeller(int sellerNo) {
 		return sellerMapper.getSeller(sellerNo);
 	}
+	public boolean hasId(String sellerId) {
+		return sellerMapper.hasId(sellerId) == 1;
+	}
 	public void setSeller(SellerRegisterRequest seller) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
 		sellerMapper.setSeller(seller);
 	}
-	public List<SellerProductDTO> getSellerProductList(Integer sellerNo) {
-		List<SellerProductDTO> sellerProductList = sellerMapper.getSellerProductList(sellerNo);
+	public List<SellerProductResponse> getSellerProductList(Integer sellerNo) {
+		List<SellerProductResponse> sellerProductList = sellerMapper.getSellerProductList(sellerNo);
 		
 		if(sellerProductList.size() == 0) {
 			return sellerProductList;
         }
 		// 2) ID 수집
         List<Integer> ids = sellerProductList.stream()
-                .map(SellerProductDTO::getProductId)
+                .map(SellerProductResponse::getProductId)
                 .toList();
         
         // 3) 상세 일괄 조회 (IN (...))
@@ -63,29 +68,38 @@ public class SellerService {
                 .collect(Collectors.groupingBy(ProductOption::getProductId));
 
         // 5) 각 상품 DTO에 붙이기
-        for (SellerProductDTO p : sellerProductList) {
+        for (SellerProductResponse p : sellerProductList) {
             List<ProductOption> list = byProductId.getOrDefault(p.getProductId(), Collections.emptyList());
             p.setOptionList(list);
         }
         
 		return sellerProductList;
 	}
-	public void addProduct(AddProductRequest product) {
-		sellerMapper.addProduct(product);
+	public void addProduct(AddProductRequest product, Integer sellerNo) {
+		sellerMapper.addProduct(product, sellerNo);
 	}
-	public void updateProduct(UpdateProductRequest product) {
-		int updated = sellerMapper.updateProduct(product);
-	 if (updated == 0) {
-	        throw new UserNotFoundException("product not found: " + product.getProductId());
+	public void updateProduct(UpdateProductRequest product, Integer sellerNo) {
+	    int updated = sellerMapper.updateProduct(product, sellerNo);
+	    if (updated == 0) {
+	        throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 	    }
 	}
-	public void addProductOption(ProductOption productOption) {
-		sellerMapper.addProductOption(productOption);
+	public void addProductOption(AddProductOptionRequest productOption, Integer sellerNo) {
+		try {
+		    int inserted = sellerMapper.addProductOption(productOption, sellerNo);
+		    if (inserted == 0) {
+		        // product가 없거나 / 내 상품이 아님
+		    	throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
+		    }
+		} catch (DuplicateKeyException e) {
+			throw new BusinessException(ErrorCode.PRODUCT_OPTION_SIZE_DUPLICATED);
+		}
 	}
-	public void updateProductOption(ProductOption productOption) {
-		int updated = sellerMapper.updateProductOption(productOption);
+	public void updateProductOption(UpdateProductOptionRequest productOption) {
+	    int updated = sellerMapper.updateProductOption(productOption);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("productOption not found: " + productOption.getProductOptionId());
+	        throw new BusinessException(ErrorCode.PRODUCT_OPTION_NOT_FOUND,
+	            "Product option not found: " + productOption.getProductOptionId());
 	    }
 	}
 	public List<Coupon> getSellerCouponList(Integer sellerNo) {
@@ -121,6 +135,7 @@ public class SellerService {
 	public List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo) {
 		return sellerMapper.getUserInCartCountList(sellerNo);
 	}
+
 
 
 
