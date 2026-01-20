@@ -10,7 +10,7 @@
 	</select>
 	<insert id="insertToken">
 		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, seller_no)
-		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{sellerNo})
+		VALUES(#{t.connectIp}, #{t.connectAgent}, #{t.refreshToken}, #{sellerNo})
 	</insert>
 	<select id="getSellerNoByToken">
 		SELECT s.seller_no
@@ -35,17 +35,23 @@
 		FROM nextjs_shop_seller
 		WHERE seller_no = #{sellerNo}
 	</select>
+	<select id="hasId" resultType="int">
+	    SELECT EXISTS (
+	        SELECT 1 FROM nextjs_shop_seller
+	        WHERE seller_id = #{sellerId}
+	    ) AS exists_flag
+	</select>
 	<insert id="setSeller">
-		INSERT INTO nextjs_shop_seller(seller_no,password,seller_name,seller_name_en,extension_number,mobile_number,email,
+		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
 			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,
 			approval_status)
-		VALUES(#{sellerNo},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
+		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
 			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
 			#{businessZipcode},#{businessAddress},#{businessAddressDetail}, 'PENDING')
 	</insert>
 	<!-- 제품 관련 -->
 	<select id="getSellerProductList">
-		SELECT p.product_id, p.name, p.color_name, p.price, p.created_at, p.view_count, p.wish_count, p.sale_stop, p.seller_id,
+		SELECT p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, p.view_count, p.wish_count, p.sale_stop,
 			ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
 			p.material_info, p.manufacturer_name, p.country_of_origin, p.wash_care_info, p.manufactured_ym, 
 			p.quality_guarantee_info, p.after_service_contact, p.after_service_manager, p.after_service_phone
@@ -67,22 +73,34 @@
 		INSERT INTO nextjs_shop_product(name, color_name, origin_price, final_price, seller_no, menu_sub_id, material_info, manufacturer_name, 
 		country_of_origin, wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone)
-		VALUES(#{name}, #{colorName}, #{originPrice}, #{finalPrice}, #{sellerNo}, #{menuSubId}, 
-			#{materialInfo}, #{manufacturerName}, #{countryOfOrigin}, #{washCareInfo}, #{manufacturedYm}, #{qualityGuaranteeInfo}, 
-			#{afterServiceContact}, #{afterServiceManager}, #{afterServicePhone})
+		VALUES(#{p.name}, #{p.colorName}, #{p.originPrice}, #{p.finalPrice}, #{sellerNo}, #{p.menuSubId}, 
+			#{p.materialInfo}, #{p.manufacturerName}, #{p.countryOfOrigin}, #{p.washCareInfo}, #{p.manufacturedYm}, #{p.qualityGuaranteeInfo}, 
+			#{p.afterServiceContact}, #{p.afterServiceManager}, #{p.afterServicePhone})
 	</insert>
 	<update id="updateProduct">
 		UPDATE nextjs_shop_product
-		SET name = #{name}, color_name = #{colorName}, origin_price = #{originPrice}, final_price = #{finalPrice}, 
-		sale_stop = #{saleStop}, menu_sub_id = #{menuSubId},
-		material_info = #{materialInfo}, manufacturer_name = #{manufacturerName}, country_of_origin = #{countryOfOrigin}, 
-		wash_care_info = #{washCareInfo}, manufactured_ym = #{manufacturedYm}, quality_guarantee_info = #{qualityGuaranteeInfo},
-		after_service_contact = #{afterServiceContact}, after_service_manager = #{afterServiceManager}, after_service_phone = #{afterServicePhone}
-		WHERE product_id = #{productId} AND seller_no = #{sellerNo}
+		SET name = #{p.name}, color_name = #{p.colorName}, origin_price = #{p.originPrice}, final_price = #{p.finalPrice}, 
+		sale_stop = #{p.saleStop}, menu_sub_id = #{p.menuSubId},
+		material_info = #{p.materialInfo}, manufacturer_name = #{p.manufacturerName}, country_of_origin = #{p.countryOfOrigin}, 
+		wash_care_info = #{p.washCareInfo}, manufactured_ym = #{p.manufacturedYm}, quality_guarantee_info = #{p.qualityGuaranteeInfo},
+		after_service_contact = #{p.afterServiceContact}, after_service_manager = #{p.afterServiceManager}, after_service_phone = #{p.afterServicePhone}
+		WHERE product_id = #{p.productId} AND seller_no = #{sellerNo}
 	</update>
 	<insert id="addProductOption">
-		INSERT INTO nextjs_shop_product_option(product_id, add_price, stock, size)
-		VALUES(#{productId}, #{addPrice}, #{stock}, #{size})
+		INSERT INTO nextjs_shop_product_option (
+			product_id,
+			add_price,
+			stock,
+			size
+		)
+		SELECT
+			#{po.productId},
+			#{po.addPrice},
+			#{po.stock},
+			#{po.size}
+		FROM nextjs_shop_product p
+		WHERE p.product_id = #{po.productId}
+		  AND p.seller_no = #{sellerNo}
 	</insert>
 	<update id="updateProductOption">
 		UPDATE nextjs_shop_product_option

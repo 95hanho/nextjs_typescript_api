@@ -9,6 +9,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 
 @Service
 public class TokenService {
@@ -69,13 +71,19 @@ public class TokenService {
 	 * @return
 	 */
 	public void parseJwtRefreshToken(String token) {
-		Key key = Keys.hmacShaKeyFor(REFRESH_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-	    Jwts.parserBuilder()
-	            .setSigningKey(key)
-	            .build()
-	            .parseClaimsJws(token)
-	            .getBody();
+	    try {
+	        Key key = Keys.hmacShaKeyFor(REFRESH_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+	        Jwts.parserBuilder()
+	                .setSigningKey(key)
+	                .build()
+	                .parseClaimsJws(token)
+	                .getBody();
+	    } catch (JwtException | IllegalArgumentException e) {
+	        // IllegalArgumentException: token null/empty 같은 케이스
+	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e);
+	    }
 	}
+
 	
 	/**
 	 * 토큰 복호화 하여 본문(Payload) 가져오기
@@ -84,17 +92,19 @@ public class TokenService {
 	 */
 	public Claims parseJwtToken(String token) {
 	    try {
-	    	// USER 토큰으로 먼저 시도
 	        return parseWithUserKey(token);
 	    } catch (JwtException e1) {
 	        try {
-	        	// 실패하면 SELLER 토큰으로 시도
 	            return parseWithSellerKey(token);
 	        } catch (JwtException e2) {
-	        	// 실패하면 ADMIN 토큰으로 시도
-	            return parseWithAdminKey(token);
-	         // 이것도 실패하면 JwtInterceptor에서 catch
+	            try {
+	                return parseWithAdminKey(token);
+	            } catch (JwtException e3) {
+	                throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e3);
+	            }
 	        }
+	    } catch (IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e);
 	    }
 	}
 	
@@ -131,16 +141,12 @@ public class TokenService {
 	 * @return
 	 */
 	public Claims parseJwtPhoneAuthToken(String token) {
-		Key key = Keys.hmacShaKeyFor(PHONEAUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-		
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(key)
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
-		System.out.println("claims = " + claims.toString());
-		
-		return claims;
+	    try {
+	        Key key = Keys.hmacShaKeyFor(PHONEAUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+	        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+	    } catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e);
+	    }
 	}
 	
 	/**
@@ -149,16 +155,12 @@ public class TokenService {
 	 * @return
 	 */
 	public Claims parseJwtPhoneAuthCompleteToken(String token) {
-		Key key = Keys.hmacShaKeyFor(PHONEAUTH_COMPLETE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-		
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(key)
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
-		System.out.println("claims = " + claims.toString());
-		
-		return claims;
+		try {
+			Key key = Keys.hmacShaKeyFor(PHONEAUTH_COMPLETE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+		} catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e);
+	    }
 	}
 	
 	
@@ -168,15 +170,11 @@ public class TokenService {
 	 * @return
 	 */
 	public Claims parseJwtPwdChangeToken(String token) {
-		Key key = Keys.hmacShaKeyFor(PWDCHANGE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-		
-		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(key)
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
-		System.out.println("claims = " + claims.toString());
-		
-		return claims;
+		try {
+			Key key = Keys.hmacShaKeyFor(PWDCHANGE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+		} catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, ErrorCode.UNAUTHORIZED_TOKEN.getDefaultMessage(), e);
+	    }
 	}
 }

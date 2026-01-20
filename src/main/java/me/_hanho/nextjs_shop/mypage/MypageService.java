@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.auth.UserNotFoundException;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
 
 @Service
 @RequiredArgsConstructor
 public class MypageService {
-
 	
 	private final MypageMapper mypageMapper;
 
@@ -44,21 +44,21 @@ public class MypageService {
 		return mypageMapper.getCartList(userNo);
 	}
 	public void updateCart(UpdateCartRequest cart) {
-		int updated = mypageMapper.updateCart(cart);
+	    int updated = mypageMapper.updateCart(cart);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("updateCart not found: " + cart.getCartId());
+	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cart.getCartId());
 	    }
 	}
 	public void updateSelectedCart(UpdateSelectedCartDTO selectedCart) {
-		int updated = mypageMapper.updateSelectedCart(selectedCart);
+	    int updated = mypageMapper.updateSelectedCart(selectedCart);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("updateSelectedCart not found: " + selectedCart.getCartIdList().toString());
+	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + selectedCart.getCartIdList());
 	    }
 	}
 	public void deleteCart(List<Integer> cartId, Integer userNo) {
-		int updated = mypageMapper.deleteCart(cartId, userNo);
+	    int updated = mypageMapper.deleteCart(cartId, userNo);
 	    if (updated == 0) {
-	        throw new UserNotFoundException("deleteCart not found: " + cartId);
+	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cartId);
 	    }
 	}
 	public List<WishlistItemDTO> getWishlistItems(Integer userNo) {
@@ -73,21 +73,20 @@ public class MypageService {
 	}
 	@Transactional
 	public void updateUserAddress(UpdateUserAddressRequest userAddress) {
-		if(userAddress.isDefaultAddress()) {
-			mypageMapper.clearDefaultAddress(userAddress.getAddressId(), userAddress.getUserNo());
-		}
-		int updated = mypageMapper.updateUserAddress(userAddress);
-		if (updated == 0) {
-			throw new UserNotFoundException("updateUserAddress not found: " + userAddress.getAddressId());
+	    if (userAddress.isDefaultAddress()) {
+	        mypageMapper.clearDefaultAddress(userAddress.getAddressId(), userAddress.getUserNo());
+	    }
+
+	    int updated = mypageMapper.updateUserAddress(userAddress);
+	    if (updated == 0) {
+	        throw new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found: " + userAddress.getAddressId());
 	    }
 	}
-
 	public void deleteUserAddress(int addressId, Integer userNo) {
-		int updated = mypageMapper.deleteUserAddress(addressId, userNo);
-		if(updated == 0) {
-			throw new UserNotFoundException("deleteUserAddress not found: " + addressId);
-		}
-		
+	    int updated = mypageMapper.deleteUserAddress(addressId, userNo);
+	    if (updated == 0) {
+	        throw new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found: " + addressId);
+	    }
 	}
 
 
