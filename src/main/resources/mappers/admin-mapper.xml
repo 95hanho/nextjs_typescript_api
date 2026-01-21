@@ -21,13 +21,18 @@
 		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, admin_no)
 		VALUES(#{connectIp}, #{connectAgent}, #{refreshToken}, #{adminNo})
 	</insert>
-	<select id="getAdminIdByToken">
+	<select id="getAdminNoByToken">
 		SELECT a.admin_id
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_admin a ON t.admin_no = a.admin_no
 		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
 		ORDER BY created_at DESC, token_id DESC
 		LIMIT 1
+	</select>
+	<select id="getSellerList">
+		SELECT *
+		FROM nextjs_shop_seller
+		ORDER BY requested_at DESC, seller_no DESC
 	</select>
 	<select id="hasSeller" resultType="int">
 		SELECT EXISTS (
@@ -39,31 +44,32 @@
 		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
 			business_registration_number,telecom_sales_number,representative_name,
 			business_zipcode,business_address,business_address_detail,
-			approval_status)
-		VALUES(#{sellerId},#{password},#{sellerName},#{sellerNameEn},#{extensionNumber},#{mobileNumber},#{email},
-			#{businessRegistrationNumber},#{telecomSalesNumber},#{representativeName},
-			#{businessZipcode},#{businessAddress},#{businessAddressDetail}, 'PENDING')
+			requested_at, approval_status, approved_at, approved_by)
+		VALUES(#{s.sellerId},#{s.password},#{s.sellerName},#{s.sellerNameEn},#{s.extensionNumber},#{s.mobileNumber},#{s.email},
+			#{s.businessRegistrationNumber},#{s.telecomSalesNumber},#{s.representativeName},
+			#{s.businessZipcode},#{s.businessAddress},#{s.businessAddressDetail}, 
+			null, 'APPROVED', NOW(), #{adminNo})
 	</insert>
 	<update id="setSellerApproval">
 		UPDATE nextjs_shop_seller
 		<set>
-        	approval_status = #{approvalStatus},
+        	approval_status = #{s.approvalStatus},
         	<choose>
-            	<when test="approvalStatus == 'APPROVED'">
+            	<when test="s.approvalStatus == 'APPROVED'">
                 	approved_at = NOW(),
-                	approved_by = #{approvedBy}
+                	approved_by = #{adminNo}
             	</when>
-            	<when test="approvalStatus == 'REJECTED'">
+            	<when test="s.approvalStatus == 'REJECTED'">
                 	rejected_at = NOW(),
-                	reject_reason = #{rejectReason}
+                	reject_reason = #{s.rejectReason}
             	</when>
-            	<when test="approvalStatus == 'SUSPENDED'">
+            	<when test="s.approvalStatus == 'SUSPENDED'">
                 	suspended_at = NOW()
             	</when>
         	</choose>
     	</set>
     	WHERE seller_no IN
-    	<foreach collection="sellerNoList" item="sellerNo" open="(" separator="," close=")">
+    	<foreach collection="s.sellerNoList" item="sellerNo" open="(" separator="," close=")">
         	#{sellerNo}
     	</foreach>
 	</update>

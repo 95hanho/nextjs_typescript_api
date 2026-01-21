@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.User;
 
@@ -37,7 +39,8 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -85,7 +88,8 @@ public class AuthController {
 	
 	// 유저아이디 조회 By인증토큰
 	@GetMapping("/id")
-	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserId userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -215,7 +219,8 @@ public class AuthController {
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -275,8 +280,9 @@ public class AuthController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> insertToken(
-			@RequestAttribute("userNo") Integer userNo, @RequestParam("refreshToken") String refreshToken,
+			@RequestAttribute(value="userNo", required=false) Integer userNo, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -335,7 +341,8 @@ public class AuthController {
 	
 	// 회원탈퇴 요청
 	@DeleteMapping
-	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("withDrawalUser userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		

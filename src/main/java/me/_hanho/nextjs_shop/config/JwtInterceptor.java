@@ -90,8 +90,9 @@ public class JwtInterceptor implements HandlerInterceptor {
 	        }
 			/* =======휴대폰 인증 토큰==================================================================== */
 			String phoneAuthToken = request.getHeader("X-Phone-Auth-Token");
-			logger.info("phoneAuthToken : " + phoneAuthToken);
+			
 			if (phoneAuthToken != null && !phoneAuthToken.isEmpty()) {
+				logger.info("phoneAuthToken : " + phoneAuthToken);
 	            // JWT 파싱 및 복호화
 	            Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 	

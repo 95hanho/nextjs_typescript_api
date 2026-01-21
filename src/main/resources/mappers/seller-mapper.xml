@@ -103,50 +103,100 @@
 		  AND p.seller_no = #{sellerNo}
 	</insert>
 	<update id="updateProductOption">
-		UPDATE nextjs_shop_product_option
-		SET add_price = #{addPrice}, stock = #{stock}
-		WHERE product_option_id = #{productOptionId}
+		UPDATE nextjs_shop_product_option po
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		SET po.add_price = #{po.addPrice}, po.stock = #{po.stock}, po.is_displayed = #{po.isDisplayed}
+		WHERE po.product_option_id = #{po.productOptionId} AND p.seller_no = #{sellerNo}
 	</update>
+	<delete id="deleteProductOption">
+	    DELETE po
+	    FROM nextjs_shop_product_option po
+	    JOIN nextjs_shop_product p 
+      		ON p.product_id = po.product_id
+	    WHERE po.product_option_id = #{productOptionId}
+      		AND p.seller_no = #{sellerNo}
+	</delete>
 	<select id="getSellerCouponList">
-		SELECT *
+		SELECT coupon_id, description, coupon_code, 
+			discount_type, discount_value, max_discount, minimum_order_before_amount, 
+			status, is_stackable, is_product_restricted, amount, start_date, end_date, 
+			created_at, updated_at
 		FROM nextjs_shop_coupon
+		WHERE seller_no = #{sellerNo} AND is_deleted = 0
+		ORDER BY updated_at DESC, created_at DESC
+	</select>
+	<select id="countByCouponCode" resultType="int">
+	    SELECT COUNT(1)
+	    FROM nextjs_shop_coupon
+	    WHERE coupon_code = #{couponCode}
 	</select>
 	<insert id="addCoupon">
     	INSERT INTO nextjs_shop_coupon(description, coupon_code, discount_type, discount_value, max_discount,
-        	minimum_order_before_amount, status, is_stackable, is_product_restricted, amount, start_date, end_date, seller_no)
-    	VALUES(#{description}, #{couponCode}, #{discountType}, #{discountValue}, #{maxDiscount},
-	        #{minimumOrderBeforeAmount}, #{status}, #{isStackable}, #{isProductRestricted}, #{amount}, #{startDate},
-	        #{endDate}, #{sellerNo})
+        	minimum_order_before_amount, amount, start_date, end_date, seller_no)
+    	VALUES(#{c.description}, #{c.couponCode}, #{c.discountType}, #{c.discountValue}, #{c.maxDiscount},
+	        #{c.minimumOrderBeforeAmount}, #{c.amount}, #{c.startDate}, #{c.endDate}, #{sellerNo})
 	</insert>
-	<update id="updateCouponStatus">
+	<update id="updateCoupon">
 		UPDATE nextjs_shop_coupon
-		SET status = #{status}
-		WHERE coupon_id = #{couponId}
+		SET description = #{c.description}, discount_value = #{c.discountValue}, max_discount = #{c.maxDiscount}, 
+			minimum_order_before_amount = #{c.minimumOrderBeforeAmount}, status = #{c.status},
+			is_stackable = #{c.isStackable}, is_product_restricted = #{c.isProductRestricted}, amount = #{c.amount}, 
+			start_date = #{c.startDate}, end_date = #{c.endDate}
+		WHERE coupon_id = #{c.couponId} AND seller_no = #{sellerNo}
+	</update>
+	<update id="deleteCoupon">
+		UPDATE nextjs_shop_coupon
+		SET is_deleted = 1
+		WHERE coupon_id = #{couponId} AND seller_no = #{sellerNo}
 	</update>
 	<select id="getSellerCouponAllow">
-		SELECT ca.coupon_allowed_id, ca.coupon_id, ca.product_id, p.name, p.created_at
-		FROM nextjs_shop_coupon_allowed ca
-		JOIN nextjs_shop_product p ON p.product_id = ca.product_id
-		WHERE coupon_id = #{couponId}
+	    SELECT
+	        p.product_id,
+	        p.name AS productName,
+	        ca.coupon_allowed_id,
+	        ca.coupon_id
+	    FROM nextjs_shop_product p
+	    LEFT JOIN nextjs_shop_coupon_allowed ca
+	        ON p.product_id = ca.product_id
+	       AND ca.coupon_id = #{couponId}
+	    WHERE p.seller_no = #{sellerNo}
+	    ORDER BY
+	        CASE
+	            WHEN ca.coupon_id IS NOT NULL THEN 0
+	            ELSE 1
+	        END ASC,
+	        ca.coupon_allowed_id DESC,
+	        p.updated_at DESC,
+	        p.created_at DESC
 	</select>
-	<delete id="deleteAllsellerCouponAllow">
-		DELETE FROM nextjs_shop_coupon_allowed
-		WHERE coupon_id = #{couponId}
-	</delete>
 	<insert id="insertSellerCouponAllowList">
-	    INSERT INTO nextjs_shop_coupon_allowed (coupon_id, product_id)
-	    VALUES
-	    <foreach collection="productIds" item="pid" separator=",">
-	        (#{couponId}, #{pid})
-	    </foreach>
+	    INSERT IGNORE INTO nextjs_shop_coupon_allowed (coupon_id, product_id)
+	    SELECT
+	        c.coupon_id,
+	        p.product_id
+	    FROM nextjs_shop_coupon c
+	    JOIN nextjs_shop_product p
+	      ON p.seller_no = c.seller_no
+	    WHERE c.coupon_id = #{couponId}
+	      AND c.seller_no = #{sellerNo}
+	      AND p.product_id IN
+	      <foreach collection="productIds" item="pid" open="(" close=")" separator=",">
+	          #{pid}
+	      </foreach>
 	</insert>
-	<insert id="issueCouponsToUsers">
-		INSERT INTO nextjs_shop_user_coupon (user_id, coupon_id)
-		VALUES 
- 		<foreach collection="userIds" item="uid" separator=",">
-			(#{uid}, #{couponId})
-		</foreach>
-	</insert>
+	<delete id="deleteSellerCouponAllowList">
+	    DELETE ca
+	    FROM nextjs_shop_coupon_allowed ca
+	    JOIN nextjs_shop_coupon c ON c.coupon_id = ca.coupon_id
+	    JOIN nextjs_shop_product p ON p.product_id = ca.product_id
+	    WHERE ca.coupon_id = #{couponId}
+	      AND c.seller_no = #{sellerNo}
+	      AND p.seller_no = #{sellerNo}
+	      AND ca.product_id IN
+	      <foreach collection="productIds" item="pid" open="(" close=")" separator=",">
+	          #{pid}
+	      </foreach>
+	</delete>
 	<select id="getProductViewCountList">
 	    SELECT pv.user_id, u.name AS user_name, pv.product_id,
 			p.name AS productName,

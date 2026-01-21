@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.seller;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateProductOptionRequest {
-    private int productOptionId;
-    private int addPrice;
-    private int stock;
+	@NotNull private Integer productOptionId;
+	@NotNull private Integer addPrice;
+	@NotNull private Integer stock;
+    @NotNull private Boolean isDisplayed;
 }

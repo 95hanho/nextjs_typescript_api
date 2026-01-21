@@ -32,5 +32,4 @@ public class Seller {
     private Timestamp rejectedAt; // 반려 시각
     private String rejectReason; // 반려 사유
     private Timestamp suspendedAt; // 정지 날짜
-    
 }
