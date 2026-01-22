@@ -15,7 +15,8 @@ public class WishlistItemDTO {
 	
 	private int productId;
 	private String name;
-	private int price;
+	private int originPrice;
+	private int finalPrice;
 	private int likeCount;
 	private int viewCount;
 	private int wishCount;
