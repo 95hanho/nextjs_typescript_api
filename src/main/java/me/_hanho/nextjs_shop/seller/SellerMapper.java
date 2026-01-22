@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.auth.TokenDTO;
-import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.ProductOption;
 
 @Mapper
@@ -34,21 +33,25 @@ public interface SellerMapper {
 
 	int addProductOption(@Param("po") AddProductOptionRequest productOption, @Param("sellerNo") Integer sellerNo);
 
-	int updateProductOption(UpdateProductOptionRequest productOption);
+	int updateProductOption(@Param("po") UpdateProductOptionRequest productOption, @Param("sellerNo") Integer sellerNo);
 	
-	List<Coupon> getSellerCouponList(Integer sellerNo);
+	void deleteProductOption(@Param("productOptionId") Integer productOptionId, @Param("sellerNo") Integer sellerNo);
 	
-	void addCoupon(Coupon coupon);
+	List<SellerCouponResponse> getSellerCouponList(Integer sellerNo);
+	
+	int countByCouponCode(@Param("couponCode") String couponCode);
+	
+	void addCoupon(@Param("c") AddCouponRequest coupon, @Param("sellerNo") Integer sellerNo);
 
-	void updateCouponStatus(Coupon coupon);
-
-	List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String couponId);
+	void updateCoupon(@Param("c") UpdateCouponRequest coupon, @Param("sellerNo") Integer sellerNo);
 	
-	void deleteAllsellerCouponAllow(String couponId);
+	void deleteCoupon(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
-	void insertSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds);
+	List<SellerProductCouponAllowed> getSellerCouponAllow(@Param("couponId") String couponId, @Param("sellerNo") Integer sellerNo);
 	
-	void issueCouponsToUsers(@Param("couponId") String couponId, @Param("userIds") List<String> userIds);
+	void insertSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
+	
+	void deleteSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
 	
 	List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo);
 	
@@ -59,8 +62,6 @@ public interface SellerMapper {
 	List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo);
 
 
-
-	
 	
 
 	

@@ -114,4 +114,19 @@ SELECT EXISTS (
      SELECT 1 FROM nextjs_shop_seller
      WHERE seller_id = 'expert'
  ) AS exists_flag;
+ 
+ UPDATE nextjs_shop_product
+SET final_price = FLOOR((origin_price * (0.60 + (RAND() * 0.35))) / 100) * 100
+WHERE final_price IS NULL
+  AND origin_price IS NOT NULL
+  AND origin_price > 0;
+  
+  UPDATE nextjs_shop_product
+SET origin_price = ROUND(origin_price / 100) * 100
+WHERE origin_price IS NOT NULL
+  AND origin_price > 0;
+  
+UPDATE nextjs_shop_product_option
+SET is_displayed = 1;
+
 

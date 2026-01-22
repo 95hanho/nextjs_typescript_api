@@ -14,8 +14,8 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.model.Coupon;
 import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.util.CouponCodeGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -95,34 +95,55 @@ public class SellerService {
 			throw new BusinessException(ErrorCode.PRODUCT_OPTION_SIZE_DUPLICATED);
 		}
 	}
-	public void updateProductOption(UpdateProductOptionRequest productOption) {
-	    int updated = sellerMapper.updateProductOption(productOption);
-	    if (updated == 0) {
-	        throw new BusinessException(ErrorCode.PRODUCT_OPTION_NOT_FOUND,
-	            "Product option not found: " + productOption.getProductOptionId());
-	    }
+	public void updateProductOption(UpdateProductOptionRequest productOption, Integer sellerNo) {
+		try {
+			int updated = sellerMapper.updateProductOption(productOption, sellerNo);
+		    if (updated == 0) {
+		        throw new BusinessException(ErrorCode.PRODUCT_OPTION_NOT_FOUND,
+		            "Product option not found: " + productOption.getProductOptionId());
+		    }
+		} catch (DuplicateKeyException e) {
+			throw new BusinessException(ErrorCode.PRODUCT_OPTION_SIZE_DUPLICATED);
+		}
 	}
-	public List<Coupon> getSellerCouponList(Integer sellerNo) {
+	public void deleteProductOption(Integer productOptionId, Integer sellerNo) {
+		sellerMapper.deleteProductOption(productOptionId, sellerNo);
+	}
+	public List<SellerCouponResponse> getSellerCouponList(Integer sellerNo) {
 		return sellerMapper.getSellerCouponList(sellerNo);
 	}
-	public void addCoupon(Coupon coupon) {
-		sellerMapper.addCoupon(coupon);
-	}
-	public void updateCouponStatus(Coupon coupon) {
-		sellerMapper.updateCouponStatus(coupon);
-	}
-	public List<SellerCouponAllowedProductDTO> getSellerCouponAllow(String couponId) {
-		return sellerMapper.getSellerCouponAllow(couponId);
-	}
+	@Transactional(readOnly = true)
+    public String generateUniqueCouponCode() {
+        final int maxTry = 20; // 현실적으로 충분
+        for (int i = 0; i < maxTry; i++) {
+            String code = CouponCodeGenerator.generateDefault();
+            if (sellerMapper.countByCouponCode(code) == 0) {
+                return code;
+            }
+        }
+        throw new IllegalStateException("Failed to generate unique coupon code. Please retry.");
+    }
 	@Transactional
-	public void setSellerCouponAllow(String couponId, List<Integer> productIds) {
-		sellerMapper.deleteAllsellerCouponAllow(couponId);
-		sellerMapper.insertSellerCouponAllowList(couponId, productIds);
+	public void addCoupon(AddCouponRequest coupon, Integer sellerNo) {
+		coupon.setCouponCode(generateUniqueCouponCode());
+		sellerMapper.addCoupon(coupon, sellerNo);
 	}
-	public void issueCouponsToUsers(String couponId, List<String> userIds) {
-		sellerMapper.issueCouponsToUsers(couponId, userIds);
+	public void updateCoupon(UpdateCouponRequest coupon, Integer sellerNo) {
+		sellerMapper.updateCoupon(coupon, sellerNo);
 	}
-	// 
+	public void deleteCoupon(Integer couponId, Integer sellerNo) {
+		sellerMapper.deleteCoupon(couponId, sellerNo);
+	}
+	public List<SellerProductCouponAllowed> getSellerCouponAllow(String couponId, Integer sellerNo) {
+		return sellerMapper.getSellerCouponAllow(couponId, sellerNo);
+	}
+	public void setSellerCouponAllow(String couponId, List<Integer> productIds, Boolean allow, Integer sellerNo) {
+		if (Boolean.TRUE.equals(allow)) {
+	        sellerMapper.insertSellerCouponAllowList(couponId, productIds, sellerNo);
+	    } else {
+	        sellerMapper.deleteSellerCouponAllowList(couponId, productIds, sellerNo);
+	    }
+	}
 	public List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
 	}
@@ -135,6 +156,7 @@ public class SellerService {
 	public List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo) {
 		return sellerMapper.getUserInCartCountList(sellerNo);
 	}
+
 
 
 

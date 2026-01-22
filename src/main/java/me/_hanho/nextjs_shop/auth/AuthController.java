@@ -19,8 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.User;
 
@@ -37,26 +42,19 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		try {
-			UserInfo user = authService.getUserInfo(userNo);
-			if(user == null) {
-				result.put("message", "USER_NOT_FOUND"); // 존재하지 않는 사용자 (로그인 실패 때와 동일)
-				return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
-			} else {
-				result.put("user", user);
-				result.put("message", "USER_FETCH_SUCCESS");
-				return new ResponseEntity<>(result, HttpStatus.OK);
-			}
-		} catch(Exception e) {
-			logger.error(e.getMessage());
-			logger.error("token 제대로 안온듯");
-			result.put("message", "UNAUTHORIZED_USER"); // 인증 실패로 조회 불가
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED); 
+		UserInfo user = authService.getUserInfo(userNo);
+		if(user == null) {
+			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 		}
+		result.put("user", user);
+		result.put("message", "USER_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+		
 	}
 	// 로그인
 	@PostMapping
@@ -68,29 +66,21 @@ public class AuthController {
 		
 		UserLoginResponse checkUser = authService.getUserForPassword(userId);
 		if (checkUser == null || !authService.passwordCheck(password, checkUser.getPassword())) {
-			result.put("message", "USER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
-			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
-			
-			return new ResponseEntity<>(
-					result
-					, HttpStatus.UNAUTHORIZED);
-		} else {
-			result.put("userNo", checkUser.getUserNo());
-			result.put("message", "LOGIN_SUCCESS");
-			return new ResponseEntity<>(
-					result
-					, HttpStatus.OK);
+			throw new BusinessException(ErrorCode.LOGIN_FAILED);
 		}
+		result.put("userNo", checkUser.getUserNo());
+		result.put("message", "LOGIN_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 	// 유저아이디 조회 By인증토큰
 	@GetMapping("/id")
-	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserId userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String userId = authService.getUserId(userNo);
-//		logger.info("userId : " + userId);
 		
 		result.put("userId", userId);
 		result.put("message", "ID_AVAILABLE");
@@ -106,32 +96,46 @@ public class AuthController {
 		boolean hasId = authService.hasId(userId);
 		logger.info("hasId : " + hasId);
 		
-		if(!hasId) {
-			result.put("message", "ID_AVAILABLE");
-			return new ResponseEntity<>(result, HttpStatus.OK);
-		} else {
-			result.put("message", "ID_DUPLICATED");
-			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
-		}
+		if(hasId) throw new BusinessException(ErrorCode.ID_DUPLICATED);
+		
+		result.put("message", "ID_AVAILABLE");
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 휴대폰인증 - 회원가입, 아이디찾기, 비밀번호 찾기 또는 휴대폰번호 바꾸기
 	@PostMapping("/phone")
-	public ResponseEntity<Map<String, Object>> sendPhoneAuth(@RequestParam("phone") String phone, 
+	public ResponseEntity<Map<String, Object>> sendPhoneAuth(
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor,
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
-		logger.info("phoneAuth - phone : " + phone + ", phoneAuthToken : " + phoneAuthToken + ", userNo : " + userNo);
+		logger.info("phoneAuth - phoneAuthToken : {}, userNo : {}", phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
+		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String phone = null;
 		
 		try {
 			// JWT 파싱 및 복호화
-	        tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-		} catch(Exception e) {
-			result.put("message", "VERIFICATION_EXPIRED");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-		}
+			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
+			String type = claims.get("type", String.class);
+            logger.info("type : " + type);
+            if (type == null) {
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+            }
 
+            if (!"PHONEAUTH".equals(type)) {
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
+            }
+        	phone = claims.get("phone", String.class);
+		} catch (ExpiredJwtException e) {
+			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
+	    } catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+	    }
+		if (phone == null || phone.isEmpty()) {
+	        throw new BusinessException(ErrorCode.PHONE_NOT_FOUND_IN_TOKEN);
+	    }
+		
 		// 인증번호(6자리?)를 생성
 		String verificationCode = phoneAuthCodeService.generate6DigitCode();
 		logger.info("phoneAuth-verificationCode : " + verificationCode);
@@ -142,6 +146,7 @@ public class AuthController {
 		authService.insertPhoneAuth(phoneAuth);
 		
 		// 인증번호를 휴대폰으로 보냄!!
+		//
 		
 		result.put("message", "VERIFICATION_SENT");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -149,30 +154,37 @@ public class AuthController {
 	// 휴대폰인증 확인!!
 	@PostMapping("/phone/check")
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
-			@RequestParam("authNumber") String authNumber, 
+			@RequestParam("authNumber") String authNumber,
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestParam(required = false, name = "userId") String requestId) {
 		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", requestId : " + requestId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		try {
-			// JWT 파싱 및 복호화 인증확인
-	        tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-		} catch(Exception e) {
-			result.put("message", "VERIFICATION_EXPIRED");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-		}
+			// JWT 파싱 및 복호화
+			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
+			String type = claims.get("type", String.class);
+            logger.info("type : " + type);
+            if (type == null) {
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+            }
+            if (!"PHONEAUTH".equals(type)) {
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
+            }
+		} catch (ExpiredJwtException e) {
+			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
+	    } catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+	    }
 		
 		PhoneAuth phoneAuth = authService.getPhoneAuthCode(phoneAuthToken);
-		if (phoneAuth == null) {
-			result.put("message", "VERIFICATION_EXPIRED");
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+	    if (phoneAuth == null) {
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_NOT_FOUND);
 	    }
-		// 인증번호가 올바르지 않음
-		if(!authNumber.equals(phoneAuth.getVerificationCode())) {
-			result.put("message", "INVALID_VERIFICATION_CODE");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-		}
+	    // 인증번호가 올바르지 않음
+	    if (!authNumber.equals(phoneAuth.getVerificationCode())) {
+	        throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
+	    }
 		// 인증번호 검증 성공(사용토큰으로 변경)
 		authService.markPhoneAuthUsed(phoneAuth.getPhoneAuthId());
         
@@ -204,7 +216,7 @@ public class AuthController {
 	}
 	// 회원가입
 	@PostMapping("/user")
-	public ResponseEntity<Map<String, Object>> join(@ModelAttribute User user) {
+	public ResponseEntity<Map<String, Object>> join(@Valid @ModelAttribute User user) {
 		logger.info("join : " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -215,7 +227,8 @@ public class AuthController {
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -275,8 +288,9 @@ public class AuthController {
 	// 로그인 토큰 저장
 	@PostMapping("/token")
 	public ResponseEntity<Map<String, Object>> insertToken(
-			@RequestAttribute("userNo") Integer userNo, @RequestParam("refreshToken") String refreshToken,
+			@RequestAttribute(value="userNo", required=false) Integer userNo, @RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -335,7 +349,8 @@ public class AuthController {
 	
 	// 회원탈퇴 요청
 	@DeleteMapping
-	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("withDrawalUser userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		

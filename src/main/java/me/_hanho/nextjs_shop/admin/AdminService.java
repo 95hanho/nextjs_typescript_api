@@ -1,17 +1,23 @@
 package me._hanho.nextjs_shop.admin;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.common.util.MaskingUtil;
+import me._hanho.nextjs_shop.model.Seller;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.SellerService;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
 	
 	private final PasswordEncoder passwordEncoder;
+	private final SellerService sellerService;
 	
 	private final AdminMapper adminMapper;
 	
@@ -41,30 +47,66 @@ public class AdminService {
 		adminMapper.insertToken(token);
 	}
 	
-	public String getAdminIdByToken(TokenDTO token) {
-		return adminMapper.getAdminIdByToken(token);
+	public Integer getAdminNoByToken(TokenDTO token) {
+		return adminMapper.getAdminNoByToken(token);
+	}
+	
+	public List<Seller> getSellerList() {
+		return adminMapper.getSellerList();
 	}
 	
 	public boolean hasSeller(String sellerId) {
+		System.out.println("adminMapper.hasSeller(sellerId) : " +  adminMapper.hasSeller(sellerId));
 		return adminMapper.hasSeller(sellerId) == 1;
 	}
 
     
-	public void addSeller(SellerRegisterRequest seller) {
+	public void addSeller(SellerRegisterRequest seller, Integer adminNo) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
-		adminMapper.addSeller(seller);
+		adminMapper.addSeller(seller, adminNo);
 	}
 
-	public void setSellerApproval(SellerApprovalRequest sellerApproval) {
-		adminMapper.setSellerApproval(sellerApproval);
+	public void setSellerApproval(SellerApprovalRequest sellerApproval, Integer adminNo) {
+		adminMapper.setSellerApproval(sellerApproval, adminNo);
 	}
 
+	public List<UserResponse> getUserList() {
+		List<UserResponse> userList = adminMapper.getUserList();
+		
+		userList.forEach(user -> {
+			user.setUserId(MaskingUtil.maskUserIdName(user.getUserId(), 5));
+			user.setName(MaskingUtil.maskUserIdName(user.getName(), 3));
+			user.setPhone(MaskingUtil.maskPhone(user.getPhone()));
+			user.setEmail(MaskingUtil.maskEmail(user.getEmail(), 5));
+		});
+		
+		return userList;
+	}
 
+	public UserInfoResponse getUserInfoUnmasked(Integer userNo) {
+		return adminMapper.getUserInfoUnmasked(userNo);
+	}
 
+	public void updateUserWithdrawalStatus(List<Integer> userNoList, String withdrawalStatus) {
+		adminMapper.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
+	}
 
+	public List<CommonCoupon> getCommonCouponList() {
+		return adminMapper.getCommonCouponList();
+	}
 
+	public void addCommonCoupon(AddCommonCouponRequest commonCoupon, Integer adminNo) {
+		commonCoupon.setCouponCode(sellerService.generateUniqueCouponCode());
+		adminMapper.addCommonCoupon(commonCoupon, adminNo);
+	}
 
+	public void updateCommonCoupon(UpdateCommonCouponRequest commonCoupon) {
+		adminMapper.updateCommonCoupon(commonCoupon);
+	}
 
+	public void deleteCommonCoupon(Integer couponId) {
+		adminMapper.deleteCommonCoupon(couponId);
+	}
 
 
 
