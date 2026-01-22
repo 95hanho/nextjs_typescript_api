@@ -73,5 +73,112 @@
         	#{sellerNo}
     	</foreach>
 	</update>
+	<select id="getUserList">
+		SELECT user_no,
+			user_id,
+			name,
+			phone,
+			email,
+			created_at,
+			mileage,
+			withdrawal_status
+		FROM nextjs_shop_user
+		ORDER BY withdrawal_requested_at DESC, created_at DESC
+	</select>
+	<select id="getUserInfoUnmasked">
+		SELECT user_no,
+			user_id,
+			name,
+			zonecode,
+			address,
+			address_detail,
+			birthday,
+			phone,
+			email,
+			created_at,
+			mileage,
+			withdrawal_status,
+			withdrawal_requested_at,
+			withdrawal_completed_at
+		FROM nextjs_shop_user
+		WHERE user_no = #{userNo}
+	</select>
+	<update id="updateUserWithdrawalStatus">
+	    UPDATE nextjs_shop_user
+	    <set>
+	        withdrawal_status = #{withdrawalStatus},
+	        <choose>
+	            <when test="withdrawalStatus == 'WITHDRAWN'">
+	                withdrawal_completed_at = NOW()
+	            </when>
+	            <otherwise>
+	                withdrawal_completed_at = NULL
+	            </otherwise>
+	        </choose>
+	    </set>
+	    WHERE user_no IN
+	    <foreach collection="userNoList" item="userNo" open="(" separator="," close=")">
+	        #{userNo}
+	    </foreach>
+	</update>
+	<select id="getCommonCouponList">
+		SELECT coupon_id,
+			description,
+			coupon_code,
+			discount_type,
+			discount_value,
+			max_discount,
+			minimum_order_before_amount,
+			status,
+			is_stackable,
+			is_product_restricted,
+			amount,
+			start_date,
+			end_date,
+			created_at,
+			updated_at,
+			admin_no,
+			is_deleted
+		FROM nextjs_shop_coupon
+		WHERE admin_no IS NOT NULL
+		ORDER BY is_deleted ASC, created_at DESC
+	</select>
+	<insert id="addCommonCoupon">
+		INSERT INTO nextjs_shop_coupon(description, 
+			coupon_code,
+			discount_type, 
+			discount_value, 
+			max_discount,
+        	minimum_order_before_amount, 
+        	is_stackable,
+        	amount, 
+        	start_date, 
+        	end_date, 
+        	admin_no)
+    	VALUES(#{c.description}, 
+    		#{c.couponCode}, 
+    		#{c.discountType}, 
+    		#{c.discountValue}, 
+    		#{c.maxDiscount},
+	        #{c.minimumOrderBeforeAmount}, 
+	        1,
+	        #{c.amount}, 
+	        #{c.startDate}, 
+	        #{c.endDate}, 
+	        #{adminNo})
+	</insert>
+	<update id="updateCommonCoupon">
+		UPDATE nextjs_shop_coupon
+		SET description = #{c.description}, discount_value = #{c.discountValue}, max_discount = #{c.maxDiscount}, 
+			minimum_order_before_amount = #{c.minimumOrderBeforeAmount}, status = #{c.status},
+			is_stackable = #{c.isStackable}, is_product_restricted = #{c.isProductRestricted}, amount = #{c.amount}, 
+			start_date = #{c.startDate}, end_date = #{c.endDate}
+		WHERE coupon_id = #{c.couponId}
+	</update>
+	<update id="deleteCommonCoupon">
+		UPDATE nextjs_shop_coupon
+		SET is_deleted = 1
+		WHERE coupon_id = #{couponId}
+	</update>
 
 </mapper>

@@ -8,9 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -170,7 +173,7 @@ public class AdminController {
 	}
 	// 판매자 승인여부 변경
 	@PostMapping("/seller/approval")
-	public ResponseEntity<Map<String, Object>> setSellerApproval(@ModelAttribute SellerApprovalRequest sellerApproval,
+	public ResponseEntity<Map<String, Object>> setSellerApproval(@Valid @ModelAttribute SellerApprovalRequest sellerApproval,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("setSellerApproval {} : " + sellerApproval);
@@ -185,4 +188,131 @@ public class AdminController {
 		result.put("message", "SELLER_APPROVE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 회원 조회
+	@GetMapping("/user")
+	public ResponseEntity<Map<String, Object>> getUserList(
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("getUserList adminNo : " + adminNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<UserResponse> userList = adminService.getUserList();
+		
+		result.put("userList", userList);
+		result.put("message", "USER_LIST_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 회원 정보 보기(마스킹해제)
+	@PostMapping("/user")
+	public ResponseEntity<Map<String, Object>> getUserInfoUnmasked(
+			@RequestParam("userNo") Integer userNo,
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("getUserInfoUnmasked userNo : " + userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		UserInfoResponse userInfo = adminService.getUserInfoUnmasked(userNo);
+		
+		result.put("userInfo", userInfo);
+		result.put("message", "USER_UNMASKED_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 회원 탈퇴 확정하기 -> 이거 한 후 1년 뒤 진짜 정보 DELETE이런거 해도 좋을듯??
+	@PostMapping("/user/withdrawal")
+	public ResponseEntity<Map<String, Object>> updateUserWithdrawalStatus(
+			@RequestParam("userNoList") List<Integer> userNoList,
+			@RequestParam("withdrawalStatus") String withdrawalStatus,
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("updateUserWithdrawalStatus userNoList {} : " + userNoList + "withdrawalStatus : " + withdrawalStatus);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		adminService.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
+		
+		result.put("message", "USER_WITHDRAWAL_STATUS_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 공용 쿠폰 조회
+	@GetMapping("/coupon/common")
+	public ResponseEntity<Map<String, Object>> getCommonCouponList(
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("getCommonCouponList  : ");
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<CommonCoupon> commonCouponList = adminService.getCommonCouponList();
+		
+		result.put("commonCouponList", commonCouponList);
+		result.put("message", "COMMON_COUPON_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 공용 쿠폰 등록
+	@PostMapping("/coupon/common")
+	public ResponseEntity<Map<String, Object>> addCommonCoupon(
+			@Valid @ModelAttribute AddCommonCouponRequest commonCoupon,
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("addCommonCoupon commonCoupon {} : " + commonCoupon);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		// discount_type에 따른 규칙
+		if ("percentage".equals(commonCoupon.getDiscountType())) {
+		    if (commonCoupon.getMaxDiscount() == null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
+		    }
+		} else if ("fixed_amount".equals(commonCoupon.getDiscountType())) {
+		    if (commonCoupon.getMaxDiscount() != null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
+		    }
+		} else {
+		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
+		}
+		
+		adminService.addCommonCoupon(commonCoupon, adminNo);
+		
+		result.put("message", "COMMON_COUPON_ADD_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 공용 쿠폰 수정 -> 나중에 admin권한 추가해도 될듯
+	@PutMapping("/coupon/common")
+	public ResponseEntity<Map<String, Object>> updateCommonCoupon(
+			@Valid @ModelAttribute UpdateCommonCouponRequest commonCoupon,
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("updateCommonCoupon commonCoupon {} : " + commonCoupon);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		// discount_type에 따른 규칙
+		if ("percentage".equals(commonCoupon.getDiscountType())) {
+		    if (commonCoupon.getMaxDiscount() == null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
+		    }
+		} else if ("fixed_amount".equals(commonCoupon.getDiscountType())) {
+		    if (commonCoupon.getMaxDiscount() != null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
+		    }
+		} else {
+		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
+		}
+		
+		adminService.updateCommonCoupon(commonCoupon);
+		
+		result.put("message", "COMMON_COUPON_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 공용 쿠폰 삭제 -> 나중에 admin권한 추가해도 될듯
+	@DeleteMapping("/coupon/common/{couponId}")
+	public ResponseEntity<Map<String, Object>> deleteCommonCoupon(
+			@PathVariable("couponId") Integer couponId,
+			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
+		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("deleteCommonCoupon couponId : " + couponId);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		adminService.deleteCommonCoupon(couponId);
+		
+		result.put("message", "COMMON_COUPON_DELETE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 }

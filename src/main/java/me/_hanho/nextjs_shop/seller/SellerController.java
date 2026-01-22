@@ -282,18 +282,18 @@ public class SellerController {
 		logger.info("addSellerCoupon "+ coupon);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		// discount_type에 따른 minimum_order_before_amount 규칙
-	    if ("percentage".equals(coupon.getDiscountType())) {
-	        if (coupon.getMinimumOrderBeforeAmount() == null) {
-	            throw new BusinessException(ErrorCode.COUPON_MINIMUM_REQUIRED_FOR_PERCENTAGE);
-	        }
-	    } else if ("fixed_amount".equals(coupon.getDiscountType())) {
-	        if (coupon.getMinimumOrderBeforeAmount() != null) {
-	            throw new BusinessException(ErrorCode.COUPON_MINIMUM_MUST_BE_NULL_FOR_FIXED_AMOUNT);
-	        }
-	    } else {
-	        throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
-	    }
+		// discount_type에 따른 규칙
+		if ("percentage".equals(coupon.getDiscountType())) {
+		    if (coupon.getMaxDiscount() == null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
+		    }
+		} else if ("fixed_amount".equals(coupon.getDiscountType())) {
+		    if (coupon.getMaxDiscount() != null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
+		    }
+		} else {
+		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
+		}
 		
 		sellerService.addCoupon(coupon, sellerNo);
 		
@@ -308,18 +308,18 @@ public class SellerController {
 		logger.info("updateCoupon "+ coupon);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		// discount_type에 따른 minimum_order_before_amount 규칙
-	    if ("percentage".equals(coupon.getDiscountType())) {
-	        if (coupon.getMinimumOrderBeforeAmount() == null) {
-	            throw new BusinessException(ErrorCode.COUPON_MINIMUM_REQUIRED_FOR_PERCENTAGE);
-	        }
-	    } else if ("fixed_amount".equals(coupon.getDiscountType())) {
-	        if (coupon.getMinimumOrderBeforeAmount() != null) {
-	            throw new BusinessException(ErrorCode.COUPON_MINIMUM_MUST_BE_NULL_FOR_FIXED_AMOUNT);
-	        }
-	    } else {
-	        throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
-	    }
+		// discount_type에 따른 규칙
+		if ("percentage".equals(coupon.getDiscountType())) {
+		    if (coupon.getMaxDiscount() == null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
+		    }
+		} else if ("fixed_amount".equals(coupon.getDiscountType())) {
+		    if (coupon.getMaxDiscount() != null) {
+		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
+		    }
+		} else {
+		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
+		}
 		
 		sellerService.updateCoupon(coupon, sellerNo);
 		

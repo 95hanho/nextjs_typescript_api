@@ -7,14 +7,17 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.Seller;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.SellerService;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
 	
 	private final PasswordEncoder passwordEncoder;
+	private final SellerService sellerService;
 	
 	private final AdminMapper adminMapper;
 	
@@ -67,14 +70,43 @@ public class AdminService {
 		adminMapper.setSellerApproval(sellerApproval, adminNo);
 	}
 
+	public List<UserResponse> getUserList() {
+		List<UserResponse> userList = adminMapper.getUserList();
+		
+		userList.forEach(user -> {
+			user.setUserId(MaskingUtil.maskUserIdName(user.getUserId(), 5));
+			user.setName(MaskingUtil.maskUserIdName(user.getName(), 3));
+			user.setPhone(MaskingUtil.maskPhone(user.getPhone()));
+			user.setEmail(MaskingUtil.maskEmail(user.getEmail(), 5));
+		});
+		
+		return userList;
+	}
 
+	public UserInfoResponse getUserInfoUnmasked(Integer userNo) {
+		return adminMapper.getUserInfoUnmasked(userNo);
+	}
 
+	public void updateUserWithdrawalStatus(List<Integer> userNoList, String withdrawalStatus) {
+		adminMapper.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
+	}
 
+	public List<CommonCoupon> getCommonCouponList() {
+		return adminMapper.getCommonCouponList();
+	}
 
+	public void addCommonCoupon(AddCommonCouponRequest commonCoupon, Integer adminNo) {
+		commonCoupon.setCouponCode(sellerService.generateUniqueCouponCode());
+		adminMapper.addCommonCoupon(commonCoupon, adminNo);
+	}
 
+	public void updateCommonCoupon(UpdateCommonCouponRequest commonCoupon) {
+		adminMapper.updateCommonCoupon(commonCoupon);
+	}
 
-
-
+	public void deleteCommonCoupon(Integer couponId) {
+		adminMapper.deleteCommonCoupon(couponId);
+	}
 
 
 

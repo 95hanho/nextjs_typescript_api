@@ -88,22 +88,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 	                }
 	            }
 	        }
-			/* =======휴대폰 인증 토큰==================================================================== */
-			String phoneAuthToken = request.getHeader("X-Phone-Auth-Token");
-			
-			if (phoneAuthToken != null && !phoneAuthToken.isEmpty()) {
-				logger.info("phoneAuthToken : " + phoneAuthToken);
-	            // JWT 파싱 및 복호화
-	            Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
-	
-	            /* 파싱이 되는지만 확인할거임 */
-	            String phoneUserId = claims.get("phoneUserId", String.class);
-	            if (phoneUserId == null || phoneUserId.isEmpty()) {
-	                throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid phoneAuth token: missing phoneUserId");
-	            }
-	            request.setAttribute("phoneUserId", phoneUserId);
-	        }
-			/* ===================================================================================== */
 	        return true;
 		} catch (BusinessException e) {
 			logger.error("UNAUTHORIZED: " + e.getErrorCode().getCode(), e);

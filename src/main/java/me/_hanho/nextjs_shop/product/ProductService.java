@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.ProductOption;
 
 @Service
@@ -107,7 +108,7 @@ public class ProductService {
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	        	review.setUserName(maskUserId(review.getUserName()));
+	        	review.setUserName(MaskingUtil.maskUserIdName(review.getUserName(), 5));
 	        }
 	    }
 
@@ -126,7 +127,7 @@ public class ProductService {
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	        	qna.setUserName(maskUserId(qna.getUserName()));
+	        	qna.setUserName(MaskingUtil.maskUserIdName(qna.getUserName(), 5));
 	        }
 
 	        // 2) 비밀글(secret=1)인데 작성자가 아니면 질문/답변 null 처리
@@ -141,14 +142,5 @@ public class ProductService {
 
 	    return list;
 	}
-
-	private String maskUserId(String userName) {
-	    if (userName == null) return null;
-
-	    // 길이가 2 미만이면 있는 만큼만 + ***** 붙임
-	    int prefixLen = Math.min(2, userName.length());
-	    return userName.substring(0, prefixLen) + "*****";
-	}
-
 
 }

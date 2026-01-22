@@ -30,14 +30,19 @@ public interface AdminMapper {
 
 	void setSellerApproval(@Param("s") SellerApprovalRequest sellerApproval, @Param("adminNo") Integer adminNo);
 
-	
+	List<UserResponse> getUserList();
 
+	UserInfoResponse getUserInfoUnmasked(Integer userNo);
 
-	
+	void updateUserWithdrawalStatus(@Param("userNoList") List<Integer> userNoList, @Param("withdrawalStatus") String withdrawalStatus);
 
-	
+	List<CommonCoupon> getCommonCouponList();
 
-	
+	void addCommonCoupon(@Param("c") AddCommonCouponRequest commonCoupon, @Param("adminNo") Integer adminNo);
+
+	void updateCommonCoupon(@Param("c") UpdateCommonCouponRequest commonCoupon);
+
+	void deleteCommonCoupon(@Param("couponId") Integer couponId);
 
 	
 
