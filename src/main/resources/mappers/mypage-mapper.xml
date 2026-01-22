@@ -203,10 +203,22 @@
 	</delete>
 	
 	<select id="getWishlistItems">
-		SELECT w.wish_id, w.created_at,
-			p.product_id, p.name, p.price, p.like_count, p.view_count, p.wish_count,
-			tpi.product_image_id, f.file_id, 
-			f.file_name,  f.store_name, f.file_path, f.copyright, f.copyright_url,
+		SELECT w.wish_id, 
+			w.created_at,
+			p.product_id, 
+			p.name, 
+			p.origin_price, 
+			p.final_price, 
+			p.like_count, 
+			p.view_count, 
+			p.wish_count,
+			tpi.product_image_id, 
+			f.file_id, 
+			f.file_name,  
+			f.store_name, 
+			f.file_path, 
+			f.copyright, 
+			f.copyright_url,
 			s.seller_name
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON w.product_id = p.product_id
