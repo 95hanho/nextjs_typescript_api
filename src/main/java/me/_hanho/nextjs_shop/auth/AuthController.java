@@ -27,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
-import me._hanho.nextjs_shop.model.User;
 
 @RestController
 @RequiredArgsConstructor
@@ -216,7 +215,7 @@ public class AuthController {
 	}
 	// 회원가입
 	@PostMapping("/user")
-	public ResponseEntity<Map<String, Object>> join(@Valid @ModelAttribute User user) {
+	public ResponseEntity<Map<String, Object>> join(@Valid @ModelAttribute JoinRequest user) {
 		logger.info("join : " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -227,59 +226,64 @@ public class AuthController {
 	}
 	// 회원 정보 변경
 	@PutMapping("/user")
-	public ResponseEntity<Map<String, Object>> userInfoUpdate(@ModelAttribute UpdateUserRequest user, @RequestAttribute(value="userNo", required=false) Integer userNo) {
+	public ResponseEntity<Map<String, Object>> userInfoUpdate(
+			@Valid @ModelAttribute UpdateUserRequest user, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		user.setUserNo(userNo);
-		authService.userInfoUpdate(user);
-		
-//		"USER_UPDATE_FAILED" : 변경 중 오류 발생 (DB 문제 등)
-//		"UNAUTHORIZED_USER" : 권한이 없음.
+		authService.userInfoUpdate(user, userNo);
 		
 		result.put("message", "USER_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 비밀번호 변경 - 비밀번호찾기 또는 마이페이지 비번변경
 	@PostMapping("/password")
-	public ResponseEntity<Map<String, Object>> passwordChange(@ModelAttribute PasswordChangeDTO pwdChangeDTO) {
+	public ResponseEntity<Map<String, Object>> passwordChange(
+			@RequestParam("curPassword") String curPassword,
+			@RequestParam("newPassword") String newPassword,
+			@RequestParam("pwdResetToken") String pwdResetToken) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		String userId;
-		try {
-			String pwdResetToken = pwdChangeDTO.getPwdResetToken();
-			// JWT 파싱 및 복호화
-	        Claims claims = tokenService.parseJwtPwdChangeToken(pwdResetToken);
-	        // 토큰의 userId 추출
-	        userId = claims.get("userId", String.class);
-		} catch(Exception e) {
-			result.put("message", "VERIFICATION_EXPIRED");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-		}
+		Integer userNo = null;
 		
-		if(userId == null) {
-			result.put("message", "NO_USERID");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
-		}
+		try {
+			// JWT 파싱 및 복호화
+			Claims claims = tokenService.parseJwtPhoneAuthToken(pwdResetToken);
+			String type = claims.get("type", String.class);
+            logger.info("type : " + type);
+            if (type == null) {
+                throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_INVALID);
+            }
+            if (!"PWDRESET".equals(type)) {
+                throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_WRONG_TYPE);
+            }
+            userNo = claims.get("userNo", Integer.class);
+		} catch (ExpiredJwtException e) {
+			throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_EXPIRED);
+	    } catch (JwtException | IllegalArgumentException e) {
+	        throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_INVALID);
+	    }
+		if (userNo == null) {
+	        throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND_IN_TOKEN);
+	    }
 		
 		// 비밀번호 확인을 위한 유저 조회
-		UserLoginResponse checkUser = authService.getUserForPassword(userId);
-		String curPassword = pwdChangeDTO.getCurPassword();
+		String checkPassword = authService.getPassword(userNo);
 		// 현재 비밀번호가 있다면 마이페이지 비번변경(없으면 비밀번호찾기에서 바꾸는거)
 		if(curPassword != null) {
-			if(!authService.passwordCheck(curPassword, checkUser.getPassword())) {
-				result.put("message", "CURRENT_PASSWORD_MISMATCH");
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+			// 현재 비밀번호가 일치하는 지 검사.
+			if(!authService.passwordCheck(curPassword, checkPassword)) {
+				throw new BusinessException(ErrorCode.CURRENT_PASSWORD_MISMATCH);
 			}
 		}
 		// 현재비밀번호와 새 비밀번호 같은지 검사
-		if(authService.passwordCheck(pwdChangeDTO.getNewPassword(), checkUser.getPassword())) {
-			result.put("message", "CURRENT_PASSWORD_EQUAL");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+		if(authService.passwordCheck(newPassword, checkPassword)) {
+			throw new BusinessException(ErrorCode.CURRENT_PASSWORD_EQUAL);
 		}
 		
 		// 비밀번호 변경
-		authService.changePassword(userId, pwdChangeDTO.getNewPassword());
+		authService.changePassword(userNo, newPassword);
 		
 		result.put("message", "PASSWORD_CHANGE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -295,17 +299,10 @@ public class AuthController {
 				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		try {
-			tokenService.parseJwtRefreshToken(refreshToken);
-		} catch (Exception e) {
-            // 토큰이 유효하지 않으면 요청을 거부
-        	logger.error("token UNAUTHORIZED");
-        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-        }
-		
+		tokenService.parseJwtRefreshToken(refreshToken);
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
+		UserToken token = UserToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
 		authService.insertToken(token);
 		
 		result.put("message", "TOKEN_INSERT_SUCCESS");
@@ -315,28 +312,24 @@ public class AuthController {
 	// 로그인 토큰 수정(재저장)
 	@PostMapping("/token/refresh")
 	public ResponseEntity<Map<String, Object>> updateToken(
-			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+			@RequestParam("beforeToken") String beforeToken , 
+			@RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor) {
 		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
 				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
 				", x-forwarded-for : " + forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		try {
-			tokenService.parseJwtRefreshToken(beforeToken);
-			tokenService.parseJwtRefreshToken(refreshToken);
-		} catch (Exception e) {
-            // 토큰이 유효하지 않으면 요청을 거부
-        	logger.error("token UNAUTHORIZED");
-        	return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-        }
+		tokenService.parseJwtRefreshToken(beforeToken);
+		tokenService.parseJwtRefreshToken(refreshToken);
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
+		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
+		
 		authService.updateToken(token);
 		
 		Integer userNo = authService.getUserNoByToken(token);
-		
 		if(userNo == null) {
 			result.put("message", "WRONG_TOKEN");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.model.ProductOption;
 
 @Mapper
@@ -15,7 +15,7 @@ public interface SellerMapper {
 	
 	void insertToken(@Param("t") SellerToken token, @Param("sellerNo") Integer sellerNo);
 
-	Integer getSellerNoByToken(TokenDTO token);
+	Integer getSellerNoByToken(ReToken token);
 	
 	SellerInfoResponse getSeller(Integer sellerNo);
 

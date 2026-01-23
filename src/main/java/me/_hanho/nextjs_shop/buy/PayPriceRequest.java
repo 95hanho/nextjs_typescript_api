@@ -13,7 +13,6 @@ public class PayPriceRequest {
 	
 	private List<BuyProduct> products;
 	private AvailableCoupon commonCoupon;
-	private Integer userNo;
 	private int useMileage; // 사용마일리지
 	
 }

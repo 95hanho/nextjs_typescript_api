@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 public class ProductMainSlideDto {
     private int productId;
     private String name;
-    private int price;
+    private int originPrice;
+    private int finalPrice;
     private int viewCount;
     private int wishCount;
 

@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.model.OrderGroup;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class BuyService {
 	private final BuyMapper buyMapper;
 	
     @Transactional
-    public HoldTryResult tryHoldUpsertAllOrNothing(BuyCheckRequest req) {
+    public HoldTryResult tryHoldUpsertAllOrNothing(BuyCheckRequest req, Integer userNo) {
     	// 0. 요청 정리
         Map<Integer, Integer> mergedCountByPd = new HashMap<>();
         for (var x : req.getBuyList()) {
@@ -35,7 +36,7 @@ public class BuyService {
         var requestedDetailIds = new ArrayList<>(mergedCountByPd.keySet());
 
         // 1. 유저의 모든 현재 HOLD(미만료) 다 가져오기 (※ 여기서는 detailIds 필터 걸지 말고 전체)
-        List<Integer> allExistingHolds = buyMapper.selectAllActiveHoldsByUser(req.getUserNo());
+        List<Integer> allExistingHolds = buyMapper.selectAllActiveHoldsByUser(userNo);
         // ↑ 새로 하나 만들어야 돼. selectExistingHolds(userId, detailIds) 말고.
 
         // 2. 이번 요청에 포함되지 않은 hold 들은 RELEASE
@@ -44,7 +45,7 @@ public class BuyService {
             toRelease.add(h);
         }
         if (!toRelease.isEmpty()) {
-            buyMapper.releaseHolds(toRelease, req.getUserNo()); // status='RELEASED', active_hold=NULL
+            buyMapper.releaseHolds(toRelease, userNo); // status='RELEASED', active_hold=NULL
         }
 
         // 3. 가용수량 체크 (지금 있는 로직과 유사)
@@ -56,7 +57,7 @@ public class BuyService {
 
         // 요청된 detailId 중 아직 남아 있는 active HOLD만 다시 조회
         var remainingHolds = buyMapper.selectExistingHolds(
-            req.getUserNo(),
+        	userNo,
             requestedDetailIds
         );
 
@@ -82,7 +83,7 @@ public class BuyService {
         var upserts = new ArrayList<UpsertHoldRow>();
         for (var entry : mergedCountByPd.entrySet()) {
             upserts.add(new UpsertHoldRow(
-                req.getUserNo(),
+                userNo,
                 entry.getKey(),
                 entry.getValue(), // 최종 수량
                 HOLD_TTL_SECONDS
@@ -91,7 +92,7 @@ public class BuyService {
         buyMapper.upsertHolds(upserts);
 
         // 5. 최종 결과 반환
-        var holds = buyMapper.selectLatestHolds(req.getUserNo(), requestedDetailIds);
+        var holds = buyMapper.selectLatestHolds(userNo, requestedDetailIds);
         
 	     // optionId -> heldCount
 	        Map<Integer, Integer> heldCountMap = new HashMap<>();
@@ -107,7 +108,7 @@ public class BuyService {
 	
 	            if (actual == null || actual != expected) {
 	                // 판매중단/판매금지로 필터되었거나, 중간에 상태가 바뀌었거나, upsert가 일부만 반영된 케이스
-	                throw new HoldFailedException("HOLD_UPSERT_INCOMPLETE");
+	            	throw new BusinessException(ErrorCode.STOCK_HOLD_UPSERT_INCOMPLETE);
 	            }
 	        }
 
@@ -128,6 +129,10 @@ public class BuyService {
         }
     }
     
+	public List<Integer> selectAllActiveHoldsByUser(Integer userNo) {
+		return buyMapper.selectAllActiveHoldsByUser(userNo);
+	}
+    
     public int extendHolds(List<Integer> holdIds, Integer userNo) {
         if (holdIds == null || holdIds.isEmpty()) return 0;
         // HOLD 상태(활성)만 NOW()+TTL로 연장
@@ -141,7 +146,6 @@ public class BuyService {
     }
     
 	public List<OrderStockDTO> getOrderStock(Integer userNo) {
-//		List<OrderStockDTO> orderStock = buyMapper.getOrderStock(userNo);
 		return buyMapper.getOrderStock(userNo);
 	}
 	
@@ -154,24 +158,24 @@ public class BuyService {
 	}
 	
 	@Transactional
-	public void pay(PayRequest payRequest) {
+	public void pay(PayRequest payRequest, Integer userNo) {
 		// nextjs_shop_user UPDATE 마일리지 사용한거 없애고, 빠진 마일리지 조회
 		buyMapper.updateUserMileageByBuy(payRequest);
-		int remainingMileage = buyMapper.getUserMileage(payRequest.getUserNo());
+		int remainingMileage = buyMapper.getUserMileage(userNo);
 		
 		// nextjs_shop_order_group(주문프로세스) INSERT
-		BuyOrderGroupDAO orderGroup = BuyOrderGroupDAO.builder().userNo(payRequest.getUserNo()).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
+		BuyOrderGroupDAO orderGroup = BuyOrderGroupDAO.builder().userNo(userNo).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
 				.commonCouponDiscountTotal(payRequest.getCommonCouponDiscountTotal()).shippingFee(BigDecimal.valueOf(payRequest.getShippingFee()))
 				.usedMileage(payRequest.getUsedMileage()).remainingMileage(remainingMileage)
 				.totalPrice(payRequest.getTotalFinal()).paymentMethod(payRequest.getPaymentMethod())
 				.userCouponId(payRequest.getUserCouponId()).addressId(payRequest.getAddressId())
 				.paymentCode("0000").status("PAID").build();
 		buyMapper.insertOrderGroup(orderGroup);
-		int orderId = buyMapper.getOrderId(payRequest.getUserNo());
+		int orderId = buyMapper.getOrderId(userNo);
 		// 
 		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_item(주문목록) INSERT
-		buyMapper.insertOrderList(productWithCouponList, orderId, payRequest.getUserNo());
+		buyMapper.insertOrderList(productWithCouponList, orderId, userNo);
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경
 		buyMapper.updateCancelStockHold(productWithCouponList);
 		// nextjs_shop_product_option(상품상세옵션) stock(재고수), sales_count(판매수) 변경

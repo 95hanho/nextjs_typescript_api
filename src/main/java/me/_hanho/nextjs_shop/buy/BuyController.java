@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,47 +45,40 @@ public class BuyController {
 	@PostMapping("/stock-hold")
 	public ResponseEntity<Map<String, Object>> saleStatusCheck(
 	        @RequestBody BuyCheckRequest buyCheck,
-	        @RequestAttribute("userNo") Integer userNo) {
-
+	        @RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 	    Map<String, Object> result = new HashMap<>();
-	    buyCheck.setUserNo(userNo);
 
-	    try {
-	        HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck);
+        HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck, userNo);
 
-	        if (!res.isOk()) {
-	            result.put("message", "STOCK_HOLD_FAILED");
-	            return new ResponseEntity<>(result, HttpStatus.CONFLICT);
-	        }
+        if (!res.isOk()) {
+            throw new BusinessException(ErrorCode.STOCK_HOLD_FAILED);
+        }
 
-	        result.put("message", "STOCK_HOLD_SUCCESS");
-	        result.put("holds", res.getHolds());
-	        return new ResponseEntity<>(result, HttpStatus.OK);
-
-	    } catch (HoldFailedException e) {
-	        // 여기서 메시지를 e.getMessage()로 매핑해도 되고, 고정해도 됨
-	        result.put("message", e.getMessage()); // "HOLD_UPSERT_INCOMPLETE"
-	        return new ResponseEntity<>(result, HttpStatus.CONFLICT);
-	    }
+        result.put("message", "STOCK_HOLD_SUCCESS");
+        result.put("holds", res.getHolds());
+        return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 	// 점유 연장 (여러 holdId 배치)
     @PostMapping("/stock-hold/extend")
-    public ResponseEntity<Map<String, Object>> extendStockHold(@RequestBody HoldBatchRequest req,
-    		@RequestAttribute("userNo") Integer userNo) {
-        logger.info("extendStockHold {}", req);
+    public ResponseEntity<Map<String, Object>> extendStockHold(
+    		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+    	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+        logger.info("extendStockHold userNo=", userNo);
         Map<String, Object> result = new HashMap<>();
         
-        int updated = buyService.extendHolds(req.getHoldIds(), userNo);
-        int requested = req.getHoldIds() == null ? 0 : req.getHoldIds().size();
+        List<Integer> holdIds = buyService.selectAllActiveHoldsByUser(userNo);
         
-        result.put("holdIds", req.getHoldIds());
+        int updated = buyService.extendHolds(holdIds, userNo);
+        int requested = holdIds == null ? 0 : holdIds.size();
+        
+        result.put("holdIds", holdIds);
         result.put("requestedCount", requested);
         result.put("updatedCount", updated);
         // 400 (잘못된 요청)
         if (requested == 0) {
-        	result.put("message", "HOLD_IDS_REQUIRED");
-    	    return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+    	    throw new BusinessException(ErrorCode.HOLD_IDS_REQUIRED);
     	}
         // 성공
     	if (updated == requested) {
@@ -93,18 +87,21 @@ public class BuyController {
     	}
     	// updated == 0 → “전부 무효” (만료/판매불가/해제 등) STOCK_HOLD_EXPIRED
     	// 0 < updated < requested → “부분 무효” (일부만 유효) STOCK_HOLD_PARTIAL_EXPIRED
-    	result.put("message", updated == 0 ? "STOCK_HOLD_EXPIRED" : "STOCK_HOLD_PARTIAL_EXPIRED");
-    	return new ResponseEntity<>(result, HttpStatus.CONFLICT);
-        
+    	if(updated == 0) throw new BusinessException(ErrorCode.STOCK_HOLD_EXPIRED);
+    	throw new BusinessException(ErrorCode.STOCK_HOLD_PARTIAL_EXPIRED);
     }
     
     // 점유 해제 (여러 holdId 배치)
     // DELETE /bapi/buy/stock-hold   (body: {"holdIds":[...]} )
     @DeleteMapping("/stock-hold")
-    public ResponseEntity<Map<String, Object>> release(@RequestParam("holdIds") List<Integer> holdIds,
-    		@RequestAttribute("userNo") Integer userNo) {
-        logger.info("release holds: {}", holdIds);
+    public ResponseEntity<Map<String, Object>> release(
+    		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+    	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+        logger.info("release holds");
         Map<String, Object> result = new HashMap<>();
+        
+        List<Integer> holdIds = buyService.selectAllActiveHoldsByUser(userNo);
+        
         int released = buyService.releaseHolds(holdIds, userNo);
         
         result.put("holdIds", holdIds);
@@ -119,7 +116,9 @@ public class BuyController {
      */
 	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제화면)
 	@GetMapping("/pay")
-    public ResponseEntity<Map<String, Object>> getStockHoldProduct(@RequestAttribute("userNo") Integer userNo) {
+    public ResponseEntity<Map<String, Object>> getStockHoldProduct(
+    		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
         logger.info("getPayBefore : " + userNo);
         Map<String, Object> body = new HashMap<>();
         
@@ -143,13 +142,13 @@ public class BuyController {
 	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제화면)
 	@PostMapping("pay-price")
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest, 
-			@RequestAttribute("userNo") Integer userNo) {
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 	    logger.info("pay-price : {}", payPriceRequest);
 	    Map<String, Object> result = new HashMap<>();
 	    
-	    payPriceRequest.setUserNo(userNo);
 	    List<ProductWithCouponsDTO> items =
-	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), payPriceRequest.getUserNo());
+	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), userNo);
 	    
 	    // 1) 각 상품 쿠폰 먼저 적용
 	    PriceCalculatorService.applyDiscounts(items);
@@ -207,12 +206,14 @@ public class BuyController {
 	
 	// 상품 구매/결제
 	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액, 
-	public ResponseEntity<Map<String, Object>> pay(@RequestBody PayRequest payRequest, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> pay(
+			@RequestBody PayRequest payRequest, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("pay : {}" + payRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		payRequest.setUserNo(userNo);
-		buyService.pay(payRequest);
+		buyService.pay(payRequest, userNo);
 		
 		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

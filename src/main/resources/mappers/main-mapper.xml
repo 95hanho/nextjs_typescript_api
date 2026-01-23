@@ -19,7 +19,8 @@
 	    SELECT
 	        p.product_id,
 	        p.name,
-	        p.price,
+	        p.origin_price,
+	        p.final_price,
 	        p.view_count,
 	        p.wish_count,
 	        f.file_path AS imgPath,

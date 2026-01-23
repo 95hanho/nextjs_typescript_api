@@ -51,21 +51,54 @@
 		WHERE phone = #{phone}
 	</select>
 	
-	<insert id="joinUser">
+	<insert id="joinUser" parameterType="JoinRequest"
+        useGeneratedKeys="true"
+        keyProperty="userNo"
+        keyColumn="user_no">
 		INSERT INTO nextjs_shop_user(user_id, password, name, zonecode, address, address_detail, birthday, phone, email)
 		VALUES(#{userId}, #{password}, #{name}, #{zonecode}, #{address}, #{addressDetail}, #{birthday}, #{phone}, #{email})
 	</insert>
 	
+	<insert id="joinAddUserAddress">
+		INSERT INTO nextjs_shop_user_address(
+			address_name, 
+			recipient_name, 
+			address_phone, 
+			zonecode, 
+			address, 
+			address_detail, 
+			default_address, 
+			user_no)
+		VALUES('HOME',
+			#{name}, 
+			#{phone},
+			#{zonecode}, 
+			#{address}, 
+			#{addressDetail},
+			1,
+			#{userNo})
+	</insert>
+	
 	<update id="userInfoUpdate">
 		UPDATE nextjs_shop_user
-		SET phone = #{phone}, email = #{email}
+		SET zonecode = #{u.zonecode},
+			address = #{u.address},
+			address_detail = #{u.addressDetail},
+			phone = #{u.phone}, 
+			email = #{u.email}
 		WHERE user_no = #{userNo}
 	</update>
+	
+	<select id="getPassword">
+		SELECT password
+		FROM nextjs_shop_user
+		WHERE user_no = #{userNo}
+	</select>
 	
 	<update id="changePassword">
 		UPDATE nextjs_shop_user
 		SET password = #{newPassword}
-		WHERE user_id = #{userId}
+		WHERE user_no = #{userNo}
 	</update>
 	
 	<insert id="insertToken">

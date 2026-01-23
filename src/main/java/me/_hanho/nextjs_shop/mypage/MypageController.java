@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.model.Review;
 import me._hanho.nextjs_shop.model.UserAddress;
@@ -38,7 +40,9 @@ public class MypageController {
 	
 	// 유저 쿠폰 조회
 	@GetMapping("/user-coupon")
-	public ResponseEntity<Map<String, Object>> getUserCoupons(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserCoupons(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserCoupons : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -51,7 +55,9 @@ public class MypageController {
 	
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
-	public ResponseEntity<Map<String, Object>> getMyOrderList(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getMyOrderList(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getMyReviews : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -63,8 +69,10 @@ public class MypageController {
 	}
 	// 주문배송정보 상세조회
 	@GetMapping("/my-order/{orderId}")
-	public ResponseEntity<Map<String, Object>> getMyOrderDetail(@PathVariable("orderId") String orderId,
-			@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getMyOrderDetail(
+			@PathVariable("orderId") String orderId,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getMyReviews : " + orderId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -76,7 +84,10 @@ public class MypageController {
 	}
 	// 리뷰 작성
 	@PostMapping("/review")
-	public ResponseEntity<Map<String, Object>> writeReview(@ModelAttribute Review review, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> writeReview(
+			@ModelAttribute Review review, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("writeReview : ");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -89,7 +100,9 @@ public class MypageController {
 	
 	// 장바구니 조회
 	@GetMapping("/cart")
-	public ResponseEntity<Map<String, Object>> selectCart(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> selectCart(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("selectCart : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -101,7 +114,10 @@ public class MypageController {
 	}
 	// 장바구니 제품 옵션/수량 변경
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> updateCart(@ModelAttribute UpdateCartRequest cart, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> updateCart(
+			@ModelAttribute UpdateCartRequest cart, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("updateCart : " + cart.getCartId());
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -113,8 +129,10 @@ public class MypageController {
 	}
 	// 장바구니 제품 선택여부 변경
 	@PutMapping("/cart")
-	public ResponseEntity<Map<String, Object>> updateSelectedCart(@ModelAttribute UpdateSelectedCartDTO selectedCart, 
-			@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> updateSelectedCart(
+			@ModelAttribute UpdateSelectedCartDTO selectedCart, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("updateSelectedCart : " + selectedCart);
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -126,8 +144,10 @@ public class MypageController {
 	}
 	// 장바구니 제품 삭제
 	@DeleteMapping("/cart")
-	public ResponseEntity<Map<String, Object>> deleteCart(@RequestParam("cartIdList") List<Integer> cartIdList,
-			@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> deleteCart(
+			@RequestParam("cartIdList") List<Integer> cartIdList,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("deleteCart : " + cartIdList);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -138,7 +158,8 @@ public class MypageController {
 	}
 	// 장바구니 옵션조회 - 장바구니 제품 다른 option조회
 	@GetMapping("/cart/option/product-option")
-	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(@RequestParam("productId") int productId) {
+	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(
+			@RequestParam("productId") int productId) {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -150,7 +171,9 @@ public class MypageController {
 	}
 	// 위시리스트 조회
 	@GetMapping("/wish")
-	public ResponseEntity<Map<String, Object>> getWishList(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getWishList(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getWishList : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -165,7 +188,9 @@ public class MypageController {
 	
 	// 유저배송지 조회
 	@GetMapping("/address")
-	public ResponseEntity<Map<String, Object>> getUserAddressList(@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserAddressList(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserAddress : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -177,7 +202,10 @@ public class MypageController {
 	}
 	// 유저배송지 추가/수정
 	@PostMapping("/address")
-	public ResponseEntity<Map<String, Object>> addUserAddress(@RequestAttribute("userNo") Integer userNo, @ModelAttribute AddUserAddressRequest userAddress) {
+	public ResponseEntity<Map<String, Object>> addUserAddress(
+			@ModelAttribute AddUserAddressRequest userAddress,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("addUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -189,7 +217,10 @@ public class MypageController {
 	}
 	// 유저배송지 추가/수정
 	@PutMapping("/address")
-	public ResponseEntity<Map<String, Object>> updateUserAddress(@RequestAttribute("userNo") Integer userNo, @ModelAttribute UpdateUserAddressRequest userAddress) {
+	public ResponseEntity<Map<String, Object>> updateUserAddress(
+			@ModelAttribute UpdateUserAddressRequest userAddress,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("updateUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -201,8 +232,10 @@ public class MypageController {
 	}
 	// 유저배송지 삭제
 	@DeleteMapping("/address/{addressId}")
-	public ResponseEntity<Map<String, Object>> deleteUserAddress(@PathVariable("addressId") int addressId,
-			@RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> deleteUserAddress(
+			@PathVariable("addressId") int addressId,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("deleteUserAddress : " + addressId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
