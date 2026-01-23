@@ -5,8 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.model.OrderGroup;
-
 @Mapper
 public interface BuyMapper {
 	

@@ -302,7 +302,7 @@
 			(
 				#{orderId},
 				#{item.count},
-				#{item.price} + #{item.addPrice},
+				#{item.finalPrice} + #{item.addPrice},
 				#{item.discountAmount},
 				#{item.finalPrice},
 				#{item.userCouponId},

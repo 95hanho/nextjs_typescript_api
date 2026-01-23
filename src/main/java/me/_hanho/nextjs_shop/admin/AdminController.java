@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
-import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.auth.TokenService;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
@@ -117,8 +117,10 @@ public class AdminController {
 	// 로그인 토큰 수정(재저장)
 	@PostMapping("/token/refresh")
 	public ResponseEntity<Map<String, Object>> updateToken(
-			@RequestParam("beforeToken") String beforeToken , @RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
+			@RequestParam("beforeToken") String beforeToken , 
+			@RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor) {
 		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
 				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
 				", x-forwarded-for : " + forwardedFor);
@@ -128,7 +130,7 @@ public class AdminController {
 		tokenService.parseJwtRefreshToken(refreshToken);
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		TokenDTO token = TokenDTO.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
+		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		
 		authService.updateToken(token);
 		

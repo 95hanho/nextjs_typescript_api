@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.model.Seller;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 
@@ -20,7 +20,7 @@ public interface AdminMapper {
 	
 	void insertToken(AdminToken token);
 
-	Integer getAdminNoByToken(TokenDTO token);
+	Integer getAdminNoByToken(ReToken token);
 	
 	List<Seller> getSellerList();
 	
@@ -35,7 +35,7 @@ public interface AdminMapper {
 	UserInfoResponse getUserInfoUnmasked(Integer userNo);
 
 	void updateUserWithdrawalStatus(@Param("userNoList") List<Integer> userNoList, @Param("withdrawalStatus") String withdrawalStatus);
-
+	
 	List<CommonCoupon> getCommonCouponList();
 
 	void addCommonCoupon(@Param("c") AddCommonCouponRequest commonCoupon, @Param("adminNo") Integer adminNo);
@@ -43,6 +43,8 @@ public interface AdminMapper {
 	void updateCommonCoupon(@Param("c") UpdateCommonCouponRequest commonCoupon);
 
 	void deleteCommonCoupon(@Param("couponId") Integer couponId);
+
+	
 
 	
 

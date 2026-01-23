@@ -9,11 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TokenDTO {
-	private int tokenId;
+public class UserToken {
     private String connectIp;
     private String connectAgent;
     private String refreshToken;
-    private String beforeToken;
     private Integer userNo;
 }

@@ -4,9 +4,10 @@ import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-import me._hanho.nextjs_shop.auth.TokenDTO;
+import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.Seller;
 import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
@@ -47,7 +48,7 @@ public class AdminService {
 		adminMapper.insertToken(token);
 	}
 	
-	public Integer getAdminNoByToken(TokenDTO token) {
+	public Integer getAdminNoByToken(ReToken token) {
 		return adminMapper.getAdminNoByToken(token);
 	}
 	
@@ -86,7 +87,7 @@ public class AdminService {
 	public UserInfoResponse getUserInfoUnmasked(Integer userNo) {
 		return adminMapper.getUserInfoUnmasked(userNo);
 	}
-
+	@Transactional
 	public void updateUserWithdrawalStatus(List<Integer> userNoList, String withdrawalStatus) {
 		adminMapper.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
 	}

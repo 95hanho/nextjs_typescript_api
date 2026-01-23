@@ -4,7 +4,6 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.PhoneAuth;
-import me._hanho.nextjs_shop.model.User;
 
 @Mapper
 public interface AuthMapper {
@@ -25,19 +24,26 @@ public interface AuthMapper {
 	
 	String getUserIdByPhone(String phone);
 
-	void joinUser(User user);
-	
-	int userInfoUpdate(UpdateUserRequest user);
-	
-	void changePassword(@Param("userId") String userId, @Param("newPassword") String newPassword);
-	
-	void insertToken(TokenDTO token);
-	
-	int updateToken(TokenDTO token);
+	void joinUser(JoinRequest user);
 
-	Integer getUserNoByToken(TokenDTO token);
+	void joinAddUserAddress(JoinRequest user);
+	
+	int userInfoUpdate(@Param("u") UpdateUserRequest user, @Param("userNo") Integer userNo);
+	
+	String getPassword(Integer userNo);
+	
+	void changePassword(@Param("userNo") Integer userNo, @Param("newPassword") String newPassword);
+	
+	void insertToken(UserToken token);
+	
+	int updateToken(ReToken token);
+
+	Integer getUserNoByToken(ReToken token);
 
 	void withDrawalUser(Integer userNo);
+
+	
+
 
 	
 

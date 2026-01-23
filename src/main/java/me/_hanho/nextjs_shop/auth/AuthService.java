@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
-import me._hanho.nextjs_shop.model.User;
 
 @Service
 @RequiredArgsConstructor
@@ -55,34 +54,39 @@ public class AuthService {
 		return authMapper.getUserIdByPhone(phone);
 	}
 
-	public void joinUser(User user) {
+	public void joinUser(JoinRequest user) {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		authMapper.joinUser(user);
+		authMapper.joinAddUserAddress(user);
 	}
 
-	public void userInfoUpdate(UpdateUserRequest user) {
-	    int updated = authMapper.userInfoUpdate(user);
+	public void userInfoUpdate(UpdateUserRequest user, Integer userNo) {
+	    int updated = authMapper.userInfoUpdate(user, userNo);
 	    if (updated == 0) {
-	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + user.getUserNo());
+	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found");
 	    }
 	}
 	
-	public void changePassword(String userId, String newPassword) {
-		authMapper.changePassword(userId, passwordEncoder.encode(newPassword));
+	public String getPassword(Integer userNo) {
+		return authMapper.getPassword(userNo);
 	}
 	
-	public void insertToken(TokenDTO token) {
+	public void changePassword(Integer userNo, String newPassword) {
+		authMapper.changePassword(userNo, passwordEncoder.encode(newPassword));
+	}
+	
+	public void insertToken(UserToken token) {
 		authMapper.insertToken(token);
 	}
 	
-	public void updateToken(TokenDTO token) {
+	public void updateToken(ReToken token) {
 	    int updated = authMapper.updateToken(token);
 	    if (updated == 0) {
 	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "Token not found");
 	    }
 	}
 
-	public Integer getUserNoByToken(TokenDTO token) {
+	public Integer getUserNoByToken(ReToken token) {
 		return authMapper.getUserNoByToken(token);
 	}
 
@@ -90,8 +94,6 @@ public class AuthService {
 		authMapper.withDrawalUser(userNo);
 	}
 
-
-	
 
 
 
