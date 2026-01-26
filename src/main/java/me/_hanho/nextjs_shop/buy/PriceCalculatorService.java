@@ -24,8 +24,10 @@ public class PriceCalculatorService {
         BigDecimal discountValue = nvl(dto.getDiscountValue(), ZERO);
         String discountType = safe(dto.getDiscountType());
 
+        int price = dto.getFinalPrice() == 0 ?  dto.getOriginPrice() : dto.getFinalPrice();
+        
         // 소계 계산: (price + add_price) * count
-        BigDecimal unitBase = bd(dto.getPrice()).add(bd(dto.getAddPrice())).setScale(KRW_SCALE, KRW_ROUND);
+        BigDecimal unitBase = bd(price).add(bd(dto.getAddPrice())).setScale(KRW_SCALE, KRW_ROUND);
         BigDecimal subtotalBefore = unitBase.multiply(new BigDecimal(dto.getCount())).setScale(KRW_SCALE, KRW_ROUND);
 
         boolean eligible = subtotalBefore.compareTo(minOrder) >= 0;
@@ -58,7 +60,7 @@ public class PriceCalculatorService {
         BigDecimal finalPrice = subtotalBefore.subtract(discount).setScale(KRW_SCALE, KRW_ROUND);
 
         dto.setDiscountAmount(discount);
-        dto.setFinalPrice(finalPrice);
+        dto.setResultPrice(finalPrice);
     }
 
     /**

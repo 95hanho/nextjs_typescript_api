@@ -17,7 +17,7 @@ public class OrderItemWithReviewDTO {
     private int count;
     private BigDecimal orderPrice;
     private BigDecimal discountPrice;
-    private BigDecimal finalPrice;
+    private BigDecimal paidUnitPrice;
 
     private int holdId;
     private int productOptionId;
@@ -27,7 +27,8 @@ public class OrderItemWithReviewDTO {
     private int productId;
     private String productName;
     private String colorName;
-    private int price;
+    private int originPrice;
+    private int finalPrice;
     
     private String sellerName;
     

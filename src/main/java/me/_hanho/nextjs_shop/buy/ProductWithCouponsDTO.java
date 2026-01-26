@@ -19,7 +19,8 @@ public class ProductWithCouponsDTO {
 	private Integer userCouponId;
 	
 	private int productId;
-	private int price;
+	private int originPrice;
+	private int finalPrice;
 	
 	private int couponId;
 	private String description;
@@ -31,5 +32,5 @@ public class ProductWithCouponsDTO {
 	private boolean isProductRestricted;
 	
 	private BigDecimal discountAmount;   // 적용된 총 할인 금액
-	private BigDecimal finalPrice;       // 최종 결제 금액 (쿠폰 적용)
+	private BigDecimal resultPrice;       // 최종 결제 금액 (쿠폰 적용)
 }

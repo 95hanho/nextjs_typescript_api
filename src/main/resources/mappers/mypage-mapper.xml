@@ -28,10 +28,10 @@
 	</select>
 	<select id="getMyOrderListProductWithReview">
 		SELECT ol.order_list_id, ol.order_id, ol.count, ol.order_price, ol.discount_price,
-			ol.final_price,
+			ol.final_price AS paidUnitPrice,
 			sh.hold_id,
 			pd.product_option_id, pd.add_price, pd.size,
-			p.product_id, p.name AS productName, p.color_name, p.price,
+			p.product_id, p.name AS productName, p.color_name, p.origin_price, p.final_price,
 			s.seller_name,
 			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName, mt.gender,
 			tpi.product_image_id,
@@ -77,14 +77,14 @@
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = og.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
 		JOIN nextjs_shop_user_address ua ON ua.address_id = og.address_id
-		WHERE og.order_id = #{orderId} AND user_no= #{userNo}
+		WHERE og.order_id = #{orderId} AND og.user_no = #{userNo}
 	</select>
 	<select id="getMyOrderDetailItems">
-		SELECT ol.order_list_id, ol.order_id , ol.count, ol.order_price, ol.discount_price, ol.final_price,
+		SELECT ol.order_list_id, ol.order_id , ol.count, ol.order_price, ol.discount_price, ol.final_price AS paidUnitPrice,
 			ol.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
 			c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
 			sh.hold_id, pd.product_option_id, pd.add_price, pd.size,
-			p.product_id, p.name AS productName, p.color_name, p.price,
+			p.product_id, p.name AS productName, p.color_name, p.origin_price, p.final_price,
 			s.seller_name,
 			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName,
 			tpi.product_image_id,
@@ -93,7 +93,7 @@
 		FROM nextjs_shop_order_item ol
 		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = ol.user_coupon_id AND uc.used = 1
 		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
-		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id AND user_no= #{userNo}
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id AND sh.user_no = #{userNo}
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
@@ -119,39 +119,36 @@
 		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
 		WHERE ol.order_id = #{orderId}
 	</select>
-	<!-- 
-		보충해야할듯
-	 -->
+
 	<insert id="insertReview">
 		INSERT INTO nextjs_shop_review (
 			content,
 			rating,
-			order_list_id
+			order_list_id,
+			user_no
 		)
 		SELECT
 			#{review.content},
 			#{review.rating},
-			oli.order_list_id
-		FROM nextjs_shop_order_item oli
-		JOIN nextjs_shop_order_group og
-			ON og.order_id = oli.order_id
-		WHERE
-			oli.order_list_id = #{review.orderListId}
-			AND og.user_no= #{userNo}
+			oi.order_list_id,
+			#{userNo}
+		FROM nextjs_shop_order_item oi
+		JOIN nextjs_shop_order_group og ON og.order_id = oi.order_id AND og.user_no = #{userNo}
+		WHERE oi.order_list_id = #{review.orderListId}
 	</insert>
 	
 	<update id="unselectOutOfStockItems">
 	    UPDATE nextjs_shop_cart c
 	    JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
 	    SET c.selected = 0
-	    WHERE c.user_no= #{userNo}
+	    WHERE c.user_no = #{userNo}
 	      AND pd.stock &lt; c.quantity
 	</update>
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_option_id,
 			pd.add_price, pd.stock, pd.size, p.product_id, 
-			p.name AS productName, p.price,
+			p.name AS productName, p.origin_price, p.final_price,
 			w.wish_id,
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
 			s.seller_name,
@@ -181,8 +178,8 @@
 	</select>
 	<update id="updateCart">
 		UPDATE nextjs_shop_cart
-		SET quantity = #{quantity}, product_option_id = #{productOptionId}
-		WHERE cart_id = #{cartId} AND user_no = #{userNo}
+		SET quantity = #{c.quantity}, product_option_id = #{c.productOptionId}
+		WHERE cart_id = #{c.cartId} AND user_no = #{userNo}
 	</update>
 	<update id="updateSelectedCart">
 		UPDATE nextjs_shop_cart
@@ -243,19 +240,21 @@
 		WHERE w.user_no= #{userNo}
 	</select>
 	<select id="getUserAddressList">
-		SELECT address_id, address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, created_at, updated_at, usedate_at
+		SELECT address_id, address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, usedate_at
 		FROM nextjs_shop_user_address
-		WHERE user_no= #{userNo}
-		AND deleted = 0
+		WHERE user_no = #{userNo}
+		AND is_deleted = 0
 		ORDER BY default_address DESC,
 			usedate_at DESC,
 			updated_at DESC,
 			created_at DESC
 	</select>
 	<insert id="insertUserAddress">
-		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, user_no)
+		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, zonecode, 
+			address, address_detail, memo, default_address, user_no)
 		VALUES (
-			#{addressName}, #{recipientName}, #{addressPhone}, #{zonecode}, #{address}, #{addressDetail}, #{memo}, #{defaultAddress}, #{userNo}
+			#{ua.addressName}, #{ua.recipientName}, #{ua.addressPhone}, #{ua.zonecode}, 
+			#{ua.address}, #{ua.addressDetail}, #{ua.memo}, #{ua.defaultAddress}, #{userNo}
 		)
 	</insert>
 	<update id="clearDefaultAddress">
@@ -265,21 +264,50 @@
 	</update>
 	<update id="updateUserAddress">
 		UPDATE nextjs_shop_user_address
-		SET address_name = #{addressName}, 
-			recipient_name = #{recipientName},
-			address_phone = #{addressPhone}, 
-			zonecode = #{zonecode},
-			address = #{address},
-			address_detail = #{addressDetail},
-			memo = #{memo},
-			default_address = #{defaultAddress},
+		SET address_name = #{ua.addressName}, 
+			recipient_name = #{ua.recipientName},
+			address_phone = #{ua.addressPhone}, 
+			zonecode = #{ua.zonecode},
+			address = #{ua.address},
+			address_detail = #{ua.addressDetail},
+			memo = #{ua.memo},
+			default_address = #{ua.defaultAddress},
 			updated_at = NOW()
-		WHERE address_id = #{addressId} AND user_no= #{userNo}
+		WHERE address_id = #{ua.addressId} AND user_no= #{userNo}
 	</update>
-	<delete id="deleteUserAddress">
+	<select id="isDefaultAddress" resultType="int">
+	    SELECT EXISTS (
+	        SELECT 1 FROM nextjs_shop_user_address
+	        WHERE address_id = #{addressId}
+	        	AND user_no = #{userNo}
+	        	AND is_deleted = 0
+	        	AND default_address = 1
+	    ) AS exists_flag
+	</select>
+	<update id="deleteUserAddress">
 		UPDATE nextjs_shop_user_address
-		SET deleted = 1
-		WHERE address_id = #{addressId} AND user_no= #{userNo}
-	</delete>
+		SET is_deleted = 1, default_address = 0
+		WHERE address_id = #{addressId} AND user_no = #{userNo}
+	</update>
+	<update id="updateDefaultLatest">
+		UPDATE nextjs_shop_user_address
+		SET default_address =
+			CASE
+				WHEN address_id = (
+					SELECT t.address_id
+					FROM (
+						SELECT address_id
+						FROM nextjs_shop_user_address
+						WHERE user_no = #{userNo}
+						  AND is_deleted = 0
+						ORDER BY updated_at DESC, address_id DESC
+						LIMIT 1
+					) t
+				) THEN 1
+				ELSE 0
+			END
+		WHERE user_no = #{userNo}
+		  AND is_deleted = 0
+	</update>
 
 </mapper>

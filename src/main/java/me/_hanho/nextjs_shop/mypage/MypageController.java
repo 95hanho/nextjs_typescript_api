@@ -19,12 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.ProductOption;
-import me._hanho.nextjs_shop.model.Review;
-import me._hanho.nextjs_shop.model.UserAddress;
 import me._hanho.nextjs_shop.product.ProductService;
 
 @RestController
@@ -58,7 +57,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getMyOrderList(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getMyReviews : " + userNo);
+		logger.info("getMyOrderList : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(userNo);
@@ -84,17 +83,16 @@ public class MypageController {
 	}
 	// 리뷰 작성
 	@PostMapping("/review")
-	public ResponseEntity<Map<String, Object>> writeReview(
-			@ModelAttribute Review review, 
+	public ResponseEntity<Map<String, Object>> addReview(
+			@Valid @ModelAttribute AddReviewRequest review, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("writeReview : ");
+		logger.info("addReview review {} : " + review + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		review.setUserNo(userNo);
 		mypageService.insertReview(review, userNo);
 		
-		result.put("message", "REVIEW_WRITE_SUCCESS");
+		result.put("message", "REVIEW_INSERT_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
@@ -115,14 +113,13 @@ public class MypageController {
 	// 장바구니 제품 옵션/수량 변경
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> updateCart(
-			@ModelAttribute UpdateCartRequest cart, 
+			@Valid @ModelAttribute UpdateCartRequest cart, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("updateCart : " + cart.getCartId());
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		cart.setUserNo(userNo);
-		mypageService.updateCart(cart);
+		mypageService.updateCart(cart, userNo);
 		
 		result.put("message", "CART_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -130,14 +127,14 @@ public class MypageController {
 	// 장바구니 제품 선택여부 변경
 	@PutMapping("/cart")
 	public ResponseEntity<Map<String, Object>> updateSelectedCart(
-			@ModelAttribute UpdateSelectedCartDTO selectedCart, 
+			@RequestParam("cartIdList") List<Integer> cartIdList,
+			@RequestParam("selected") Boolean selected,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateSelectedCart : " + selectedCart);
+		logger.info("updateSelectedCart cartIdList {} : " + cartIdList + ", selected : " + selected);
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		selectedCart.setUserNo(userNo);
-		mypageService.updateSelectedCart(selectedCart);
+		mypageService.updateSelectedCart(cartIdList, selected, userNo);
 		
 		result.put("message", "CART_SELECTED_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -159,7 +156,7 @@ public class MypageController {
 	// 장바구니 옵션조회 - 장바구니 제품 다른 option조회
 	@GetMapping("/cart/option/product-option")
 	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(
-			@RequestParam("productId") int productId) {
+			@RequestParam("productId") Integer productId) {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -194,38 +191,36 @@ public class MypageController {
 		logger.info("getUserAddress : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<UserAddress> userAddressList = mypageService.getUserAddressList(userNo);
+		List<UserAddressResponse> userAddressList = mypageService.getUserAddressList(userNo);
 		
 		result.put("userAddressList", userAddressList);
 		result.put("message", "ADDRESS_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 유저배송지 추가/수정
+	// 유저배송지 추가
 	@PostMapping("/address")
 	public ResponseEntity<Map<String, Object>> addUserAddress(
-			@ModelAttribute AddUserAddressRequest userAddress,
+			@Valid @ModelAttribute AddUserAddressRequest userAddress,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("addUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		userAddress.setUserNo(userNo);
-		mypageService.insertUserAddress(userAddress);
+		mypageService.insertUserAddress(userAddress, userNo);
 		
 		result.put("message", "ADDRESS_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 유저배송지 추가/수정
+	// 유저배송지 수정
 	@PutMapping("/address")
 	public ResponseEntity<Map<String, Object>> updateUserAddress(
-			@ModelAttribute UpdateUserAddressRequest userAddress,
+			@Valid @ModelAttribute UpdateUserAddressRequest userAddress,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("updateUserAddress : " + userAddress);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		userAddress.setUserNo(userNo);
-		mypageService.updateUserAddress(userAddress);
+		mypageService.updateUserAddress(userAddress, userNo);
 		
 		result.put("message", "ADDRESS_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -233,7 +228,7 @@ public class MypageController {
 	// 유저배송지 삭제
 	@DeleteMapping("/address/{addressId}")
 	public ResponseEntity<Map<String, Object>> deleteUserAddress(
-			@PathVariable("addressId") int addressId,
+			@PathVariable("addressId") Integer addressId,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("deleteUserAddress : " + addressId);

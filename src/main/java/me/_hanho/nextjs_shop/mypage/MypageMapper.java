@@ -5,9 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.model.Review;
-import me._hanho.nextjs_shop.model.UserAddress;
-
 @Mapper
 public interface MypageMapper {
 
@@ -21,28 +18,40 @@ public interface MypageMapper {
 	
 	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
-	void insertReview(@Param("review") Review review, @Param("userNo") Integer userNo);
+	void insertReview(@Param("review") AddReviewRequest review, @Param("userNo") Integer userNo);
 	
 	void unselectOutOfStockItems(Integer userNo);
 	
 	List<CartProductDTO> getCartList(Integer userNo);
 	
-	int updateCart(UpdateCartRequest cart);
+	int updateCart(@Param("c") UpdateCartRequest cart, @Param("userNo") Integer userNo);
 	
-	int updateSelectedCart(UpdateSelectedCartDTO selectedCart);
+	int updateSelectedCart(@Param("cartIdList") List<Integer> cartIdList, 
+							@Param("selected") Boolean selected, 
+							@Param("userNo") Integer userNo);
 	
-	int deleteCart(@Param("cartId") List<Integer> cartId, @Param("userNo") Integer userNo);
+	int deleteCart(@Param("cartIdList") List<Integer> cartIdList, @Param("userNo") Integer userNo);
 	
 	List<WishlistItemDTO> getWishlistItems(Integer userNo);
 
-	List<UserAddress> getUserAddressList(Integer userNo);
+	List<UserAddressResponse> getUserAddressList(Integer userNo);
 
-	void insertUserAddress(AddUserAddressRequest userAddress);
+	void insertUserAddress(@Param("ua") AddUserAddressRequest userAddress, @Param("userNo") Integer userNo);
 
 	void clearDefaultAddress(@Param("addressId") Integer addressId, @Param("userNo") Integer userNo);
 	
-	int updateUserAddress(UpdateUserAddressRequest userAddress);
+	int updateUserAddress(@Param("ua") UpdateUserAddressRequest userAddress, @Param("userNo") Integer userNo);
 
-	int deleteUserAddress(@Param("addressId") int addressId, @Param("userNo") Integer userNo);
+	int isDefaultAddress(@Param("addressId") Integer addressId, @Param("userNo") Integer userNo);
+	
+	int deleteUserAddress(@Param("addressId") Integer addressId, @Param("userNo") Integer userNo);
+	
+	void updateDefaultLatest(@Param("userNo") Integer userNo);
+
+	
+
+	
+
+	
 	
 }

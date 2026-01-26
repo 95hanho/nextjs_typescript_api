@@ -51,26 +51,26 @@ public class ProductService {
 	    return productList;
 	}
 	@Transactional
-	public void setLike(AddLikeRequest like) {
-		boolean hasLike = productMapper.isLikeExist(like);
+	public void setLike(Integer productId, Integer userNo) {
+		boolean hasLike = productMapper.isLikeExist(productId, userNo);
 		if(!hasLike) {
-			productMapper.upProductLike(like.getProductId());
-			productMapper.insertLike(like);
+			productMapper.upProductLike(productId);
+			productMapper.insertLike(productId, userNo);
 		} else {
-			productMapper.downProductLike(like.getProductId());
-			productMapper.deleteLike(like);
+			productMapper.downProductLike(productId);
+			productMapper.deleteLike(productId, userNo);
 		}
 	}
 	
 	@Transactional
-	public void setWish(AddWishRequest wish) {
-		boolean hasWish = productMapper.isWishExist(wish);
+	public void setWish(Integer productId, Integer userNo) {
+		boolean hasWish = productMapper.isWishExist(productId, userNo);
 		if(!hasWish) {
-			productMapper.upProductWish(wish.getProductId());
-			productMapper.insertWish(wish);
+			productMapper.upProductWish(productId);
+			productMapper.insertWish(productId, userNo);
 		} else {
-			productMapper.downProductWish(wish.getProductId());
-			productMapper.deleteWish(wish);
+			productMapper.downProductWish(productId);
+			productMapper.deleteWish(productId, userNo);
 		}
 	}
 

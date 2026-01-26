@@ -21,7 +21,8 @@ public class CartProductDTO {
     
     private int productId;
     private String productName;
-    private int price;
+    private int originPrice;
+    private int finalPrice;
     
     private Integer wishId;
     
