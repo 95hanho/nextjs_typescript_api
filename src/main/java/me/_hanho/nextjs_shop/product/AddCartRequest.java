@@ -9,6 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor // 전체 필드 생성자
 public class AddCartRequest {
 	private Integer productOptionId;
-	private Integer userNo;
 	private Integer quantity;
 }

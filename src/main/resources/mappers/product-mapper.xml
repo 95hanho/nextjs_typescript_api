@@ -68,6 +68,34 @@
 	  ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 
+	<select id="isLikeExist" resultType="boolean">
+		SELECT EXISTS (
+        SELECT 1
+        FROM nextjs_shop_like
+        WHERE product_id = #{productId}
+          AND user_no = #{userNo}
+	    )
+	</select>
+	<update id="upProductLike">
+		UPDATE nextjs_shop_product
+		SET like_count = like_count + 1
+		WHERE product_id = #{productId} 
+	</update>
+	<insert id="insertLike">
+		INSERT INTO nextjs_shop_like(product_id, user_no)
+		VALUES(#{productId}, #{userNo})
+	</insert>
+	<update id="downProductLike">
+		UPDATE nextjs_shop_product
+		SET like_count = like_count - 1
+		WHERE product_id = #{productId}
+	</update>
+	<delete id="deleteLike">
+		DELETE FROM nextjs_shop_like
+		WHERE product_id = #{productId}
+          AND user_no = #{userNo}
+	</delete>
+	<!--  -->
 	<select id="isWishExist" resultType="boolean">
 		SELECT EXISTS (
         SELECT 1
@@ -96,33 +124,7 @@
           AND user_no = #{userNo}
 	</delete>
 	<!--  -->
-	<select id="isLikeExist" resultType="boolean">
-		SELECT EXISTS (
-        SELECT 1
-        FROM nextjs_shop_like
-        WHERE product_id = #{productId}
-          AND user_no = #{userNo}
-	    )
-	</select>
-	<update id="upProductLike">
-		UPDATE nextjs_shop_product
-		SET like_count = like_count + 1
-		WHERE product_id = #{productId} 
-	</update>
-	<insert id="insertLike">
-		INSERT INTO nextjs_shop_like(product_id, user_no)
-		VALUES(#{productId}, #{userNo})
-	</insert>
-	<update id="downProductLike">
-		UPDATE nextjs_shop_product
-		SET like_count = like_count - 1
-		WHERE product_id = #{productId}
-	</update>
-	<delete id="deleteLike">
-		DELETE FROM nextjs_shop_like
-		WHERE product_id = #{productId}
-          AND user_no = #{userNo}
-	</delete>
+
 	<insert id="addCart">
 		INSERT INTO nextjs_shop_cart(product_option_id, user_no, quantity)
 		VALUES(#{productOptionId}, #{userNo}, #{quantity})

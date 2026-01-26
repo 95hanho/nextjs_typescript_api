@@ -16,25 +16,27 @@ public interface ProductMapper {
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
 	
-	boolean isWishExist(AddWishRequest wish);
-	
-	void upProductWish(int productId);
-	
-	void insertWish(AddWishRequest wish);
-	
-	void downProductWish(int productId);
+	boolean isLikeExist(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 
-	void deleteWish(AddWishRequest wish);
+	void upProductLike(Integer productId);
+
+	void insertLike(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+
+	void downProductLike(Integer productId);
+
+	void deleteLike(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+	
+	boolean isWishExist(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+	
+	void upProductWish(Integer productId);
+	
+	void insertWish(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+	
+	void downProductWish(Integer productId);
+
+	void deleteWish(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	//
-	boolean isLikeExist(AddLikeRequest like);
 
-	void upProductLike(int productId);
-
-	void insertLike(AddLikeRequest like);
-
-	void downProductLike(int productId);
-
-	void deleteLike(AddLikeRequest like);
 	
 	void addCart(AddCartRequest cart);
 

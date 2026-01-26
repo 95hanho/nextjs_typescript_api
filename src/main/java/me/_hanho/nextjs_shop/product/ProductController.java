@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.ProductOption;
 
 @RestController
@@ -49,35 +51,41 @@ public class ProductController {
 	}
 	// 좋아요/취소
 	@PostMapping("like")
-	public ResponseEntity<Map<String, Object>> setLike(@ModelAttribute AddLikeRequest like, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> setLike(
+			@RequestParam("productId") Integer productId,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		like.setUserNo(userNo);
-		productService.setLike(like);
+		productService.setLike(productId, userNo);
 
-		result.put("message", "WISH_SET_SUCCESS");
+		result.put("message", "LIKE_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 위시 등록/해제
 	@PostMapping("/wish")
-	public ResponseEntity<Map<String, Object>> setWish(@ModelAttribute AddWishRequest wish, @RequestAttribute("userNo") Integer userNo) {
-		logger.info("getProductList");
+	public ResponseEntity<Map<String, Object>> setWish(
+			@RequestParam("productId") Integer productId, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("setWish productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		wish.setUserNo(userNo);
-		productService.setWish(wish);
+		productService.setWish(productId, userNo);
 
 		result.put("message", "WISH_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
-	public ResponseEntity<Map<String, Object>> addCart(@ModelAttribute AddCartRequest cart, @RequestAttribute("userNo") Integer userNo) {
+	public ResponseEntity<Map<String, Object>> addCart(
+			@ModelAttribute AddCartRequest cart, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("addCart");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		cart.setUserNo(userNo);
 		productService.addCart(cart);
 
 		result.put("message", "CART_ADD_SUCCESS");

@@ -161,7 +161,7 @@ public class BuyController {
 	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인된 가격 
 
 	    BigDecimal couponFinalTotal = items.stream()
-	            .map(ProductWithCouponsDTO::getFinalPrice)
+	            .map(ProductWithCouponsDTO::getResultPrice)
 	            .filter(Objects::nonNull)
 	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인받은 최종가격  
 	    

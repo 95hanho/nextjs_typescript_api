@@ -1,5 +1,7 @@
 package me._hanho.nextjs_shop.mypage;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,13 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddUserAddressRequest {
-	private String addressName;
-	private String recipientName;
-	private String addressPhone;
-	private String zonecode;
-	private String address;
-	private String addressDetail;
-	private String memo;
-	private boolean defaultAddress;
-	private Integer userNo;
+	@NotBlank private String addressName;
+	@NotBlank private String recipientName;
+	@NotBlank private String addressPhone;
+	@NotBlank private String zonecode;
+	@NotBlank private String address;
+	@NotBlank private String addressDetail;
+	@NotBlank private String memo;
+	@NotNull private boolean defaultAddress;
 }

@@ -17,7 +17,7 @@ public class MyOrderDetailItemDTO {
     private int count;
     private BigDecimal orderPrice;
     private BigDecimal discountPrice;
-    private BigDecimal finalPrice;
+    private BigDecimal paidUnitPrice;
     
 	// 해당 제품에 사용한 쿠폰 내역
 	private int userCouponId;
@@ -38,7 +38,8 @@ public class MyOrderDetailItemDTO {
     private int productId;
     private String productName;
     private String colorName;
-    private int price;
+    private int originPrice;
+    private int finalPrice;
     
     private String sellerName;
     
