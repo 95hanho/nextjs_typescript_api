@@ -28,7 +28,7 @@ public class Seller {
     private Timestamp requestedAt; // 판매자 가입 신청 시각
     private String appovalStatus; // 승인 상태 'PENDING','APPROVED','REJECTED','SUSPENDED'
     private Timestamp approvedAt; // 요청/승인 날짜
-    private int approvedBy; // 처리자 관리자id
+    private int approvedBy; // 처리자 관리자no
     private Timestamp rejectedAt; // 반려 시각
     private String rejectReason; // 반려 사유
     private Timestamp suspendedAt; // 정지 날짜

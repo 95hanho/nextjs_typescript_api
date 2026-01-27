@@ -41,7 +41,8 @@ public class AuthController {
 
 	// 유저정보가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getUserInfo(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserInfo(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -57,7 +58,9 @@ public class AuthController {
 	}
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@RequestParam("userId") String userId, @RequestParam("password") String password, 
+	public ResponseEntity<Map<String, Object>> login(
+			@RequestParam("userId") String userId, 
+			@RequestParam("password") String password, 
 			@RequestHeader("User-Agent") String agent
 			, HttpServletRequest request) {
 		logger.info("login :" + userId);
@@ -72,9 +75,63 @@ public class AuthController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	// 로그인 토큰 저장
+	@PostMapping("/token")
+	public ResponseEntity<Map<String, Object>> insertToken(
+			@RequestAttribute(value="userNo", required=false) Integer userNo, 
+			@RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
+				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		tokenService.parseJwtRefreshToken(refreshToken);
+		
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		UserToken token = UserToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
+		authService.insertToken(token);
+		
+		result.put("message", "TOKEN_INSERT_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	// 로그인 토큰 수정(재저장)
+	@PostMapping("/token/refresh")
+	public ResponseEntity<Map<String, Object>> updateToken(
+			@RequestParam("beforeToken") String beforeToken , 
+			@RequestParam("refreshToken") String refreshToken,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor) {
+		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
+				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
+				", x-forwarded-for : " + forwardedFor);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		tokenService.parseJwtRefreshToken(beforeToken);
+		tokenService.parseJwtRefreshToken(refreshToken);
+		
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
+		
+		authService.updateToken(token);
+		
+		Integer userNo = authService.getUserNoByToken(token);
+		if(userNo == null) {
+			result.put("message", "WRONG_TOKEN");
+			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
+		}
+		
+		result.put("userNo", userNo);
+		result.put("message", "TOKEN_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	// 유저아이디 조회 By인증토큰
 	@GetMapping("/id")
-	public ResponseEntity<Map<String, Object>> getUserId(@RequestAttribute(value="userNo", required=false) Integer userNo) {
+	public ResponseEntity<Map<String, Object>> getUserId(
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("getUserId userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -286,57 +343,6 @@ public class AuthController {
 		authService.changePassword(userNo, newPassword);
 		
 		result.put("message", "PASSWORD_CHANGE_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-
-	// 로그인 토큰 저장
-	@PostMapping("/token")
-	public ResponseEntity<Map<String, Object>> insertToken(
-			@RequestAttribute(value="userNo", required=false) Integer userNo, @RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, @RequestHeader("x-forwarded-for") String forwardedFor) {
-		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
-				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		tokenService.parseJwtRefreshToken(refreshToken);
-		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		UserToken token = UserToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
-		authService.insertToken(token);
-		
-		result.put("message", "TOKEN_INSERT_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-	
-	// 로그인 토큰 수정(재저장)
-	@PostMapping("/token/refresh")
-	public ResponseEntity<Map<String, Object>> updateToken(
-			@RequestParam("beforeToken") String beforeToken , 
-			@RequestParam("refreshToken") String refreshToken,
-			@RequestHeader("user-agent") String userAgent, 
-			@RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
-				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
-				", x-forwarded-for : " + forwardedFor);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		tokenService.parseJwtRefreshToken(beforeToken);
-		tokenService.parseJwtRefreshToken(refreshToken);
-		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
-		
-		authService.updateToken(token);
-		
-		Integer userNo = authService.getUserNoByToken(token);
-		if(userNo == null) {
-			result.put("message", "WRONG_TOKEN");
-			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
-		}
-		
-		result.put("userNo", userNo);
-		result.put("message", "TOKEN_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

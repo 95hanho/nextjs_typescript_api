@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -80,20 +79,22 @@ public class ProductController {
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> addCart(
-			@ModelAttribute AddCartRequest cart, 
+			@RequestParam("productOptionId") Integer productOptionId,
+			@RequestParam("quantity") Integer quantity,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("addCart");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.addCart(cart);
+		productService.addCart(productOptionId, quantity, userNo);
 
 		result.put("message", "CART_ADD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
-	public ResponseEntity<Map<String, Object>> getProductDetail(@PathVariable("productId") int productId,
+	public ResponseEntity<Map<String, Object>> getProductDetail(
+			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductDetail productId : " + productId + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -114,7 +115,8 @@ public class ProductController {
 	}
 	// 리뷰 조회
 	@GetMapping("/review")
-	public ResponseEntity<Map<String, Object>> getProductReviewList(@RequestParam("productId") String productId,
+	public ResponseEntity<Map<String, Object>> getProductReviewList(
+			@RequestParam("productId") String productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -127,7 +129,8 @@ public class ProductController {
 	}
 	// 상품 Q&A
 	@GetMapping("/qna")
-	public ResponseEntity<Map<String, Object>> getProductQnaList(@RequestParam("productId") String productId,
+	public ResponseEntity<Map<String, Object>> getProductQnaList(
+			@RequestParam("productId") String productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductDetail productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();

@@ -37,8 +37,7 @@ public interface ProductMapper {
 	void deleteWish(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	//
 
-	
-	void addCart(AddCartRequest cart);
+	void addCart(@Param("productOptionId") Integer productOptionId, @Param("quantity") Integer quantity, @Param("userNo") Integer userNo);
 
 	ProductDetailResponse getProductDetail(int productId);
 	
@@ -51,6 +50,7 @@ public interface ProductMapper {
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") String productId, @Param("userNo") Integer userNo);
 
 	List<ProductQnaResponse> getProductQnaList(@Param("productId") String productId, @Param("userNo") Integer userNo);
+
 
 	
 

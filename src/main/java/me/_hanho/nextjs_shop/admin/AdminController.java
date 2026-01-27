@@ -69,7 +69,9 @@ public class AdminController {
 	}
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@RequestParam("adminId") String adminId, @RequestParam("password") String password) {
+	public ResponseEntity<Map<String, Object>> login(
+			@RequestParam("adminId") String adminId, 
+			@RequestParam("password") String password) {
 		logger.info("adminLogin :" + adminId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
