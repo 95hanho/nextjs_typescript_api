@@ -74,9 +74,10 @@ public class ProductService {
 		}
 	}
 
-	public void addCart(AddCartRequest cart) {
-		productMapper.addCart(cart);
+	public void addCart(Integer productOptionId, Integer quantity, Integer userNo) {
+		productMapper.addCart(productOptionId, quantity, userNo);
 	}
+	
 
 	public ProductDetailResponse getProductDetail(int productId) {
 		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);

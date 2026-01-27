@@ -30,6 +30,13 @@ public class AuthService {
 		return passwordEncoder.matches(password, checkPassword);
 	}
     
+	public void updateToken(ReToken token) {
+	    int updated = authMapper.updateToken(token);
+	    if (updated == 0) {
+	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "Token not found");
+	    }
+	}
+    
     public String getUserId(Integer userNo) {
 		return authMapper.getUserId(userNo);
 	}
@@ -77,13 +84,6 @@ public class AuthService {
 	
 	public void insertToken(UserToken token) {
 		authMapper.insertToken(token);
-	}
-	
-	public void updateToken(ReToken token) {
-	    int updated = authMapper.updateToken(token);
-	    if (updated == 0) {
-	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "Token not found");
-	    }
 	}
 
 	public Integer getUserNoByToken(ReToken token) {

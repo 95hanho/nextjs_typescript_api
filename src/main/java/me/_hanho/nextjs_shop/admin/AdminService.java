@@ -53,6 +53,12 @@ public class AdminService {
 	}
 	
 	public List<Seller> getSellerList() {
+		List<Seller> sellerList = adminMapper.getSellerList();
+		
+		sellerList.forEach(seller -> {
+			seller.setSellerId(MaskingUtil.maskUserIdName(seller.getSellerId(), 5));
+		});
+		
 		return adminMapper.getSellerList();
 	}
 	
@@ -61,7 +67,6 @@ public class AdminService {
 		return adminMapper.hasSeller(sellerId) == 1;
 	}
 
-    
 	public void addSeller(SellerRegisterRequest seller, Integer adminNo) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));
 		adminMapper.addSeller(seller, adminNo);
