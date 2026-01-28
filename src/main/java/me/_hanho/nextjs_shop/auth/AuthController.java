@@ -178,7 +178,6 @@ public class AuthController {
             if (type == null) {
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
             }
-
             if (!"PHONEAUTH".equals(type)) {
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
             }
@@ -212,7 +211,7 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
 			@RequestParam("authNumber") String authNumber,
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestParam(required = false, name = "userId") String requestId) {
+			@RequestParam(required = false, name = "requestId") String requestId) {
 		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", requestId : " + requestId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
