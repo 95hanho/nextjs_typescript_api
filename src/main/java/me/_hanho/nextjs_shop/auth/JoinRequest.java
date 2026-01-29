@@ -1,6 +1,8 @@
 package me._hanho.nextjs_shop.auth;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +21,9 @@ public class JoinRequest {
     @NotBlank private String zonecode;
     @NotBlank private String address;
     @NotBlank private String addressDetail;
-    @NotNull private Timestamp birthday;
+    @NotNull 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // @ModelAttribute일 때 특히 필요
+    private LocalDate birthday;
     @NotBlank private String phone;
     @NotBlank private String email;
 }

@@ -17,6 +17,7 @@ public class PhoneAuth {
 	private String phoneAuthToken;
 	private String phone;
 	private String verificationCode;
+	private String mode; // 'JOIN','IDFIND','PWDFIND','CHANGE'
 	private String connectIp;
 	private String connectAgent;
 	private boolean isUsed;

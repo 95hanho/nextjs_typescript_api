@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.auth;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -157,18 +158,19 @@ public class AuthController {
 		result.put("message", "ID_AVAILABLE");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 휴대폰인증 - 회원가입, 아이디찾기, 비밀번호 찾기 또는 휴대폰번호 바꾸기
+	// 휴대폰인증 - 회원가입, 아이디찾기/비밀번호 찾기 또는 휴대폰번호 바꾸기
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> sendPhoneAuth(
+			@RequestParam("phone") String phone,
+			@RequestParam("mode") String mode,
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor,
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
-		logger.info("phoneAuth - phoneAuthToken : {}, userNo : {}", phoneAuthToken, userNo);
+		logger.info("phoneAuth - phone :, mode :, phoneAuthToken : {}, userNo : {}", phone, mode, phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		String phone = null;
 		
 		try {
 			// JWT 파싱 및 복호화
@@ -181,23 +183,23 @@ public class AuthController {
             if (!"PHONEAUTH".equals(type)) {
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
             }
-        	phone = claims.get("phone", String.class);
 		} catch (ExpiredJwtException e) {
 			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
 	    } catch (JwtException | IllegalArgumentException e) {
 	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
 	    }
-		if (phone == null || phone.isEmpty()) {
-	        throw new BusinessException(ErrorCode.PHONE_NOT_FOUND_IN_TOKEN);
-	    }
-		
+		boolean hasPhone = authService.hasPhone(phone);
+		if(List.of("JOIN", "CHANGE").contains(mode) && hasPhone) {
+			throw new BusinessException(ErrorCode.PHONE_DUPLICATED);
+		}
 		// 인증번호(6자리?)를 생성
 		String verificationCode = phoneAuthCodeService.generate6DigitCode();
 		logger.info("phoneAuth-verificationCode : " + verificationCode);
 		
         // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
 		PhoneAuthDAO phoneAuth = PhoneAuthDAO.builder().userNo(userNo).phoneAuthToken(phoneAuthToken)
-				.phone(phone).verificationCode(verificationCode).connectIp(ipAddress).connectAgent(userAgent).build();
+				.phone(phone).verificationCode(verificationCode).mode(mode)
+				.connectIp(ipAddress).connectAgent(userAgent).build();
 		authService.insertPhoneAuth(phoneAuth);
 		
 		// 인증번호를 휴대폰으로 보냄!!
@@ -210,9 +212,8 @@ public class AuthController {
 	@PostMapping("/phone/check")
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
 			@RequestParam("authNumber") String authNumber,
-			@RequestParam("phoneAuthToken") String phoneAuthToken,
-			@RequestParam(required = false, name = "requestId") String requestId) {
-		logger.info("phoneAuthCheck - authNumber='" + authNumber + ", requestId : " + requestId);
+			@RequestParam("phoneAuthToken") String phoneAuthToken) {
+		logger.info("phoneAuthCheck - authNumber='" + authNumber);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		try {
@@ -236,33 +237,33 @@ public class AuthController {
 	    if (phoneAuth == null) {
 	        throw new BusinessException(ErrorCode.PHONE_AUTH_NOT_FOUND);
 	    }
+	    String mode = phoneAuth.getMode(); 
 	    // 인증번호가 올바르지 않음
 	    if (!authNumber.equals(phoneAuth.getVerificationCode())) {
 	        throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
 	    }
 		// 인증번호 검증 성공(사용토큰으로 변경)
 		authService.markPhoneAuthUsed(phoneAuth.getPhoneAuthId());
-        
-		String hasId = authService.getUserIdByPhone(phoneAuth.getPhone());
-        if(requestId == null) {
-        	// 1. requestId가 없고,hasId에 id도 없다. = 회원가입
-        	if(hasId == null) {
-        		result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
-    			return new ResponseEntity<>(result, HttpStatus.OK);
-        	}
-        	// 2. requestId가 없고, hasId가 존재하는 유저이다.  = 아이디찾기
-        	else {
-        		result.put("userId", hasId);
-        		result.put("message", "IDFIND_SUCCESS"); // 인증 성공
-        		return new ResponseEntity<>(result, HttpStatus.OK);
-        	}
-        }
-        // 3. requestId가 있고, hasId와 일치한다. = 비밀번호 찾기
-        else if(requestId != null && requestId.equals(hasId)) {
-        	result.put("userId", hasId);
+		
+		// 회원가입, 전화번호 변경
+		if(List.of("JOIN", "CHANGE").contains(mode)) {
+			result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+		FindUserDTO findUser = authService.getUserByPhone(phoneAuth.getPhone());
+		if(findUser == null) throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND);
+		// 아이디 찾기
+		if("IDFIND".equals(mode)){
+			result.put("userId", findUser.getUserId());
+    		result.put("message", "IDFIND_SUCCESS"); // 인증 성공
+    		return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+		// 비밀번호 찾기
+		if("PWDFIND".equals(mode)) {
+			result.put("userNo", findUser.getUserNo());
         	result.put("message", "PWDFIND_SUCCESS"); // 인증 성공
     		return new ResponseEntity<>(result, HttpStatus.OK);
-        }
+		}
         
         result.put("message", "INVALID_REQUEST");
         return ResponseEntity
@@ -346,7 +347,7 @@ public class AuthController {
 	}
 	
 	// 회원탈퇴 요청
-	@DeleteMapping
+	@DeleteMapping("/user")
 	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("withDrawalUser userNo : " + userNo);
