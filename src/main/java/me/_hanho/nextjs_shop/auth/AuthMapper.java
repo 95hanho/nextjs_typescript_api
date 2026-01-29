@@ -16,13 +16,15 @@ public interface AuthMapper {
 	
 	int hasId(String userId);
 	
+	int hasPhone(String phone);
+	
 	void insertPhoneAuth(PhoneAuthDAO phoneAuth);
 	
 	PhoneAuth getPhoneAuthCode(String phoneAuthToken);
 
 	void markPhoneAuthUsed(int phoneAuthId);
 	
-	String getUserIdByPhone(String phone);
+	FindUserDTO getUserByPhone(String phone);
 
 	void joinUser(JoinRequest user);
 
@@ -41,6 +43,8 @@ public interface AuthMapper {
 	Integer getUserNoByToken(ReToken token);
 
 	void withDrawalUser(Integer userNo);
+
+	
 
 	
 

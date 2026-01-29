@@ -25,10 +25,16 @@
 	        WHERE user_id = #{userId}
 	    ) AS exists_flag
 	</select>
+	<select id="hasPhone" resultType="int">
+		SELECT EXISTS (
+	        SELECT 1 FROM nextjs_shop_user
+	        WHERE phone = #{phone}
+	    ) AS exists_flag
+	</select>
 	
 	<insert id="insertPhoneAuth">
-		INSERT INTO nextjs_shop_phone_auth(user_no, phone_auth_token, phone, verification_code, connect_ip, connect_agent)
-		VALUES(#{userNo}, #{phoneAuthToken}, #{phone}, #{verificationCode}, #{connectIp}, #{connectAgent})
+		INSERT INTO nextjs_shop_phone_auth(user_no, phone_auth_token, phone, verification_code, mode, connect_ip, connect_agent)
+		VALUES(#{userNo}, #{phoneAuthToken}, #{phone}, #{verificationCode}, #{mode}, #{connectIp}, #{connectAgent})
 	</insert>
 	
 	<select id="getPhoneAuthCode">
@@ -45,8 +51,8 @@
 		WHERE phone_auth_id = #{phoneAuthId}
 	</update>
 	
-	<select id="getUserIdByPhone">
-		SELECT user_id
+	<select id="getUserByPhone">
+		SELECT user_no, user_id
 		FROM nextjs_shop_user
 		WHERE phone = #{phone}
 	</select>

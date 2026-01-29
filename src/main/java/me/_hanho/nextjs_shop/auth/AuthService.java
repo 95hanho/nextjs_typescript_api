@@ -45,6 +45,10 @@ public class AuthService {
 		return authMapper.hasId(userId) == 1;
 	}
 	
+	public boolean hasPhone(String phone) {
+		return authMapper.hasPhone(phone) == 1;
+	}
+
 	public void insertPhoneAuth(PhoneAuthDAO phoneAuth) {
 		authMapper.insertPhoneAuth(phoneAuth);
 	}
@@ -57,8 +61,8 @@ public class AuthService {
 		authMapper.markPhoneAuthUsed(phoneAuthId);
 	}
 	
-	public String getUserIdByPhone(String phone) {
-		return authMapper.getUserIdByPhone(phone);
+	public FindUserDTO getUserByPhone(String phone) {
+		return authMapper.getUserByPhone(phone);
 	}
 
 	public void joinUser(JoinRequest user) {
