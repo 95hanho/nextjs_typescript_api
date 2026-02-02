@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.product.ProductOptionDTO;
 import me._hanho.nextjs_shop.product.ProductService;
 
 @RestController
@@ -159,7 +160,7 @@ public class MypageController {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartOtherOptionResponse> cartOptionProductOptionList = productService.getProductOptionList(productId);
+		List<ProductOptionDTO> cartOptionProductOptionList = productService.getProductOptionList(productId);
 		
 		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
 		result.put("message", "CART_OPTION_FETCH_SUCCESS");

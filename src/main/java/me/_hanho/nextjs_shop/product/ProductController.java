@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.mypage.CartOtherOptionResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -100,7 +99,7 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
-		List<CartOtherOptionResponse> productOptionList = productService.getProductOptionList(productId);
+		List<ProductOptionDTO> productOptionList = productService.getProductOptionList(productId);
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = null;
 		if(userNo != null) {
