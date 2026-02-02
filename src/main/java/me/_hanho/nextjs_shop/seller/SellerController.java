@@ -41,7 +41,9 @@ public class SellerController {
 	
 	// 로그인
 	@PostMapping
-	public ResponseEntity<Map<String, Object>> login(@RequestParam("sellerId") String sellerId, @RequestParam("password") String password) {
+	public ResponseEntity<Map<String, Object>> login(
+			@RequestParam("sellerId") String sellerId, 
+			@RequestParam("password") String password) {
 		logger.info("sellerLogin :" + sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -171,8 +173,9 @@ public class SellerController {
 	}
 	// 제품 추가
 	@PostMapping("/product")
-	public ResponseEntity<Map<String, Object>> addProduct(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
-		 	@Valid @ModelAttribute AddProductRequest product) {
+	public ResponseEntity<Map<String, Object>> addProduct(
+		 	@Valid @ModelAttribute AddProductRequest product,
+		 	@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("sellerAddProduct " + product);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -263,9 +266,10 @@ public class SellerController {
 	}
 	// 쿠폰 조회
 	@GetMapping("/coupon")
-	public ResponseEntity<Map<String, Object>> getSellerCouponList(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+	public ResponseEntity<Map<String, Object>> getSellerCouponList(
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerCoupon "+ sellerNo);
+		logger.info("getSellerCouponList "+ sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<SellerCouponResponse> couponList = sellerService.getSellerCouponList(sellerNo);

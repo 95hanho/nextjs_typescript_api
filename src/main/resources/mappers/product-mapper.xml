@@ -132,7 +132,7 @@
 	<select id="getProductDetail">
 		SELECT  p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
 		p.like_count, p.view_count, p.wish_count, s.seller_name,
-		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName,
+		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
 		material_info, manufacturer_name, country_of_origin, 
 		wash_care_info, manufactured_ym, quality_guarantee_info, 
 		after_service_contact, after_service_manager, after_service_phone
@@ -157,9 +157,9 @@
 		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 	<select id="getProductOptionList">
-		SELECT *
+		SELECT product_option_id, product_id, add_price, stock, size
 		FROM nextjs_shop_product_option
-		WHERE product_id = #{productId}
+		WHERE product_id = #{productId} AND is_displayed = 1
 	</select>
 	<select id="getAvailableProductCoupon">
 		SELECT uc.user_coupon_id, uc.used, 
@@ -174,13 +174,16 @@
 		WHERE uc.user_no = #{userNo} AND uc.used = 0
 	</select>
 	<select id="getProductReviewList">
-		SELECT r.review_id, r.content, r.created_at, r.updated_at, r.rating, r.order_list_id, r.product_id, 
-		r.product_option_id, r.user_no, u.name AS userName
+		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_list_id, 
+			r.user_no, u.name AS userName
 		FROM nextjs_shop_review r
-		JOIN userjs_shop_user u ON r.user_no = u.user_no
-		WHERE r.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
+		JOIN nextjs_shop_user u ON r.user_no = u.user_no
+		JOIN nextjs_shop_order_item oi ON r.order_list_id = oi.order_list_id
+		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
+		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+		WHERE po.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
 		ORDER BY
-		<if test="userId != null">
+		<if test="userNo != null">
 			CASE WHEN r.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
 		</if>
 		r.created_at DESC,
@@ -195,14 +198,16 @@
 			pq.res_created_at,
 			pq.secret,
 			pq.product_qna_type_id,
+			pqt.name AS productQnaTypeName,
 			pq.product_id,
 			pq.user_no,
 			u.name AS userName
 		FROM nextjs_shop_product_qna pq
-		JOIN userjs_shop_user u ON pq.user_no = u.user_no
+		JOIN nextjs_shop_user u ON pq.user_no = u.user_no
+		JOIN nextjs_shop_product_qna_type pqt ON pq.product_qna_type_id = pqt.product_qna_type_id
 		WHERE pq.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
 		ORDER BY
-		<if test="userId != null">
+		<if test="userNo != null">
 			CASE WHEN pq.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
 		</if>
 		pq.created_at DESC,

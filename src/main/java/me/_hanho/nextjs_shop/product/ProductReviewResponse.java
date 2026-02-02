@@ -12,12 +12,9 @@ import lombok.NoArgsConstructor;
 public class ProductReviewResponse {
 	private int reviewId;
     private String content;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private Timestamp reviewDate;
     private int rating;
     private int orderListId;
-    private int productId;
-    private int productOptionId;
     private Integer userNo;
     private String userName;
 }

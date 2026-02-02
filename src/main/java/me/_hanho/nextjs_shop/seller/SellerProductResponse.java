@@ -18,10 +18,12 @@ public class SellerProductResponse {
 	private int originPrice;
 	private int finalPrice;
 	private Timestamp createdAt;
+	private int likeCount;
 	private int viewCount;
 	private int wishCount;
 	
 	private boolean saleStop; // 판매 중지여부
+	private int menuSubId;
     private String subMenuName;
 	private String topMenuName;
     private String gender;
