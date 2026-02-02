@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
-import me._hanho.nextjs_shop.mypage.CartOtherOptionResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -89,7 +88,7 @@ public class ProductService {
 		return productDetail;
 	}
 
-	public List<CartOtherOptionResponse> getProductOptionList(int productId) {
+	public List<ProductOptionDTO> getProductOptionList(int productId) {
 		return productMapper.getProductOptionList(productId);
 	}
 

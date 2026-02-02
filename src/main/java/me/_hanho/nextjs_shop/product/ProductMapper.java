@@ -6,8 +6,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import me._hanho.nextjs_shop.mypage.CartOtherOptionResponse;
-
 @Mapper
 public interface ProductMapper {
 
@@ -43,7 +41,7 @@ public interface ProductMapper {
 	
 	List<ProductImageFile> getProductImageList(int productId);
 
-	List<CartOtherOptionResponse> getProductOptionList(int productId);
+	List<ProductOptionDTO> getProductOptionList(int productId);
 
 	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	
