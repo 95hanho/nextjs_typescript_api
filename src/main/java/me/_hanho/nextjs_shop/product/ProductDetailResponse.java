@@ -20,11 +20,11 @@ public class ProductDetailResponse {
     private int likeCount;
     private int viewCount;
     private int wishCount;
-    private boolean saleStop; // 판매 중지여부
     private String sellerName;
     private int menuSubId;
     private String subMenuName;
     private String topMenuName;
+    private String gender;
     private String materialInfo; // 제품 소재
     private String manufacturerName; // 제조자
     private String countryOfOrigin; // 제조국

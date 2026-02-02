@@ -1,7 +1,9 @@
 package me._hanho.nextjs_shop.seller;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,6 +28,8 @@ public class UpdateCouponRequest {
     @NotNull
     @Positive
     private Integer amount;
-    @NotNull private Timestamp startDate;
-    @NotNull private Timestamp endDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // @ModelAttribute일 때 특히 필요
+    @NotNull private LocalDate startDate;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // @ModelAttribute일 때 특히 필요
+    @NotNull private LocalDate endDate;
 }

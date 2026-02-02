@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
-import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.mypage.CartOtherOptionResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -89,7 +89,7 @@ public class ProductService {
 		return productDetail;
 	}
 
-	public List<ProductOption> getProductOptionList(int productId) {
+	public List<CartOtherOptionResponse> getProductOptionList(int productId) {
 		return productMapper.getProductOptionList(productId);
 	}
 
@@ -105,7 +105,7 @@ public class ProductService {
 		for (ProductReviewResponse review : list) {
 	        Integer writerNo = review.getUserNo();
 	        review.setUserNo(null);
-	        boolean isOwner = userNo != null && writerNo != null && writerNo.equals(userNo);
+	        boolean isOwner = userNo != null && writerNo != null && writerNo == userNo;
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {

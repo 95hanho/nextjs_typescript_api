@@ -1,0 +1,9 @@
+jwt:
+  secret:
+    refresh: ${JWT_REFRESH_SECRET}
+    user: ${JWT_USER_SECRET}
+    phoneauth: ${JWT_PHONEAUTH_SECRET}
+    phoneauth-complete: ${JWT_PHONEAUTH_COMPLETE_SECRET}
+    pwdchange: ${JWT_PWDCHANGE_SECRET}
+    seller: ${JWT_SELLER_SECRET}
+    admin: ${JWT_ADMIN_SECRET}

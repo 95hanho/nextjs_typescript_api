@@ -51,8 +51,9 @@
 	</insert>
 	<!-- 제품 관련 -->
 	<select id="getSellerProductList">
-		SELECT p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, p.view_count, p.wish_count, p.sale_stop,
-			ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
+		SELECT p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
+			p.like_count, p.view_count, p.wish_count, p.sale_stop,
+			p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
 			p.material_info, p.manufacturer_name, p.country_of_origin, p.wash_care_info, p.manufactured_ym, 
 			p.quality_guarantee_info, p.after_service_contact, p.after_service_manager, p.after_service_phone
 		FROM nextjs_shop_product p

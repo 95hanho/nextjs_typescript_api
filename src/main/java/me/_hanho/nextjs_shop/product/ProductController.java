@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.mypage.CartOtherOptionResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -100,7 +100,7 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
-		List<ProductOption> productOptionList = productService.getProductOptionList(productId);
+		List<CartOtherOptionResponse> productOptionList = productService.getProductOptionList(productId);
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = null;
 		if(userNo != null) {
@@ -113,12 +113,12 @@ public class ProductController {
 		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 리뷰 조회
+	// 제품 리뷰 조회
 	@GetMapping("/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
 			@RequestParam("productId") String productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("getProductDetail productId : " + productId);
+		logger.info("getProductReviewList productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
@@ -127,18 +127,18 @@ public class ProductController {
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 상품 Q&A
+	// 제품 상품 Q&A 조회
 	@GetMapping("/qna")
 	public ResponseEntity<Map<String, Object>> getProductQnaList(
 			@RequestParam("productId") String productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("getProductDetail productId : " + productId);
+		logger.info("getProductQnaList productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductQnaResponse> ProductQnaList = productService.getProductQnaList(productId, userNo);
 		
 		result.put("ProductQnaList", ProductQnaList);
-		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
+		result.put("message", "PRODUCT_QNA_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	

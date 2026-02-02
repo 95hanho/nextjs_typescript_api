@@ -3,6 +3,7 @@ package me._hanho.nextjs_shop.auth;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -15,13 +16,20 @@ import me._hanho.nextjs_shop.common.exception.ErrorCode;
 @Service
 public class TokenService {
 	
-	private static final String REFRESH_SECRET_KEY = "HANHOSEONGREFRESHTESTHANHOSEONGREFRESHTEST";
-	private static final String USER_SECRET_KEY = "HANHOSEONGTOKENTESTHANHOSEONGTOKENTEST";
-	private static final String PHONEAUTH_SECRET_KEY = "HANHOSEONGPHONEAUTHHANHOSEONGPHONEAUTH";
-	private static final String PHONEAUTH_COMPLETE_SECRET_KEY = "HANHOSEONGPHONEAUTHCOMPLETEHANHOSEONGPHONEAUTHCOMPLETE";
-	private static final String PWDCHANGE_SECRET_KEY = "HANHOSEONGPWDCHANGEHANHOSEONGPWDCHANGE";
-	private static final String SELLER_SECRET_KEY = "NEXTJSSELLERTOKENTESTNEXTJSSELLERTOKEN";
-	private static final String ADMIN_SECRET_KEY = "NEXTJSADMINTOKENTESTNEXTJSADMINTOKENAA";
+	@Value("${jwt.secret.refresh}")
+	private String REFRESH_SECRET_KEY;
+	@Value("${jwt.secret.user}")
+	private String USER_SECRET_KEY;
+	@Value("${jwt.secret.phoneauth}")
+	private String PHONEAUTH_SECRET_KEY;
+	@Value("${jwt.secret.phoneauth-complete}")
+	private String PHONEAUTH_COMPLETE_SECRET_KEY;
+	@Value("${jwt.secret.pwdchange}")
+	private String PWDCHANGE_SECRET_KEY;
+	@Value("${jwt.secret.seller}")
+	private String SELLER_SECRET_KEY;
+	@Value("${jwt.secret.admin}")
+	private String ADMIN_SECRET_KEY;
 
 	/**
 	 * 토큰 생성하기

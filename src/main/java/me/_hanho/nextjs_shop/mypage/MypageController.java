@@ -23,7 +23,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.product.ProductService;
 
 @RestController
@@ -154,13 +153,13 @@ public class MypageController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 장바구니 옵션조회 - 장바구니 제품 다른 option조회
-	@GetMapping("/cart/option/product-option")
+	@GetMapping("/cart/option")
 	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(
 			@RequestParam("productId") Integer productId) {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductOption> cartOptionProductOptionList = productService.getProductOptionList(productId);
+		List<CartOtherOptionResponse> cartOptionProductOptionList = productService.getProductOptionList(productId);
 		
 		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
 		result.put("message", "CART_OPTION_FETCH_SUCCESS");
