@@ -41,7 +41,7 @@ public class ProductController {
 		logger.info("getProductList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		// 
-		List<ProductListDTO> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+		List<ProductListResponse> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 		result.put("productList", productList);
 		result.put("message", "PRODUCT_FETCH_SUCCESS");
@@ -99,7 +99,7 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
-		List<ProductOptionDTO> productOptionList = productService.getProductOptionList(productId);
+		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = null;
 		if(userNo != null) {

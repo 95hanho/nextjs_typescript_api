@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class WishlistItemDTO {
+public class WishlistItemResponse {
 	private int wishId;
 	private Timestamp createdAt;
 	

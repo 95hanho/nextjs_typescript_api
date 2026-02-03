@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.product.ProductOptionDTO;
+import me._hanho.nextjs_shop.product.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.ProductService;
 
 @RestController
@@ -45,7 +45,7 @@ public class MypageController {
 		logger.info("getUserCoupons : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<UserCouponDTO> couponList = mypageService.getUserCoupons(userNo);
+		List<UserCouponResponse> couponList = mypageService.getUserCoupons(userNo);
 		
 		result.put("couponList", couponList);
 		result.put("message", "USER_COUPON_FETCH_SUCCESS");
@@ -60,7 +60,7 @@ public class MypageController {
 		logger.info("getMyOrderList : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MyOrderGroupDTO> myOrderList = mypageService.getMyOrderListWithReview(userNo);
+		List<MyOrderGroupResponse> myOrderList = mypageService.getMyOrderListWithReview(userNo);
 
 		result.put("myOrderList", myOrderList);
 		result.put("message", "MY_ORDER_LIST_FETCH_SUCCESS");
@@ -75,7 +75,7 @@ public class MypageController {
 		logger.info("getMyReviews : " + orderId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		MyOrderDetailDTO myOrderDetail = mypageService.getMyOrderDetail(orderId, userNo);
+		MyOrderDetailResponse myOrderDetail = mypageService.getMyOrderDetail(orderId, userNo);
 
 		result.put("myOrderDetail", myOrderDetail);
 		result.put("message", "MY_ORDER_DETAIL_FETCH_SUCCESS");
@@ -104,7 +104,7 @@ public class MypageController {
 		logger.info("selectCart : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartProductDTO> CartList = mypageService.getCartList(userNo);
+		List<CartProductResponse> CartList = mypageService.getCartList(userNo);
 		
 		result.put("cartList", CartList);
 		result.put("message", "CART_FETCH_SUCCESS");
@@ -160,7 +160,7 @@ public class MypageController {
 		logger.info("getCartOptionProductOptionList : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductOptionDTO> cartOptionProductOptionList = productService.getProductOptionList(productId);
+		List<ProductOptionResponse> cartOptionProductOptionList = productService.getProductOptionList(productId);
 		
 		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
 		result.put("message", "CART_OPTION_FETCH_SUCCESS");
@@ -174,7 +174,7 @@ public class MypageController {
 		logger.info("getWishList : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<WishlistItemDTO> wishlistItems = mypageService.getWishlistItems(userNo);
+		List<WishlistItemResponse> wishlistItems = mypageService.getWishlistItems(userNo);
 		
 		result.put("wishlistItems", wishlistItems);
 		result.put("message", "WISH_FETCH_SUCCESS");

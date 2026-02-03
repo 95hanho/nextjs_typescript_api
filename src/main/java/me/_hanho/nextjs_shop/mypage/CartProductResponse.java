@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartProductDTO {
+public class CartProductResponse {
 
 	private int cartId;
 	private Timestamp createdAt;

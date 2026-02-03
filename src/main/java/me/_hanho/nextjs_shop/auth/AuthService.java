@@ -17,7 +17,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
 	
-	public UserInfo getUserInfo(Integer userNo) {
+	public UserInfoResponse getUserInfo(Integer userNo) {
 		return authMapper.getUserInfo(userNo);
 	}
 	
@@ -49,7 +49,7 @@ public class AuthService {
 		return authMapper.hasPhone(phone) == 1;
 	}
 
-	public void insertPhoneAuth(PhoneAuthDAO phoneAuth) {
+	public void insertPhoneAuth(PhoneAuthDTO phoneAuth) {
 		authMapper.insertPhoneAuth(phoneAuth);
 	}
 	
@@ -61,7 +61,7 @@ public class AuthService {
 		authMapper.markPhoneAuthUsed(phoneAuthId);
 	}
 	
-	public FindUserDTO getUserByPhone(String phone) {
+	public FindUser getUserByPhone(String phone) {
 		return authMapper.getUserByPhone(phone);
 	}
 

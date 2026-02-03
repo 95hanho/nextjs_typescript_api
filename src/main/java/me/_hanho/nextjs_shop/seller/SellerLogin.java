@@ -7,10 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SellerProductCouponAllowed {
-	private int productId;
-	private String productName;
-	
-    private Integer couponAllowedId;
-    private Integer couponId;
+public class SellerLogin {
+	private int sellerNo;
+    private String sellerId; // 아이디
+    private String password; // 비밀번호
 }

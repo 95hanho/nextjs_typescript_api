@@ -9,9 +9,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class userInBookmarkDTO {
-	
-	private Timestamp createdAt;
+public class ProductViewCountResponse {
 	private String userId;
 	private String userName;
+	
+	private int productId;
+	private String productName;
+	
+	private int viewCount;
+	private Timestamp latestDate;
 }

@@ -27,11 +27,11 @@ public class AdminService {
 		return passwordEncoder.encode(password);
 	}
 	
-	public AdminInfo getAdminInfo(Integer adminNo) {
+	public AdminInfoResponse getAdminInfo(Integer adminNo) {
 		return adminMapper.getAdminInfo(adminNo);
 	}
 	
-	public AdminLoginDTO isAdmin(String adminId) {
+	public AdminLogin isAdmin(String adminId) {
 		return adminMapper.isAdmin(adminId);
 	}
 	
@@ -89,7 +89,7 @@ public class AdminService {
 		return userList;
 	}
 
-	public UserInfoResponse getUserInfoUnmasked(Integer userNo) {
+	public UserInfoInAdminResponse getUserInfoUnmasked(Integer userNo) {
 		return adminMapper.getUserInfoUnmasked(userNo);
 	}
 	@Transactional
@@ -97,7 +97,7 @@ public class AdminService {
 		adminMapper.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
 	}
 
-	public List<CommonCoupon> getCommonCouponList() {
+	public List<CommonCouponResponse> getCommonCouponList() {
 		return adminMapper.getCommonCouponList();
 	}
 

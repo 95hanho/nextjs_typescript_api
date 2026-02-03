@@ -61,7 +61,7 @@ public class AdminController {
 		logger.info("getAdminNoInfo : adminNo=" + adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		AdminInfo admin = adminService.getAdminInfo(adminNo);
+		AdminInfoResponse admin = adminService.getAdminInfo(adminNo);
 		
 		result.put("admin", admin);
 		result.put("message", "ADMIN_FETCH_SUCCESS");
@@ -75,7 +75,7 @@ public class AdminController {
 		logger.info("adminLogin :" + adminId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		AdminLoginDTO checkAdmin = adminService.isAdmin(adminId);
+		AdminLogin checkAdmin = adminService.isAdmin(adminId);
 		if (checkAdmin == null || !adminService.passwordCheck(password, checkAdmin.getPassword())) {
 			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
 			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
@@ -215,7 +215,7 @@ public class AdminController {
 		logger.info("getUserInfoUnmasked userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		UserInfoResponse userInfo = adminService.getUserInfoUnmasked(userNo);
+		UserInfoInAdminResponse userInfo = adminService.getUserInfoUnmasked(userNo);
 		
 		result.put("userInfo", userInfo);
 		result.put("message", "USER_UNMASKED_FETCH_SUCCESS");
@@ -244,7 +244,7 @@ public class AdminController {
 		logger.info("getCommonCouponList  : ");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CommonCoupon> commonCouponList = adminService.getCommonCouponList();
+		List<CommonCouponResponse> commonCouponList = adminService.getCommonCouponList();
 		
 		result.put("commonCouponList", commonCouponList);
 		result.put("message", "COMMON_COUPON_FETCH_SUCCESS");

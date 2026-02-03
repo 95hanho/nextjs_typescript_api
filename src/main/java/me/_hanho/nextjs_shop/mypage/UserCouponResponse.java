@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.buy;
+package me._hanho.nextjs_shop.mypage;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AvailableCoupon {
+public class UserCouponResponse {
+
+	private int userCouponId;
+	private boolean used;
 	
-    private int couponId;
-    private String description;
-    private String couponCode;
+	private int couponId;
+	private String description;
+	private String couponCode;
     private String discountType;
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
@@ -27,9 +30,7 @@ public class AvailableCoupon {
     private Timestamp endDate;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    private String sellerId;
-    //
-    private int userCouponId; 
-	private boolean used; 
+    
+    private String sellerName;
 	
 }

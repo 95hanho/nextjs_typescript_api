@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MenuDTO {
+public class MenuResponse {
     private int menuTopId;
     private String menuName;
     private String gender;

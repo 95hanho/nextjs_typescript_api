@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ProductMapper {
 
-	List<ProductListDTO> getProductList(@Param("sort") String sort, @Param("menuSubId") int menuSubId, @Param("lastCreatedAt") Timestamp lastCreatedAt, 
+	List<ProductListResponse> getProductList(@Param("sort") String sort, @Param("menuSubId") int menuSubId, @Param("lastCreatedAt") Timestamp lastCreatedAt, 
 			@Param("lastProductId") Integer lastProductId, @Param("lastPopularity") Integer lastPopularity);
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
@@ -41,7 +41,7 @@ public interface ProductMapper {
 	
 	List<ProductImageFile> getProductImageList(int productId);
 
-	List<ProductOptionDTO> getProductOptionList(int productId);
+	List<ProductOptionResponse> getProductOptionList(int productId);
 
 	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	

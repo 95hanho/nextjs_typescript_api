@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PayRequest {
 	
-	private List<ProductWithCouponsDTO> items;
+	private List<ProductWithCouponResponse> items;
 	private BigDecimal eachCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
     private BigDecimal commonCouponDiscountTotal; // 공용쿠폰 할인값 총합
     private int shippingFee; // 배송비

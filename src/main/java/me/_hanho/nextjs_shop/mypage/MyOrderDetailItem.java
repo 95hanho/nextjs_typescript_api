@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItemWithReviewDTO {
+public class MyOrderDetailItem {
 	
     private int orderListId;
     private int orderId;
@@ -18,6 +18,17 @@ public class OrderItemWithReviewDTO {
     private BigDecimal orderPrice;
     private BigDecimal discountPrice;
     private BigDecimal paidUnitPrice;
+    
+	// 해당 제품에 사용한 쿠폰 내역
+	private int userCouponId;
+	private int couponId;
+	private String description;
+	private String couponCode;
+	private String discountType;
+	private BigDecimal discountValue;
+	private BigDecimal maxDiscount;
+	private BigDecimal minimumOrderBeforeAmount;
+	private boolean isStackable;
 
     private int holdId;
     private int productOptionId;
@@ -41,7 +52,6 @@ public class OrderItemWithReviewDTO {
     private String subMenuName;
     private int menuTopId;
     private String topMenuName;
-    private String gender;
     
     private int productImageId;
     private int fileId;
@@ -51,5 +61,4 @@ public class OrderItemWithReviewDTO {
     private String filePath;
     private String copyright;
     private String copyrightUrl;
-
 }

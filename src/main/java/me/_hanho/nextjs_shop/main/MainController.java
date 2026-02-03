@@ -29,7 +29,7 @@ public class MainController {
 		logger.info("getMenuList");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MenuDTO> menuList = mainService.getMenuList();
+		List<MenuResponse> menuList = mainService.getMenuList();
 		
 		result.put("message", "MENU_FETCH_SUCCESS");
 		result.put("menuList", menuList);
@@ -42,7 +42,7 @@ public class MainController {
 		logger.info("getProducts");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductMainSlideDto> productList = mainService.getMainSlideProducts();
+		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts();
 		
 		result.put("message", "MAIN_SLIDE_FETCH_SUCCESS");
 		result.put("productList", productList);

@@ -47,7 +47,7 @@ public class SellerController {
 		logger.info("sellerLogin :" + sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		SellerLoginDTO checkSeller = sellerService.isSeller(sellerId);
+		SellerLogin checkSeller = sellerService.isSeller(sellerId);
 		System.out.println("checkSeller : " + checkSeller);
 		if (checkSeller == null || !sellerService.passwordCheck(password, checkSeller.getPassword())) {
 			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
@@ -351,7 +351,7 @@ public class SellerController {
 		logger.info("getSellerProductCouponAllowed "+ couponId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<SellerProductCouponAllowed> CouponAllowedProductList = sellerService.getSellerCouponAllow(couponId, sellerNo);
+		List<SellerProductCouponAllowedResponse> CouponAllowedProductList = sellerService.getSellerCouponAllow(couponId, sellerNo);
 		
 		result.put("CouponAllowedProductList", CouponAllowedProductList);
 		result.put("message", "SELLER_COUPON_ALLOWED_FETCH_SUCCESS");
@@ -389,13 +389,13 @@ public class SellerController {
 		logger.info("getSellerInterestingUser "+ sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductViewCountDTO> productViewCountList = sellerService.getProductViewCountList(sellerNo);
+		List<ProductViewCountResponse> productViewCountList = sellerService.getProductViewCountList(sellerNo);
 		
-		List<ProductWishCountDTO> productWishCountList = sellerService.getProductWishCountList(sellerNo);
+		List<ProductWishCountResponse> productWishCountList = sellerService.getProductWishCountList(sellerNo);
 		
-		List<userInBookmarkDTO> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
+		List<UserInBookmarkResponse> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
 		
-		List<UserInCartCountDTO> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
+		List<UserInCartCountResponse> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
 		
 		// 주문액수, 주문 갯수 가져오기
 		

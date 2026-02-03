@@ -18,21 +18,21 @@ public class ProductService {
 
 	private final ProductMapper productMapper;
 	
-	public List<ProductListDTO> getProductList(
+	public List<ProductListResponse> getProductList(
 	        String sort,
 	        Integer menuSubId,
 	        Timestamp lastCreatedAt,
 	        Integer lastProductId,
 	        Integer lastPopularity
 	) {
-	    List<ProductListDTO> productList =
+	    List<ProductListResponse> productList =
 	            productMapper.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 	    if (productList.isEmpty()) return productList;
 
 	    // ✅ 1) productId 목록 추출
 	    List<Integer> productIds = productList.stream()
-	            .map(ProductListDTO::getProductId)
+	            .map(ProductListResponse::getProductId)
 	            .toList();
 
 	    // ✅ 2) 이미지들을 "한 방"에 가져오기 (쿼리 1번)
@@ -43,7 +43,7 @@ public class ProductService {
 	            .collect(java.util.stream.Collectors.groupingBy(ProductImageFile::getProductId));
 
 	    // ✅ 4) DTO에 주입 (없으면 빈 리스트)
-	    for (ProductListDTO p : productList) {
+	    for (ProductListResponse p : productList) {
 	        p.setProductImageList(imageMap.getOrDefault(p.getProductId(), java.util.Collections.emptyList()));
 	    }
 
@@ -88,7 +88,7 @@ public class ProductService {
 		return productDetail;
 	}
 
-	public List<ProductOptionDTO> getProductOptionList(int productId) {
+	public List<ProductOptionResponse> getProductOptionList(int productId) {
 		return productMapper.getProductOptionList(productId);
 	}
 

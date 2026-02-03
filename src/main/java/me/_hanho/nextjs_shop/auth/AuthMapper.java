@@ -8,7 +8,7 @@ import me._hanho.nextjs_shop.model.PhoneAuth;
 @Mapper
 public interface AuthMapper {
 
-	UserInfo getUserInfo(Integer userNo);
+	UserInfoResponse getUserInfo(Integer userNo);
 	
 	UserLoginResponse getUserForPassword(String userId);
 	
@@ -18,13 +18,13 @@ public interface AuthMapper {
 	
 	int hasPhone(String phone);
 	
-	void insertPhoneAuth(PhoneAuthDAO phoneAuth);
+	void insertPhoneAuth(PhoneAuthDTO phoneAuth);
 	
 	PhoneAuth getPhoneAuthCode(String phoneAuthToken);
 
 	void markPhoneAuthUsed(int phoneAuthId);
 	
-	FindUserDTO getUserByPhone(String phone);
+	FindUser getUserByPhone(String phone);
 
 	void joinUser(JoinRequest user);
 

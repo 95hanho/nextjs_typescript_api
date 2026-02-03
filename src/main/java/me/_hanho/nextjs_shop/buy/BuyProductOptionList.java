@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BuyProductOptionListRequest {
+public class BuyProductOptionList {
 	private int productOptionId;
 	private int addPrice;
 	private int count;
