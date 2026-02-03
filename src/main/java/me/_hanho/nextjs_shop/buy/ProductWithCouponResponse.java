@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductWithCouponsDTO {
+public class ProductWithCouponResponse {
 	private int holdId;
 	private int count;
 

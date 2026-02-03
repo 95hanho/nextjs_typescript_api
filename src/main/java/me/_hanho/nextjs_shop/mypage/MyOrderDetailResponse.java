@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyOrderDetailDTO {
+public class MyOrderDetailResponse {
 	
 	private int orderId;
 	private Timestamp orderDate;
@@ -51,6 +51,6 @@ public class MyOrderDetailDTO {
 	private String memo;
 	private boolean defaultAddress;
 	
-	private List<MyOrderDetailItemDTO> items;
+	private List<MyOrderDetailItem> items;
 
 }

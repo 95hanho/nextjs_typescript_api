@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderStockDTO {
+public class OrderStockResponse {
 	private int holdId;
 	private int count;
 	

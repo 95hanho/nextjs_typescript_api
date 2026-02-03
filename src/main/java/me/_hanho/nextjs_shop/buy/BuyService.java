@@ -145,15 +145,15 @@ public class BuyService {
         return buyMapper.releaseHolds(holdIds, userNo);
     }
     
-	public List<OrderStockDTO> getOrderStock(Integer userNo) {
+	public List<OrderStockResponse> getOrderStock(Integer userNo) {
 		return buyMapper.getOrderStock(userNo);
 	}
 	
-	public List<AvailableCoupon> getAvailableCoupon(List<Integer> productIds, Integer userNo) {
+	public List<AvailableCouponResponse> getAvailableCoupon(List<Integer> productIds, Integer userNo) {
 		return buyMapper.getAvailableCoupon(productIds, userNo);
 	}
 	
-	public List<ProductWithCouponsDTO> getProductWithCoupons(List<BuyProduct> products, Integer userNo) {
+	public List<ProductWithCouponResponse> getProductWithCoupons(List<BuyProduct> products, Integer userNo) {
 		return buyMapper.getProductWithCoupons(products, userNo);
 	}
 	
@@ -164,7 +164,7 @@ public class BuyService {
 		int remainingMileage = buyMapper.getUserMileage(userNo);
 		
 		// nextjs_shop_order_group(주문프로세스) INSERT
-		BuyOrderGroupDAO orderGroup = BuyOrderGroupDAO.builder().userNo(userNo).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
+		BuyOrderGroup orderGroup = BuyOrderGroup.builder().userNo(userNo).eachCouponDiscountTotal(payRequest.getEachCouponDiscountTotal())
 				.commonCouponDiscountTotal(payRequest.getCommonCouponDiscountTotal()).shippingFee(BigDecimal.valueOf(payRequest.getShippingFee()))
 				.usedMileage(payRequest.getUsedMileage()).remainingMileage(remainingMileage)
 				.totalPrice(payRequest.getTotalFinal()).paymentMethod(payRequest.getPaymentMethod())
@@ -173,7 +173,7 @@ public class BuyService {
 		buyMapper.insertOrderGroup(orderGroup);
 		int orderId = buyMapper.getOrderId(userNo);
 		// 
-		List<ProductWithCouponsDTO> productWithCouponList = payRequest.getItems();
+		List<ProductWithCouponResponse> productWithCouponList = payRequest.getItems();
 		// nextjs_shop_order_item(주문목록) INSERT
 		buyMapper.insertOrderList(productWithCouponList, orderId, userNo);
 		// nextjs_shop_stock_hold의 점유 status, active_hold 변경

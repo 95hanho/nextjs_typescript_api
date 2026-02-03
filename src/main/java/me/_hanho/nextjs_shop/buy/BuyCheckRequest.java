@@ -12,6 +12,6 @@ import me._hanho.nextjs_shop.model.Product;
 @AllArgsConstructor
 public class BuyCheckRequest {
 	private Integer userNo;
-	private List<BuyProductOptionListRequest> buyList;
+	private List<BuyProductOptionList> buyList;
 	private Product product;
 }

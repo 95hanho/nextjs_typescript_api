@@ -48,7 +48,7 @@ public class AuthController {
 		logger.info("getUserInfo : userNo=" + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		UserInfo user = authService.getUserInfo(userNo);
+		UserInfoResponse user = authService.getUserInfo(userNo);
 		if(user == null) {
 			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 		}
@@ -197,7 +197,7 @@ public class AuthController {
 		logger.info("phoneAuth-verificationCode : " + verificationCode);
 		
         // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
-		PhoneAuthDAO phoneAuth = PhoneAuthDAO.builder().userNo(userNo).phoneAuthToken(phoneAuthToken)
+		PhoneAuthDTO phoneAuth = PhoneAuthDTO.builder().userNo(userNo).phoneAuthToken(phoneAuthToken)
 				.phone(phone).verificationCode(verificationCode).mode(mode)
 				.connectIp(ipAddress).connectAgent(userAgent).build();
 		authService.insertPhoneAuth(phoneAuth);
@@ -250,7 +250,7 @@ public class AuthController {
 			result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		}
-		FindUserDTO findUser = authService.getUserByPhone(phoneAuth.getPhone());
+		FindUser findUser = authService.getUserByPhone(phoneAuth.getPhone());
 		if(findUser == null) throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND);
 		// 아이디 찾기
 		if("IDFIND".equals(mode)){

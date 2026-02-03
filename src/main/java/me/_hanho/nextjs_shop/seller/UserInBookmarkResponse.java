@@ -1,5 +1,7 @@
 package me._hanho.nextjs_shop.seller;
 
+import java.sql.Timestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SellerLoginDTO {
-	private int sellerNo;
-    private String sellerId; // 아이디
-    private String password; // 비밀번호
+public class UserInBookmarkResponse {
+	
+	private Timestamp createdAt;
+	private String userId;
+	private String userName;
 }

@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.admin;
+package me._hanho.nextjs_shop.auth;
 
 import java.sql.Timestamp;
 
@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoResponse {
-	private int userNo;
-    private String userId;
     private String name;
     private String zonecode;
     private String address;
@@ -21,7 +19,6 @@ public class UserInfoResponse {
     private String email;
     private Timestamp createdAt;
     private int mileage;
-    private String withdrawalStatus; // 'ACTIVE','REQUESTED','WITHDRAWN'
-    private Timestamp withdrawalRequestedAt;
-    private Timestamp withdrawalCompletedAt;
+    private int tall;
+    private int weight;
 }

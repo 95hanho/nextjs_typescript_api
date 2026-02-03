@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PhoneAuthDAO {
+public class PhoneAuthDTO {
 	private Integer userNo;
 	private String phoneAuthToken;
 	private String phone;

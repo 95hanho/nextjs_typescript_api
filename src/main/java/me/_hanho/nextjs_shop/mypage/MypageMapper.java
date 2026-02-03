@@ -8,21 +8,21 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface MypageMapper {
 
-	List<UserCouponDTO> getUserCoupons(Integer userNo);
+	List<UserCouponResponse> getUserCoupons(Integer userNo);
 
-	List<MyOrderGroupDTO> getMyOrderListGroupList(Integer userNo);
+	List<MyOrderGroupResponse> getMyOrderListGroupList(Integer userNo);
 	
-	List<OrderItemWithReviewDTO> getMyOrderListProductWithReview(int orderId);
+	List<OrderItemWithReview> getMyOrderListProductWithReview(int orderId);
 	
-	MyOrderDetailDTO getMyOrderDetail(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
+	MyOrderDetailResponse getMyOrderDetail(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
-	List<MyOrderDetailItemDTO> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
+	List<MyOrderDetailItem> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
 	void insertReview(@Param("review") AddReviewRequest review, @Param("userNo") Integer userNo);
 	
 	void unselectOutOfStockItems(Integer userNo);
 	
-	List<CartProductDTO> getCartList(Integer userNo);
+	List<CartProductResponse> getCartList(Integer userNo);
 	
 	int updateCart(@Param("c") UpdateCartRequest cart, @Param("userNo") Integer userNo);
 	
@@ -32,7 +32,7 @@ public interface MypageMapper {
 	
 	int deleteCart(@Param("cartIdList") List<Integer> cartIdList, @Param("userNo") Integer userNo);
 	
-	List<WishlistItemDTO> getWishlistItems(Integer userNo);
+	List<WishlistItemResponse> getWishlistItems(Integer userNo);
 
 	List<UserAddressResponse> getUserAddressList(Integer userNo);
 

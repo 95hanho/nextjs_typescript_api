@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductListDTO {
+public class ProductListResponse {
 	private int productId;
 	private String name;
 	private String colorName;

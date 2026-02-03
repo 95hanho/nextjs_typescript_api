@@ -25,7 +25,7 @@ public class SellerService {
 	
 	private final PasswordEncoder passwordEncoder;
 	
-	public SellerLoginDTO isSeller(String sellerId) {
+	public SellerLogin isSeller(String sellerId) {
 		return sellerMapper.isSeller(sellerId);
 	}
 	public boolean passwordCheck(String password, String checkPassword) {
@@ -134,7 +134,7 @@ public class SellerService {
 	public void deleteCoupon(Integer couponId, Integer sellerNo) {
 		sellerMapper.deleteCoupon(couponId, sellerNo);
 	}
-	public List<SellerProductCouponAllowed> getSellerCouponAllow(String couponId, Integer sellerNo) {
+	public List<SellerProductCouponAllowedResponse> getSellerCouponAllow(String couponId, Integer sellerNo) {
 		return sellerMapper.getSellerCouponAllow(couponId, sellerNo);
 	}
 	public void setSellerCouponAllow(String couponId, List<Integer> productIds, Boolean allow, Integer sellerNo) {
@@ -144,16 +144,16 @@ public class SellerService {
 	        sellerMapper.deleteSellerCouponAllowList(couponId, productIds, sellerNo);
 	    }
 	}
-	public List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo) {
+	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
 	}
-	public List<ProductWishCountDTO> getProductWishCountList(Integer sellerNo) {
+	public List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo) {
 		return sellerMapper.getProductWishCountList(sellerNo);
 	}
-	public List<userInBookmarkDTO> getBrandBookmarkList(Integer sellerNo) {
+	public List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo) {
 		return sellerMapper.getBrandBookmarkList(sellerNo);
 	}
-	public List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo) {
+	public List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo) {
 		return sellerMapper.getUserInCartCountList(sellerNo);
 	}
 

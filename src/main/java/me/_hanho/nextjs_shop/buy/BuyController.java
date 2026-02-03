@@ -122,10 +122,10 @@ public class BuyController {
         logger.info("getPayBefore : " + userNo);
         Map<String, Object> body = new HashMap<>();
         
-        List<AvailableCoupon> availableCouponList = null;
-        List<OrderStockDTO> orderStock = buyService.getOrderStock(userNo);
+        List<AvailableCouponResponse> availableCouponList = null;
+        List<OrderStockResponse> orderStock = buyService.getOrderStock(userNo);
         List<Integer> productIds = orderStock.stream()
-                .map(OrderStockDTO::getProductId)
+                .map(OrderStockResponse::getProductId)
                 .distinct()
                 .collect(Collectors.toList());
         
@@ -147,7 +147,7 @@ public class BuyController {
 	    logger.info("pay-price : {}", payPriceRequest);
 	    Map<String, Object> result = new HashMap<>();
 	    
-	    List<ProductWithCouponsDTO> items =
+	    List<ProductWithCouponResponse> items =
 	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), userNo);
 	    
 	    // 1) 각 상품 쿠폰 먼저 적용
@@ -156,17 +156,17 @@ public class BuyController {
 	    BigDecimal zero = BigDecimal.ZERO;
 	    
 	    BigDecimal couponDiscountTotal = items.stream()
-	            .map(ProductWithCouponsDTO::getDiscountAmount)
+	            .map(ProductWithCouponResponse::getDiscountAmount)
 	            .filter(Objects::nonNull)
 	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인된 가격 
 
 	    BigDecimal couponFinalTotal = items.stream()
-	            .map(ProductWithCouponsDTO::getResultPrice)
+	            .map(ProductWithCouponResponse::getResultPrice)
 	            .filter(Objects::nonNull)
 	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인받은 최종가격  
 	    
 	    // 2) 공용 쿠폰(mainCoupon) 적용 (상품쿠폰 이후, 마일리지 이전)
-	    AvailableCoupon mainCoupon = payPriceRequest.getCommonCoupon();
+	    AvailableCouponResponse mainCoupon = payPriceRequest.getCommonCoupon();
 	    BigDecimal mainCouponDiscount = PriceCalculatorService.calcCommonCouponDiscount(couponFinalTotal, mainCoupon);
 
 	    BigDecimal afterMainCouponTotal = couponFinalTotal.subtract(mainCouponDiscount);

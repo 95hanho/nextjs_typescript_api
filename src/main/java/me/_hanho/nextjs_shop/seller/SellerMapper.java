@@ -11,7 +11,7 @@ import me._hanho.nextjs_shop.model.ProductOption;
 @Mapper
 public interface SellerMapper {
 	
-	SellerLoginDTO isSeller(String sellerId);
+	SellerLogin isSeller(String sellerId);
 	
 	void insertToken(@Param("t") SellerToken token, @Param("sellerNo") Integer sellerNo);
 
@@ -47,19 +47,19 @@ public interface SellerMapper {
 	
 	void deleteCoupon(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
-	List<SellerProductCouponAllowed> getSellerCouponAllow(@Param("couponId") String couponId, @Param("sellerNo") Integer sellerNo);
+	List<SellerProductCouponAllowedResponse> getSellerCouponAllow(@Param("couponId") String couponId, @Param("sellerNo") Integer sellerNo);
 	
 	void insertSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
 	
 	void deleteSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
 	
-	List<ProductViewCountDTO> getProductViewCountList(Integer sellerNo);
+	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
 	
-	List<ProductWishCountDTO> getProductWishCountList(Integer sellerNo);
+	List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo);
 	
-	List<userInBookmarkDTO> getBrandBookmarkList(Integer sellerNo);
+	List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo);
 
-	List<UserInCartCountDTO> getUserInCartCountList(Integer sellerNo);
+	List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo);
 
 
 	

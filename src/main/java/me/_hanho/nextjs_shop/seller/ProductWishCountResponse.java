@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductWishCountDTO {
+public class ProductWishCountResponse {
 	private Timestamp latestDate; // 가장 최근위시 날짜
 	
 	private String userId; // 유저아이디

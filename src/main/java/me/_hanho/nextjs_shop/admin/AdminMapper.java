@@ -12,9 +12,9 @@ import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
 @Mapper
 public interface AdminMapper {
 	
-	AdminInfo getAdminInfo(Integer adminNo);
+	AdminInfoResponse getAdminInfo(Integer adminNo);
 	
-	AdminLoginDTO isAdmin(String adminId);
+	AdminLogin isAdmin(String adminId);
 	
 	void updateLastLoginAt(Integer adminNo);
 	
@@ -32,11 +32,11 @@ public interface AdminMapper {
 
 	List<UserResponse> getUserList();
 
-	UserInfoResponse getUserInfoUnmasked(Integer userNo);
+	UserInfoInAdminResponse getUserInfoUnmasked(Integer userNo);
 
 	void updateUserWithdrawalStatus(@Param("userNoList") List<Integer> userNoList, @Param("withdrawalStatus") String withdrawalStatus);
 	
-	List<CommonCoupon> getCommonCouponList();
+	List<CommonCouponResponse> getCommonCouponList();
 
 	void addCommonCoupon(@Param("c") AddCommonCouponRequest commonCoupon, @Param("adminNo") Integer adminNo);
 

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductMainSlideDto {
+public class ProductMainSlideResponse {
     private int productId;
     private String name;
     private int originPrice;

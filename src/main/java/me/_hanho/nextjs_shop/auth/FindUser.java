@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FindUserDTO {
+public class FindUser {
 	private int userNo;
     private String userId;
 }

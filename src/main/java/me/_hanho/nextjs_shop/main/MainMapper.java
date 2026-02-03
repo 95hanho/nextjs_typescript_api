@@ -7,11 +7,10 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MainMapper {
 	
-	List<MenuDTO> getMenuList();
+	List<MenuResponse> getMenuList();
 	
 	List<MenuSubDTO> getMenuSubList(int menuTopId);
 
-	List<ProductMainSlideDto> getMainSlideProducts();
+	List<ProductMainSlideResponse> getMainSlideProducts();
 
-	
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInCartCountDTO {
+public class UserInCartCountResponse {
 	
 	private Timestamp latestDate; // 가장 최근 장바구니에 넣은 날짜
 	

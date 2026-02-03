@@ -1,7 +1,5 @@
 package me._hanho.nextjs_shop.seller;
 
-import java.sql.Timestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,13 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductViewCountDTO {
-	private String userId;
-	private String userName;
-	
+public class SellerProductCouponAllowedResponse {
 	private int productId;
 	private String productName;
 	
-	private int viewCount;
-	private Timestamp latestDate;
+    private Integer couponAllowedId;
+    private Integer couponId;
 }

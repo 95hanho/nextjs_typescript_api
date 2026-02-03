@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class PayPriceRequest {
 	
 	private List<BuyProduct> products;
-	private AvailableCoupon commonCoupon;
+	private AvailableCouponResponse commonCoupon;
 	private int useMileage; // 사용마일리지
 	
 }

@@ -13,12 +13,12 @@ public class PriceCalculatorService {
     private static final RoundingMode KRW_ROUND = RoundingMode.HALF_UP;
     private static final int KRW_SCALE = 0;
     
-    public static void applyDiscounts(List<ProductWithCouponsDTO> items) {
+    public static void applyDiscounts(List<ProductWithCouponResponse> items) {
         if (items == null || items.isEmpty()) return;
         items.forEach(PriceCalculatorService::applyDiscountToOne);
     }
 
-    public static void applyDiscountToOne(ProductWithCouponsDTO dto) {
+    public static void applyDiscountToOne(ProductWithCouponResponse dto) {
         // null-safe 값 준비
         BigDecimal minOrder = nvl(dto.getMinimumOrderBeforeAmount(), ZERO).setScale(KRW_SCALE, KRW_ROUND);
         BigDecimal discountValue = nvl(dto.getDiscountValue(), ZERO);
@@ -70,7 +70,7 @@ public class PriceCalculatorService {
      * - minimum_order_before_amount 이상일 때만 적용
      * - 음수/초과 방지
      */
-    public static BigDecimal calcCommonCouponDiscount(BigDecimal base, AvailableCoupon coupon) {
+    public static BigDecimal calcCommonCouponDiscount(BigDecimal base, AvailableCouponResponse coupon) {
         if (base == null) base = ZERO;
         base = base.setScale(KRW_SCALE, KRW_ROUND);
         
@@ -107,7 +107,7 @@ public class PriceCalculatorService {
     }
 
     // 공용쿠폰 사용 가능성 체크(필요에 따라 느슨/엄격 조정)
-    private static boolean isUsableCommonCoupon(AvailableCoupon c) {
+    private static boolean isUsableCommonCoupon(AvailableCouponResponse c) {
         if (c == null) return false;
 
         // (선택) 스택 규칙 → 상품쿠폰과의 중복 허용만 필요하면 주석 해제

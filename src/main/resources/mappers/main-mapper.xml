@@ -15,7 +15,7 @@
 		select *
 		from nextjs_shop_product
 	</select>
-	<select id="getMainSlideProducts" resultType="ProductMainSlideDto">
+	<select id="getMainSlideProducts" resultType="ProductMainSlideResponse">
 	    SELECT
 	        p.product_id,
 	        p.name,

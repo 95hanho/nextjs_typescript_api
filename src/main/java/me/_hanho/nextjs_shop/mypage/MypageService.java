@@ -15,12 +15,12 @@ public class MypageService {
 	
 	private final MypageMapper mypageMapper;
 
-	public List<UserCouponDTO> getUserCoupons(Integer userNo) {
+	public List<UserCouponResponse> getUserCoupons(Integer userNo) {
 		return mypageMapper.getUserCoupons(userNo);
 	}
 	@Transactional
-	public List<MyOrderGroupDTO> getMyOrderListWithReview(Integer userNo) {
-		List<MyOrderGroupDTO> myOrderList = mypageMapper.getMyOrderListGroupList(userNo);
+	public List<MyOrderGroupResponse> getMyOrderListWithReview(Integer userNo) {
+		List<MyOrderGroupResponse> myOrderList = mypageMapper.getMyOrderListGroupList(userNo);
 		//
 		myOrderList.forEach(v ->
 			v.setItems(mypageMapper.getMyOrderListProductWithReview(v.getOrderId()))
@@ -29,8 +29,8 @@ public class MypageService {
 		return myOrderList;
 	}
 	@Transactional
-	public MyOrderDetailDTO getMyOrderDetail(String orderId, Integer userNo) {
-		MyOrderDetailDTO myOrderDetail = mypageMapper.getMyOrderDetail(orderId, userNo);
+	public MyOrderDetailResponse getMyOrderDetail(String orderId, Integer userNo) {
+		MyOrderDetailResponse myOrderDetail = mypageMapper.getMyOrderDetail(orderId, userNo);
 		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId, userNo));
 		return myOrderDetail;
 	}
@@ -38,7 +38,7 @@ public class MypageService {
 		mypageMapper.insertReview(review, userNo);
 	}
 	@Transactional
-	public List<CartProductDTO> getCartList(Integer userNo) {
+	public List<CartProductResponse> getCartList(Integer userNo) {
 		// 재고 부족한 얘들 선택 해제
 		mypageMapper.unselectOutOfStockItems(userNo);
 		//
@@ -62,7 +62,7 @@ public class MypageService {
 	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cartIdList);
 	    }
 	}
-	public List<WishlistItemDTO> getWishlistItems(Integer userNo) {
+	public List<WishlistItemResponse> getWishlistItems(Integer userNo) {
 		return mypageMapper.getWishlistItems(userNo);
 	}
 

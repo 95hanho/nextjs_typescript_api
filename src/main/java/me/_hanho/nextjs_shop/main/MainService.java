@@ -12,13 +12,13 @@ public class MainService {
 	
 	private final MainMapper mainMapper;
 	
-	public List<MenuDTO> getMenuList() {
-		List<MenuDTO> menuList = mainMapper.getMenuList(); 
+	public List<MenuResponse> getMenuList() {
+		List<MenuResponse> menuList = mainMapper.getMenuList(); 
 		menuList.forEach(m -> m.setMenuSubList(mainMapper.getMenuSubList(m.getMenuTopId())));
 		return menuList;
 	}
 
-	public List<ProductMainSlideDto> getMainSlideProducts() {
+	public List<ProductMainSlideResponse> getMainSlideProducts() {
 		return mainMapper.getMainSlideProducts();
 	}
 
