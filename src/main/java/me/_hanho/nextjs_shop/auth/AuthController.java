@@ -213,7 +213,7 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
 			@RequestParam("authNumber") String authNumber,
 			@RequestParam("phoneAuthToken") String phoneAuthToken) {
-		logger.info("phoneAuthCheck - authNumber='" + authNumber);
+		logger.info("phoneAuthCheck - authNumber=" + authNumber);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		try {
