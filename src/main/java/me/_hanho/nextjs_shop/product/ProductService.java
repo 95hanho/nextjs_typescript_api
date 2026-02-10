@@ -96,7 +96,7 @@ public class ProductService {
 		return productMapper.getAvailableProductCoupon(productId, userNo);
 	}
 	
-	public List<ProductReviewResponse> getProductReviewList(String productId, Integer userNo) {
+	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {
 		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userNo);
 		
 		if (list == null || list.isEmpty()) return list;
@@ -113,6 +113,10 @@ public class ProductService {
 	    }
 
 	    return list;
+	}
+	
+	public ProductReviewSummary getProductReviewSummary(Integer productId) {
+		return productMapper.getProductReviewSummary(productId);
 	}
 
 	public List<ProductQnaResponse> getProductQnaList(String productId, Integer userNo) {
@@ -142,5 +146,6 @@ public class ProductService {
 
 	    return list;
 	}
+
 
 }
