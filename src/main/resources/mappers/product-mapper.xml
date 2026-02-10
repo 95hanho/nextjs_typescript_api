@@ -189,6 +189,16 @@
 		r.created_at DESC,
 		r.review_id DESC
 	</select>
+	<select id="getProductReviewSummary">
+		SELECT
+		    AVG(rating) AS avg_rating,
+		    COUNT(*) AS review_count
+		FROM nextjs_shop_review r
+		JOIN nextjs_shop_order_item oi ON r.order_list_id = oi.order_list_id
+		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
+		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+		WHERE po.product_id = #{productId}
+	</select>
 	<select id="getProductQnaList">
 		SELECT
 			pq.product_qna_id,

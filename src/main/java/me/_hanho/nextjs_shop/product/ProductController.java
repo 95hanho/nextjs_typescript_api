@@ -100,6 +100,7 @@ public class ProductController {
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
+		ProductReviewSummary productReviewSummary = productService.getProductReviewSummary(productId);
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = null;
 		if(userNo != null) {
@@ -108,6 +109,7 @@ public class ProductController {
 		
 		result.put("productDetail", productDetail);
 		result.put("productOptionList", productOptionList);
+		result.put("productReviewSummary", productReviewSummary);
 		result.put("availableProductCoupon", availableProductCoupon);
 		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -115,13 +117,15 @@ public class ProductController {
 	// 제품 리뷰 조회
 	@GetMapping("/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
-			@RequestParam("productId") String productId,
+			@RequestParam("productId") Integer productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductReviewList productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
+//		ProductReviewSummary productReviewSummary = productService.getProductReviewSummary(productId);
 		
+//		result.put("productReviewSummary", productReviewSummary);
 		result.put("productReviewList", productReviewList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);

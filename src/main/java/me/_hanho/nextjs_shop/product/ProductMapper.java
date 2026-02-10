@@ -45,8 +45,10 @@ public interface ProductMapper {
 
 	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	
-	List<ProductReviewResponse> getProductReviewList(@Param("productId") String productId, @Param("userNo") Integer userNo);
-
+	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+	
+	ProductReviewSummary getProductReviewSummary(Integer productId);
+	
 	List<ProductQnaResponse> getProductQnaList(@Param("productId") String productId, @Param("userNo") Integer userNo);
 
 
