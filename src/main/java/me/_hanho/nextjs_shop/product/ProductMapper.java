@@ -49,7 +49,7 @@ public interface ProductMapper {
 	
 	ProductReviewSummary getProductReviewSummary(Integer productId);
 	
-	List<ProductQnaResponse> getProductQnaList(@Param("productId") String productId, @Param("userNo") Integer userNo);
+	List<ProductQnaResponse> getProductQnaList(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
 
 	

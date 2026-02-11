@@ -131,11 +131,13 @@
 	</insert>
 	<select id="getProductDetail">
 		SELECT  p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
-		p.like_count, p.view_count, p.wish_count, s.seller_name,
+		p.like_count, p.view_count, p.wish_count, 
+		s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
 		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
-		material_info, manufacturer_name, country_of_origin, 
-		wash_care_info, manufactured_ym, quality_guarantee_info, 
-		after_service_contact, after_service_manager, after_service_phone
+		p.material_info, p.manufacturer_name, p.country_of_origin, 
+		p.wash_care_info, p.manufactured_ym, p.quality_guarantee_info, 
+		p.after_service_contact, p.after_service_manager, p.after_service_phone,
+		p.shipping_type, p.shipping_due_date, p.shipping_note
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
@@ -162,16 +164,23 @@
 		WHERE product_id = #{productId} AND is_displayed = 1
 	</select>
 	<select id="getAvailableProductCoupon">
-		SELECT uc.user_coupon_id, uc.used, 
-			c.coupon_id, c.description, c.coupon_code, c.discount_type, c.discount_value,
-			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
+		SELECT 
+			uc.user_coupon_id, uc.used, 
+			c.coupon_id, c.description, c.discount_type, c.discount_value,
+			c.max_discount, c.minimum_order_before_amount, c.status, 
+			c.is_stackable, c.is_product_restricted,
 			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
 			s.seller_name
 		FROM nextjs_shop_user_coupon uc
 		JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
-		JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id AND product_id = #{productId}
+		LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id AND ca.product_id = #{productId}
 		LEFT JOIN nextjs_shop_seller s ON s.seller_no = c.seller_no
-		WHERE uc.user_no = #{userNo} AND uc.used = 0
+		WHERE uc.user_no = #{userNo} 
+			AND uc.used = 0
+			AND (
+				c.is_product_restricted = 0
+				OR ca.product_id IS NOT NULL
+			)
 	</select>
 	<select id="getProductReviewList">
 		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_list_id, 
