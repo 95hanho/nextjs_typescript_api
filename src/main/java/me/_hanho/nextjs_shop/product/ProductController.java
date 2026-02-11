@@ -102,22 +102,31 @@ public class ProductController {
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
 		ProductReviewSummary productReviewSummary = productService.getProductReviewSummary(productId);
 		
-		List<AvailableProductCouponResponse> availableProductCoupon = null;
-		if(userNo != null) {
-			availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);
-		}
-		
 		result.put("productDetail", productDetail);
 		result.put("productOptionList", productOptionList);
 		result.put("productReviewSummary", productReviewSummary);
+		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상세보기 이용가능 쿠폰 조회
+	@GetMapping("/detail/{productId}/coupon")
+	public ResponseEntity<Map<String, Object>> getProductDetailAvailableCoupon(
+			@PathVariable("productId") int productId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("getProductDetail productId : " + productId + ", userNo : " + userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<AvailableProductCouponResponse> availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);
+		
 		result.put("availableProductCoupon", availableProductCoupon);
 		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 리뷰 조회
-	@GetMapping("/review")
+	@GetMapping("/detail/{productId}/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
-			@RequestParam("productId") Integer productId,
+			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductReviewList productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -131,9 +140,9 @@ public class ProductController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상품 Q&A 조회
-	@GetMapping("/qna")
+	@GetMapping("/detail/{productId}/qna")
 	public ResponseEntity<Map<String, Object>> getProductQnaList(
-			@RequestParam("productId") String productId,
+			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		logger.info("getProductQnaList productId : " + productId);
 		Map<String, Object> result = new HashMap<String, Object>();

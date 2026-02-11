@@ -119,7 +119,7 @@ public class ProductService {
 		return productMapper.getProductReviewSummary(productId);
 	}
 
-	public List<ProductQnaResponse> getProductQnaList(String productId, Integer userNo) {
+	public List<ProductQnaResponse> getProductQnaList(int productId, Integer userNo) {
 	    List<ProductQnaResponse> list = productMapper.getProductQnaList(productId, userNo);
 
 	    if (list == null || list.isEmpty()) return list;
