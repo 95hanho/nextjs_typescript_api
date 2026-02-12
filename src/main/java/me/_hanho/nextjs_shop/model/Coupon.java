@@ -29,5 +29,9 @@ public class Coupon {
     private int sellerNo;
     private int adminNo;
     private boolean isDeleted;
+    private String issueMethod; // 발급되는 정책('CLAIM','AUTO','MANUAL')
+//    CLAIM: 고객이 쿠폰함에서 “다운로드” 버튼으로 받는 쿠폰
+//    MANUAL: 판매자/관리자가 고객에게 “지급” (CS, 이벤트 당첨 등)
+//    AUTO: 회원가입/첫구매/등급조건/생일쿠폰처럼 조건 만족 시 자동발급
     
 }

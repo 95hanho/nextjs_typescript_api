@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.model;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,4 +32,7 @@ public class Product {
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
     private String afterServicePhone; // (선택) A/S 전화번호
+    private String shippingType; // 출고 방식('IMMEDIATE','RESERVED')
+    private LocalDate shippingDueDate; // 출고 예정일
+    private String shippingNote; // 출고 관련 추가 안내 문구
 }
