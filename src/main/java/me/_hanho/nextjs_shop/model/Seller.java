@@ -32,4 +32,7 @@ public class Seller {
     private Timestamp rejectedAt; // 반려 시각
     private String rejectReason; // 반려 사유
     private Timestamp suspendedAt; // 정지 날짜
+    private int baseShippingFee; // 기본 배송비
+    private int freeShippingMinAmount; // 무료배송 최소 주문금액
+    private int extraShippingFee; // 제주/도서산간 추가 배송비
 }
