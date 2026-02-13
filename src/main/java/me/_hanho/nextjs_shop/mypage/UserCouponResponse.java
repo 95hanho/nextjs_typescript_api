@@ -22,7 +22,6 @@ public class UserCouponResponse {
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
     private BigDecimal minimumOrderBeforeAmount;
-    private String status;
     private Boolean isStackable;
     private Boolean isProductRestricted;
     private int amount;

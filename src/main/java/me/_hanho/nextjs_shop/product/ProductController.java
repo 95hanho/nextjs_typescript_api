@@ -123,6 +123,20 @@ public class ProductController {
 		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 쿠폰 다운로드
+	@PostMapping("/coupon/download")
+	public ResponseEntity<Map<String, Object>> couponDownload(
+			@RequestParam("couponId") Integer couponId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("couponDownload couponId : " + couponId + ", userNo : " + userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		productService.couponDownload(couponId, userNo);
+		
+		result.put("message", "COUPON_DOWNLOAD_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 제품 리뷰 조회
 	@GetMapping("/detail/{productId}/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
