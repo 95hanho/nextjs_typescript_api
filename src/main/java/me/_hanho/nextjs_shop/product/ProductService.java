@@ -96,6 +96,10 @@ public class ProductService {
 		return productMapper.getAvailableProductCoupon(productId, userNo);
 	}
 	
+	public void couponDownload(Integer couponId, Integer userNo) {
+		productMapper.couponDownload(couponId, userNo);
+	}
+	
 	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {
 		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userNo);
 		
@@ -146,6 +150,7 @@ public class ProductService {
 
 	    return list;
 	}
+
 
 
 }

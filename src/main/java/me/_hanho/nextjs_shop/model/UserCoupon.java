@@ -15,4 +15,5 @@ public class UserCoupon {
 	private int couponId;
 	private boolean used;
 	private Timestamp usedAt;
+	private Timestamp createdAt;
 }

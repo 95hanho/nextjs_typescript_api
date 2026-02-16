@@ -5,7 +5,7 @@
 	<select id="getUserCoupons">
 		SELECT uc.user_coupon_id, uc.used, 
 			c.coupon_id, c.description, c.coupon_code, c.discount_type, c.discount_value,
-			c.max_discount, c.minimum_order_before_amount, c.status, c.is_stackable, c.is_product_restricted,
+			c.max_discount, c.minimum_order_before_amount, c.is_stackable, c.is_product_restricted,
 			c.amount, c.start_date, c.end_date, c.created_at, c.updated_at, 
 			s.seller_name
 		FROM nextjs_shop_user_coupon uc
