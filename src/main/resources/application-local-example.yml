@@ -11,7 +11,7 @@ spring:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
 
     # 로컬 DB
-    url: jdbc:p6spy:mariadb://localhost:3306/ehfqntuqntu
+    url: jdbc:p6spy:mariadb://203.245.44.21:3306/ehfqntuqntu
 
     # DB 계정 정보 (환경변수로 주입)
     username: ${DB_USERNAME}

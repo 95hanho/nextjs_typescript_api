@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local
   application:
     name: nextjs_shop
 
@@ -6,6 +8,8 @@ spring:
   # 개발 편의 설정
   # ==============================
   devtools:
+    restart:
+      enabled: true
     livereload:
       enabled: true
 
@@ -57,12 +61,11 @@ mybatis:
 # ==============================
 logging:
   level:
-    org.mybatis: DEBUG
-    org.apache.ibatis: DEBUG
-    java.sql: DEBUG
-    com.p6spy: INFO
-    # Mapper 클래스 로그 (AuthMapper 기준)
-    me._hanho.nextjs_shop.mapper: DEBUG
+    "[org.mybatis]": DEBUG
+    "[org.apache.ibatis]": DEBUG
+    "[java.sql]": DEBUG
+    "[com.p6spy]": INFO
+    "[me._hanho.nextjs_shop.mapper]": DEBUG
 
 # ==============================
 # JWT 설정 (환경변수 사용)
