@@ -179,8 +179,7 @@
 	    LEFT JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id AND uc.user_no = #{userNo} AND uc.used = 0
 	    LEFT JOIN nextjs_shop_seller s ON c.seller_no = s.seller_no
 	    WHERE p.product_id = #{productId}
-	        AND c.is_deleted = 0
-	        AND c.status = 'ACTIVE'
+	        AND c.is_deleted = 0 AND c.status = 'ACTIVE' AND c.amount > 0
 	        <!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
 	        AND (
 	            c.is_product_restricted = 0
