@@ -115,7 +115,9 @@
 	<update id="updateToken">
 		UPDATE nextjs_shop_token
 		SET refresh_token = #{refreshToken}
-		WHERE refresh_token = #{beforeToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+		WHERE refresh_token = #{beforeToken} 
+			AND connect_ip = #{connectIp} 
+			<!-- AND connect_agent = #{connectAgent} -->
 	</update>
 	
 	<select id="getUserNoByToken">
