@@ -140,7 +140,7 @@ public class AuthController {
 		String userId = authService.getUserId(userNo);
 		
 		result.put("userId", userId);
-		result.put("message", "ID_AVAILABLE");
+		result.put("message", "ID_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
