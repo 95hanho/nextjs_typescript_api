@@ -33,7 +33,7 @@ public class AuthService {
 	public void updateToken(ReToken token) {
 	    int updated = authMapper.updateToken(token);
 	    if (updated == 0) {
-	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "Token not found");
+	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "updateToken => Token not found");
 	    }
 	}
     
@@ -74,7 +74,7 @@ public class AuthService {
 	public void userInfoUpdate(UpdateUserRequest user, Integer userNo) {
 	    int updated = authMapper.userInfoUpdate(user, userNo);
 	    if (updated == 0) {
-	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found");
+	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "userInfoUpdate => User not found");
 	    }
 	}
 	

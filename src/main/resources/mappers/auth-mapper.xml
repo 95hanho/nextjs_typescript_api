@@ -124,7 +124,8 @@
 		SELECT u.user_no
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_user u ON t.user_no = u.user_no
-		WHERE t.refresh_token = #{refreshToken} AND t.connect_ip = #{connectIp} AND t.connect_agent = #{connectAgent}
+		WHERE t.refresh_token = #{refreshToken} AND t.connect_ip = #{connectIp} 
+		<!-- AND t.connect_agent = #{connectAgent} -->
 		ORDER BY t.created_at DESC, t.token_id DESC
 		LIMIT 1
 	</select>
