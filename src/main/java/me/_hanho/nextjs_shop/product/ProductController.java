@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,21 +76,48 @@ public class ProductController {
 		result.put("message", "WISH_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 장바구니 확인
+	@GetMapping("/cart")
+	public ResponseEntity<Map<String, Object>> cartCheck(
+			@RequestParam("productId") Integer productId, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("cartCheck productId : " + productId);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		boolean hasCart = productService.getProductHasCart(productId, userNo);
+
+		result.put("hasCart", hasCart);
+		result.put("message", "CART_CHECK_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	// 장바구니 넣기/수량증가
 	@PostMapping("/cart")
 	public ResponseEntity<Map<String, Object>> addCart(
-			@RequestParam("productOptionId") Integer productOptionId,
-			@RequestParam("quantity") Integer quantity,
+			@RequestBody AddCartRequest addCartRequest, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addCart");
+		logger.info("addCart" + addCartRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.addCart(productOptionId, quantity, userNo);
+		CartAddResult addCartResult = productService.addCart(addCartRequest, userNo);
+
+		if (addCartResult.getSuccessCount() == 0) {
+			result.put("message", "CART_ADD_OUT_OF_STOCK");
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
+		}
+
+		if (addCartResult.isPartial()) {
+			result.put("message", "CART_ADD_PARTIAL_SUCCESS");
+			result.put("limitedItems", addCartResult.getLimitedItems());
+			return ResponseEntity.ok(result);
+		}
 
 		result.put("message", "CART_ADD_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity.ok(result);
 	}
+
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(
@@ -114,7 +142,7 @@ public class ProductController {
 			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getProductDetail productId : " + productId + ", userNo : " + userNo);
+		logger.info("getProductDetailAvailableCoupon productId : " + productId + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class Cart {
 	private int cartId;
 	private Timestamp createdAt;
+	private Timestamp updatedAt;
 	private int productOptionId;
 	private int userNo;
 	private int quantity;

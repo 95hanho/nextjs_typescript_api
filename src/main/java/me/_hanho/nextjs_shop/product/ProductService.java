@@ -1,6 +1,8 @@
 package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,11 +75,81 @@ public class ProductService {
 		}
 	}
 
-	public void addCart(Integer productOptionId, Integer quantity, Integer userNo) {
-		productMapper.addCart(productOptionId, quantity, userNo);
+	public boolean getProductHasCart (Integer productId, Integer userNo) {
+		List<Integer> addCartList = productMapper.getProductCart(productId, userNo);
+		return addCartList != null && !addCartList.isEmpty();
+	}
+
+	@Transactional
+	public CartAddResult addCart(AddCartRequest addCartRequest, Integer userNo) {
+		List<Integer> existingOptionIds = productMapper.getProductCart(addCartRequest.getProductId(), userNo);
+
+		// 이미 장바구니에 있으면 업데이트, 없으면 추가
+		List<AddCartItem> updateList = new ArrayList<>();
+		List<AddCartItem> insertList = new ArrayList<>();
+		for (AddCartItem cart : addCartRequest.getAddCartList()) {
+			if (existingOptionIds.contains(cart.getProductOptionId())) {
+				updateList.add(cart);
+			} else {
+				insertList.add(cart);
+			}
+		}
+
+		// ✅ update 전 수량 미리 확보 (update 판단용)
+		Map<Integer, Integer> beforeQtyMap = new HashMap<>();
+		if (!updateList.isEmpty()) {
+			List<CartQtyRow> beforeRows = productMapper.getCartQtyMap(userNo, updateList);
+			for (CartQtyRow r : beforeRows) {
+				beforeQtyMap.put(r.getProductOptionId(), r.getQuantity());
+			}
+		}
+
+		int result = 0;
+
+		if (!updateList.isEmpty()) {
+			result = result + productMapper.upQuantityCart(updateList, userNo);
+		}
+		if (!insertList.isEmpty()) {
+			result = result + productMapper.addCart(insertList, userNo);
+		}
+
+		// after + stock + requested 조회
+		List<CartAppliedRow> applied = productMapper.getCartAppliedResult(userNo, addCartRequest.getAddCartList());
+
+		int successCount = 0;
+		List<Integer> limitedItems = new ArrayList<>();
+
+		Map<Integer, CartAppliedRow> appliedMap = new HashMap<>();
+		for (CartAppliedRow row : applied) {
+			appliedMap.put(row.getProductOptionId(), row);
+		}
+
+		for (AddCartItem reqItem : addCartRequest.getAddCartList()) {
+			CartAppliedRow row = appliedMap.get(reqItem.getProductOptionId());
+
+			// cart에 없으면 (재고 0 등) 성공 카운트 안 함
+			if (row == null || row.getCartQuantity() == null) {
+				continue;
+			}
+
+			Integer beforeQty = beforeQtyMap.get(reqItem.getProductOptionId());
+			int before = (beforeQty == null ? 0 : beforeQty);
+			int after = row.getCartQuantity();
+			int appliedDelta = after - before; // ✅ 이번 요청으로 실제 증가분
+
+			if (appliedDelta > 0) successCount++;
+			if (appliedDelta < reqItem.getQuantity()) {
+				limitedItems.add(reqItem.getProductOptionId());
+			}
+		}
+
+		CartAddResult res = new CartAddResult();
+		res.setSuccessCount(successCount);
+		res.setPartial(!limitedItems.isEmpty());
+		res.setLimitedItems(limitedItems);
+		return res;
 	}
 	
-
 	public ProductDetailResponse getProductDetail(int productId) {
 		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
 		
