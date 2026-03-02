@@ -2,7 +2,9 @@ package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,8 +36,15 @@ public interface ProductMapper {
 
 	void deleteWish(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	//
+	List<Integer> getProductCart(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 
-	void addCart(@Param("productOptionId") Integer productOptionId, @Param("quantity") Integer quantity, @Param("userNo") Integer userNo);
+	List<CartQtyRow> getCartQtyMap(@Param("userNo") Integer userNo, @Param("cartList") List<AddCartItem> cartList);
+
+	int upQuantityCart(@Param("updateList") List<AddCartItem> updateList, @Param("userNo") Integer userNo);
+
+	int addCart(@Param("insertList") List<AddCartItem> insertList, @Param("userNo") Integer userNo);
+
+	List<CartAppliedRow> getCartAppliedResult(@Param("userNo") Integer userNo, @Param("cartList") List<AddCartItem> cartList);
 
 	ProductDetailResponse getProductDetail(int productId);
 	

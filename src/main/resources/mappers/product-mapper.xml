@@ -125,10 +125,80 @@
 	</delete>
 	<!--  -->
 
+	<select id="getProductCart">
+		SELECT product_option_id
+		FROM nextjs_shop_cart
+		WHERE product_option_id IN (
+		    SELECT product_option_id
+		    FROM nextjs_shop_product_option
+		    WHERE product_id = #{productId}
+		)
+		AND user_no = #{userNo}
+	</select>
+
+	<select id="getCartQtyMap" resultType="me._hanho.nextjs_shop.product.CartQtyRow">
+		SELECT
+			c.product_option_id AS productOptionId,
+			c.quantity AS quantity
+		FROM nextjs_shop_cart c
+		WHERE c.user_no = #{userNo}
+			AND c.product_option_id IN
+			<foreach collection="cartList" item="item" open="(" separator="," close=")">
+			#{item.productOptionId}
+			</foreach>
+	</select>
+	
+	<update id="upQuantityCart">
+		UPDATE nextjs_shop_cart c
+		JOIN nextjs_shop_product_option po ON c.product_option_id = po.product_option_id
+		SET c.quantity = LEAST(
+			c.quantity + CASE c.product_option_id
+				<foreach collection="updateList" item="item">
+				WHEN #{item.productOptionId} THEN #{item.quantity}
+				</foreach>
+				ELSE 0
+			END,
+			po.stock
+		)
+		WHERE c.user_no = #{userNo}
+			AND c.product_option_id IN
+			<foreach collection="updateList" item="item" open="(" separator="," close=")">
+			#{item.productOptionId}
+			</foreach>
+	</update>
+
 	<insert id="addCart">
-		INSERT INTO nextjs_shop_cart(product_option_id, user_no, quantity)
-		VALUES(#{productOptionId}, #{userNo}, #{quantity})
+		INSERT INTO nextjs_shop_cart (product_option_id, user_no, quantity)
+		SELECT t.product_option_id, #{userNo}, LEAST(t.quantity, po.stock) AS quantity
+		FROM (
+			<foreach collection="insertList" item="item" separator=" UNION ALL ">
+			SELECT #{item.productOptionId} AS product_option_id, #{item.quantity} AS quantity
+			</foreach>
+		) t
+		JOIN nextjs_shop_product_option po ON po.product_option_id = t.product_option_id
+		WHERE po.stock > 0
 	</insert>
+
+	<select id="getCartAppliedResult" resultType="me._hanho.nextjs_shop.product.CartAppliedRow">
+		SELECT
+			t.product_option_id AS productOptionId,
+			t.quantity AS requestedQuantity,
+			po.stock AS stock,
+			c.quantity AS cartQuantity
+		FROM (
+			<foreach collection="cartList" item="item" separator=" UNION ALL ">
+				SELECT
+					#{item.productOptionId} AS product_option_id,
+					#{item.quantity} AS quantity
+			</foreach>
+		) t
+		JOIN nextjs_shop_product_option po
+			ON po.product_option_id = t.product_option_id
+		LEFT JOIN nextjs_shop_cart c
+			ON c.user_no = #{userNo}
+			AND c.product_option_id = t.product_option_id
+	</select>
+
 	<select id="getProductDetail">
 		SELECT  p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
 		p.like_count, p.view_count, p.wish_count, 
