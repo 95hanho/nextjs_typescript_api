@@ -23,6 +23,10 @@ public interface MypageMapper {
 	void unselectOutOfStockItems(Integer userNo);
 	
 	List<CartProductResponse> getCartList(Integer userNo);
+
+	List<AvailableCouponAtCartResponse> getAvailableCouponsAtCart(Integer userNo);
+
+	List<AvailableCouponForProductResponse> getAvailableCouponsForProducts(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	
 	int updateCart(@Param("c") UpdateCartRequest cart, @Param("userNo") Integer userNo);
 	

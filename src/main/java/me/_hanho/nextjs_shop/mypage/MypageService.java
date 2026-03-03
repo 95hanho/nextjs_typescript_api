@@ -44,6 +44,14 @@ public class MypageService {
 		//
 		return mypageMapper.getCartList(userNo);
 	}
+	public List<AvailableCouponAtCartResponse> getAvailableCouponsAtCart(Integer userNo) {
+		return mypageMapper.getAvailableCouponsAtCart(userNo);
+	}
+
+	public List<AvailableCouponForProductResponse> getAvailableCouponsForProducts(List<Integer> productIds, Integer userNo) {
+		return mypageMapper.getAvailableCouponsForProducts(productIds, userNo);
+	}
+
 	public void updateCart(UpdateCartRequest cart, Integer userNo) {
 	    int updated = mypageMapper.updateCart(cart, userNo);
 	    if (updated == 0) {

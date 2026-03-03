@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.product.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.ProductService;
 
@@ -104,9 +105,19 @@ public class MypageController {
 		logger.info("selectCart : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartProductResponse> CartList = mypageService.getCartList(userNo);
+		List<CartProductResponse> cartList = mypageService.getCartList(userNo);
+		List<Integer> productIds = cartList.stream()
+				.map(CartProductResponse::getProductId)
+				.distinct()
+				.toList();
+		List<AvailableCouponAtCartResponse> availableCouponsAtCart = mypageService.getAvailableCouponsAtCart(userNo);
+
+		// 장바구니에 담긴 제품들에 대한 이용가능 쿠폰 조회
+		List<AvailableCouponForProductResponse> availableCouponsForProduct = mypageService.getAvailableCouponsForProducts(productIds, userNo);
 		
-		result.put("cartList", CartList);
+		result.put("cartList", cartList);
+		result.put("availableCouponsAtCart", availableCouponsAtCart);
+		result.put("availableCouponsForProduct", availableCouponsForProduct);
 		result.put("message", "CART_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
