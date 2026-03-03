@@ -11,7 +11,7 @@
 	<update id="releaseHolds">
 	    UPDATE nextjs_shop_stock_hold
 	    SET status = 'RELEASED',
-	        active_hold = NULL
+	        active_hold = 0
 	    WHERE user_no = #{userNo} AND status = 'HOLD'
 			AND active_hold = 1
 			AND hold_id IN
@@ -19,36 +19,35 @@
 			  #{id}
 			</foreach>
  	</update>
-	  
 	
- <!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
-  <select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
-	  SELECT
-	    po.product_option_id,
-	    GREATEST(
-	      po.stock - IFNULL(SUM(
-	        CASE
-	          WHEN sh.status = 'HOLD'
-	           AND sh.active_hold = 1
-	           AND sh.expires_at > NOW()
-	          THEN sh.count
-	          ELSE 0
-	        END
-	      ), 0),
-	      0
-	    ) AS available
-	  FROM nextjs_shop_product_option po
-	  JOIN nextjs_shop_product p ON p.product_id = po.product_id
-	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no 
-	  LEFT JOIN nextjs_shop_stock_hold sh
-	    ON sh.product_option_id = po.product_option_id
-	  WHERE s.approval_status = 'APPROVED' AND p.sale_stop = 0 AND
-	  	po.product_option_id IN
-	    <foreach collection="detailIds" item="id" open="(" separator="," close=")">
-	      #{id}
-	    </foreach>
-	  GROUP BY po.product_option_id
-  </select>
+ 	<!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
+	<select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
+		SELECT
+			po.product_option_id,
+			GREATEST(
+			po.stock - IFNULL(SUM(
+				CASE
+				WHEN sh.status = 'HOLD'
+				AND sh.active_hold = 1
+				AND sh.expires_at > NOW()
+				THEN sh.count
+				ELSE 0
+				END
+			), 0),
+			0
+			) AS available
+		FROM nextjs_shop_product_option po
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no 
+		LEFT JOIN nextjs_shop_stock_hold sh
+			ON sh.product_option_id = po.product_option_id
+		WHERE s.approval_status = 'APPROVED' AND p.sale_stop = 0 AND
+			po.product_option_id IN
+			<foreach collection="detailIds" item="id" open="(" separator="," close=")">
+			#{id}
+			</foreach>
+		GROUP BY po.product_option_id
+	</select>
 
   <!-- 본인 미만료 HOLD -->
   <select id="selectExistingHolds" resultType="me._hanho.nextjs_shop.buy.ExistingHold">

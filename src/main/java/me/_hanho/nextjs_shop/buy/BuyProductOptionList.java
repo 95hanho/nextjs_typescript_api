@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BuyProductOptionList {
 	private int productOptionId;
-	private int addPrice;
+	// private int addPrice;
 	private int count;
 	
 }
