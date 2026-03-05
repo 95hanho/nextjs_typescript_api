@@ -46,8 +46,8 @@ public class JwtInterceptor implements HandlerInterceptor {
 		    }
 			
 			/* =======판매자 로그인 토큰==================================================================== */
+			logger.info("[preHandle] ===> method: " + request.getMethod() + ", url : " + request.getRequestURL());
 			logger.info("token : " + token);
-			logger.info("preHandle ===> method: " + request.getMethod() + ", url : " + request.getRequestURL());
 			if (token != null && !token.isEmpty()) {
 				// JWT 파싱 및 복호화
 	            Claims claims = tokenService.parseJwtToken(token);

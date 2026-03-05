@@ -18,6 +18,7 @@ public class SellerProductResponse {
 	private int originPrice;
 	private int finalPrice;
 	private Timestamp createdAt;
+    private Timestamp updatedAt;
 	private int likeCount;
 	private int viewCount;
 	private int wishCount;
