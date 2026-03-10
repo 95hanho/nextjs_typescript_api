@@ -159,22 +159,23 @@
 		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = c.user_no
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		LEFT JOIN (
-	        SELECT 
-	            pi_inner.product_id,
-	            pi_inner.file_id
-	        FROM nextjs_shop_product_image pi_inner
-	        INNER JOIN (
-	            SELECT 
-	                product_id,
-	                MIN(sort_key) AS min_sort_key
-	            FROM nextjs_shop_product_image
-	            GROUP BY product_id
-	        ) first_img
-	            ON pi_inner.product_id = first_img.product_id
-	           AND pi_inner.sort_key   = first_img.min_sort_key
-	    ) tpi ON tpi.product_id = p.product_id
-	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-		WHERE c.user_no= #{userNo}
+			SELECT 
+				pi_inner.product_id,
+				pi_inner.file_id
+			FROM nextjs_shop_product_image pi_inner
+			INNER JOIN (
+				SELECT 
+					product_id,
+					MIN(sort_key) AS min_sort_key
+				FROM nextjs_shop_product_image
+				GROUP BY product_id
+			) first_img
+				ON pi_inner.product_id = first_img.product_id
+			AND pi_inner.sort_key   = first_img.min_sort_key
+		) tpi ON tpi.product_id = p.product_id
+		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+		WHERE c.user_no = #{userNo}
+		ORDER BY (p.final_price * c.quantity) DESC
 	</select>
 
 	<select id="getAvailableCouponsAtCart">
