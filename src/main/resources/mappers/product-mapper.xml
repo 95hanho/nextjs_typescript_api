@@ -261,7 +261,10 @@
 	        )
 	</select>
 	
-	<insert id="couponDownload">
+	<insert id="couponDownload"
+        useGeneratedKeys="true"
+        keyProperty="userCouponId"
+        keyColumn="user_coupon_id">
 		INSERT INTO nextjs_shop_user_coupon(user_no, coupon_id)
 		VALUES(#{userNo}, #{couponId})
 	</insert>
