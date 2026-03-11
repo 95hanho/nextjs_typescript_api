@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.model.UserCoupon;
+
 @Mapper
 public interface ProductMapper {
 
@@ -54,7 +56,7 @@ public interface ProductMapper {
 
 	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	
-	void couponDownload(@Param("couponId") Integer couponId, @Param("userNo") Integer userNo);
+	int couponDownload(UserCoupon userCoupon);
 
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
+import me._hanho.nextjs_shop.model.UserCoupon;
 
 @Service
 @RequiredArgsConstructor
@@ -168,8 +169,11 @@ public class ProductService {
 		return productMapper.getAvailableProductCoupon(productId, userNo);
 	}
 	
-	public void couponDownload(Integer couponId, Integer userNo) {
-		productMapper.couponDownload(couponId, userNo);
+	public int couponDownload(UserCoupon userCoupon) {
+		int result = productMapper.couponDownload(userCoupon);
+		if(result == 0) return 0;
+
+		return userCoupon.getUserCouponId();
 	}
 	
 	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {

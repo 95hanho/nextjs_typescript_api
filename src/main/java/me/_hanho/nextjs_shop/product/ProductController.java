@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.UserCoupon;
 
 @RestController
 @RequiredArgsConstructor
@@ -160,8 +161,19 @@ public class ProductController {
 		logger.info("couponDownload couponId : " + couponId + ", userNo : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		productService.couponDownload(couponId, userNo);
+
+		UserCoupon userCoupon = UserCoupon.builder()
+				.couponId(couponId)
+				.userNo(userNo)
+				.build();
+		int userCouponId = productService.couponDownload(userCoupon);
 		
+		if(userCouponId == 0) {
+			result.put("message", "COUPON_DOWNLOAD_FAILED");
+			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		result.put("userCouponId", userCouponId);
 		result.put("message", "COUPON_DOWNLOAD_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
