@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.mypage;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,8 @@ import me._hanho.nextjs_shop.common.exception.ErrorCode;
 @RequiredArgsConstructor
 public class MypageService {
 	
+	private static final Logger logger = Logger.getLogger(MypageService.class.getName());
+
 	private final MypageMapper mypageMapper;
 
 	public List<UserCouponResponse> getUserCoupons(Integer userNo) {
@@ -38,11 +41,26 @@ public class MypageService {
 		mypageMapper.insertReview(review, userNo);
 	}
 	@Transactional
-	public List<CartProductResponse> getCartList(Integer userNo) {
+	public CartSummaryResponse getCartSummary(Integer userNo) {
+		CartSummaryResponse cartSummary = new CartSummaryResponse();
 		// 재고 부족한 얘들 선택 해제
-		mypageMapper.unselectOutOfStockItems(userNo);
-		//
-		return mypageMapper.getCartList(userNo);
+		int updated = mypageMapper.unselectOutOfStockItems(userNo);
+		System.out.println("updated: " + updated);
+		if (updated > 0) {
+			logger.info("재고 부족한 제품 선택 해제: " + updated);
+		}
+		List<CartProductResponse> cartList = mypageMapper.getCartList(userNo);
+
+		// 장바구니에 담긴 제품들의 Id 조회
+		List<Integer> productIds = cartList.stream()
+		.map(CartProductResponse::getProductId)
+		.distinct()
+		.toList();
+		
+		cartSummary.setCartList(cartList);
+		cartSummary.setProductIds(productIds);
+		cartSummary.setExceedQuantity(updated > 0);
+		return cartSummary;
 	}
 	public List<AvailableCouponAtCartResponse> getAvailableCouponsAtCart(Integer userNo) {
 		return mypageMapper.getAvailableCouponsAtCart(userNo);

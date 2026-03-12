@@ -1,8 +1,11 @@
 package me._hanho.nextjs_shop.mypage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,17 +108,16 @@ public class MypageController {
 		logger.info("selectCart : " + userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<CartProductResponse> cartList = mypageService.getCartList(userNo);
-		List<Integer> productIds = cartList.stream()
-				.map(CartProductResponse::getProductId)
-				.distinct()
-				.toList();
-		List<AvailableCouponAtCartResponse> availableCouponsAtCart = mypageService.getAvailableCouponsAtCart(userNo);
+		// 장바구니 제품리스트, 장바구니 제품 Ids, 재고 부족 여부 조회
+		CartSummaryResponse cartSummary = mypageService.getCartSummary(userNo);
 
-		// 장바구니에 담긴 제품들에 대한 이용가능 쿠폰 조회
-		List<AvailableCouponForProductResponse> availableCouponsForProduct = mypageService.getAvailableCouponsForProducts(productIds, userNo);
-		
-		result.put("cartList", cartList);
+		// 장바구니에 담긴 제품들에 대한 이용가능 장바구니 쿠폰 조회
+		List<AvailableCouponAtCartResponse> availableCouponsAtCart = mypageService.getAvailableCouponsAtCart(userNo);
+		// 장바구니에 담긴 제품들에 대한 이용가능 판매자 쿠폰 조회 
+		List<AvailableCouponForProductResponse> availableCouponsForProduct = mypageService.getAvailableCouponsForProducts(cartSummary.getProductIds(), userNo);
+
+		result.put("isExceedQuantity", cartSummary.isExceedQuantity());
+		result.put("cartList", cartSummary.getCartList());
 		result.put("availableCouponsAtCart", availableCouponsAtCart);
 		result.put("availableCouponsForProduct", availableCouponsForProduct);
 		result.put("message", "CART_FETCH_SUCCESS");

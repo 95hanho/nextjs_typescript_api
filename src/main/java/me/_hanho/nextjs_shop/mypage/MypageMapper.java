@@ -20,7 +20,7 @@ public interface MypageMapper {
 	
 	void insertReview(@Param("review") AddReviewRequest review, @Param("userNo") Integer userNo);
 	
-	void unselectOutOfStockItems(Integer userNo);
+	int unselectOutOfStockItems(Integer userNo);
 	
 	List<CartProductResponse> getCartList(Integer userNo);
 
