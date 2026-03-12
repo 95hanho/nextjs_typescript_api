@@ -151,7 +151,7 @@
 			p.name AS productName, p.origin_price, p.final_price,
 			w.wish_id,
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
-			s.seller_name,
+			s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
 			c.quantity, c.selected
 		FROM nextjs_shop_cart c
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
