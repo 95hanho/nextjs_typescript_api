@@ -229,8 +229,20 @@
 		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 	<select id="getProductOptionList">
-		SELECT product_option_id, product_id, add_price, stock, size
-		FROM nextjs_shop_product_option
+		SELECT 
+			product_option_id, 
+			product_id, 
+			add_price, 
+			(stock - COALESCE((
+				SELECT SUM(sh.count)
+				FROM nextjs_shop_stock_hold sh
+				WHERE sh.product_option_id = po.product_option_id
+				AND sh.status = 'HOLD'
+				AND sh.active_hold = 1
+				AND sh.expires_at > NOW()
+			), 0)) AS stock,
+			size
+		FROM nextjs_shop_product_option po
 		WHERE product_id = #{productId} AND is_displayed = 1
 	</select>
 	<select id="getAvailableProductCoupon">
