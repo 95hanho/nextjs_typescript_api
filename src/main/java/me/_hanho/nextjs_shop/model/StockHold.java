@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.model;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
@@ -18,4 +19,5 @@ public class StockHold {
 	private boolean activeHold;
 	private Timestamp expiresAt;
 	private Timestamp createdAt;
+	private Timestamp updatedAt;
 }
