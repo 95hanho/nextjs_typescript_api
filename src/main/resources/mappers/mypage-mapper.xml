@@ -147,7 +147,16 @@
 	
 	<select id="getCartList">
 		SELECT c.cart_id, c.created_at, c.product_option_id,
-			pd.add_price, pd.stock, pd.size, p.product_id, 
+			pd.add_price, 
+			(pd.stock - COALESCE((
+				SELECT SUM(sh.count)
+				FROM nextjs_shop_stock_hold sh
+				WHERE sh.product_option_id = pd.product_option_id
+				AND sh.status = 'HOLD'
+				AND sh.active_hold = 1
+				AND sh.expires_at > NOW()
+			), 0)) AS stock,
+			pd.size, p.product_id, 
 			p.name AS productName, p.origin_price, p.final_price,
 			w.wish_id,
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
