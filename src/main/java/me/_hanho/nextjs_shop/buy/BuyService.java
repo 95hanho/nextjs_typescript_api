@@ -48,11 +48,31 @@ public class BuyService {
     @Transactional
     public HoldTryResult preparePurchaseWithHold(BuyCheckRequest req, Integer userNo) {
         // 0. 요청 정리
+        // productOptionId 기준으로 수량은 합산하되,
+        // 같은 옵션의 cartId는 함께 관리한다.
         Map<Integer, Integer> mergedCountByPd = new HashMap<>();
+        Map<Integer, Integer> cartIdByPd = new HashMap<>();
+
         for (var x : req.getBuyList()) {
             int pdId = x.getProductOptionId();
             int cnt = Math.max(1, x.getCount());
+            Integer cartId = x.getCartId(); // 장바구니 구매면 값 존재, 바로구매면 null
+
             mergedCountByPd.merge(pdId, cnt, Integer::sum);
+
+            // 같은 상품옵션이 여러 번 들어올 수는 있지만,
+            // 현재 hold 구조는 productOptionId 기준 1건으로 관리하므로
+            // 서로 다른 cartId가 섞이면 어느 cart를 대표로 저장할지 애매하다.
+            // 따라서 같은 옵션에 서로 다른 cartId가 들어오면 예외 처리한다.
+            if (cartIdByPd.containsKey(pdId)) {
+                Integer existingCartId = cartIdByPd.get(pdId);
+
+                if (!java.util.Objects.equals(existingCartId, cartId)) {
+                    throw new BusinessException(ErrorCode.BAD_REQUEST);
+                }
+            } else {
+                cartIdByPd.put(pdId, cartId);
+            }
         }
 
         if (mergedCountByPd.isEmpty()) {
@@ -105,12 +125,18 @@ public class BuyService {
         }
 
         // 5. hold upsert
+        // productOptionId별로 cartId를 함께 넣어 저장한다.
         var upserts = new ArrayList<UpsertHoldRow>();
         for (var entry : mergedCountByPd.entrySet()) {
+            Integer productOptionId = entry.getKey();
+            Integer count = entry.getValue();
+            Integer cartId = cartIdByPd.get(productOptionId);
+
             upserts.add(new UpsertHoldRow(
                 userNo,
-                entry.getKey(),
-                entry.getValue(),
+                productOptionId,
+                cartId,
+                count,
                 HOLD_TTL_SECONDS
             ));
         }
@@ -218,7 +244,6 @@ public class BuyService {
                         throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
                     }
 
-                    // StockHoldCoupon DTO가 현재 holdId, userCouponId 구조로 바뀌었다는 전제
                     holdCouponRows.add(new StockHoldCoupon(
                         0,
                         holdId,
@@ -239,7 +264,6 @@ public class BuyService {
 
         return HoldTryResult.ok(holds);
     }
-
     /* -------------------------------------------------------------------------------- */
 
     // public static record Item(int pdId, int count) {}
