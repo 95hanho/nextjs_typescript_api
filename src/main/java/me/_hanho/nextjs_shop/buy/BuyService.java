@@ -21,7 +21,8 @@ import me._hanho.nextjs_shop.model.StockHoldCoupon;
 @RequiredArgsConstructor
 public class BuyService {
 	
-	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	// private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
 	
 	private final BuyMapper buyMapper;
 	

@@ -137,6 +137,14 @@
 		WHERE oi.order_list_id = #{review.orderListId}
 	</insert>
 	
+	<update id="releaseHoldIfExists">
+		UPDATE nextjs_shop_stock_hold
+	    SET status = 'RELEASED',
+	        active_hold = 0
+	    WHERE user_no = #{userNo} AND status = 'HOLD'
+			AND active_hold = 1
+	</update>
+	
 	<update id="unselectOutOfStockItems">
 		UPDATE nextjs_shop_cart c
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id

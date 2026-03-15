@@ -2,24 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.buy.BuyMapper">
 
-	<select id="selectAllActiveHoldsByUser">
-		SELECT sh.hold_id
-		FROM nextjs_shop_stock_hold sh
-		WHERE sh.user_no = #{userNo} AND sh.status = 'HOLD' AND sh.active_hold = 1
-	</select>
-	<!-- 점유 해제: 활성(HOLD & active_hold=1) → RELEASED, active_hold=NULL -->
-	<update id="releaseHolds">
-	    UPDATE nextjs_shop_stock_hold
-	    SET status = 'RELEASED',
-	        active_hold = 0
-	    WHERE user_no = #{userNo} AND status = 'HOLD'
-			AND active_hold = 1
-			AND hold_id IN
-			<foreach collection="holdIds" item="id" open="(" separator="," close=")">
-			  #{id}
-			</foreach>
- 	</update>
-	
  	<!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
 	<select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
 		SELECT
@@ -194,6 +176,12 @@
 	</insert>
 
 	<!-- ================================= -->
+
+	<select id="selectAllActiveHoldsByUser">
+		SELECT sh.hold_id
+		FROM nextjs_shop_stock_hold sh
+		WHERE sh.user_no = #{userNo} AND sh.status = 'HOLD' AND sh.active_hold = 1
+	</select>
 	
 	<!-- 점유 연장: 활성(HOLD & active_hold=1) 인 것만 NOW()+TTL 로 갱신 -->
 	<update id="extendHolds">
@@ -214,62 +202,74 @@
 	    </foreach>
 	</update>
 
+	<!-- 점유 해제: 활성(HOLD & active_hold=1) → RELEASED, active_hold=NULL -->
+	<update id="releaseHolds">
+	    UPDATE nextjs_shop_stock_hold
+	    SET status = 'RELEASED',
+	        active_hold = 0
+	    WHERE user_no = #{userNo} AND status = 'HOLD'
+			AND active_hold = 1
+			AND hold_id IN
+			<foreach collection="holdIds" item="id" open="(" separator="," close=")">
+			  #{id}
+			</foreach>
+ 	</update>
 
    <!-- 점유하고 있는 상품조회 -->
-  <select id="getOrderStock">
-  	SELECT sh.hold_id, sh.count, 
-  		 pd.product_option_id, pd.add_price, pd.size,
-  		 p.product_id, p.name, p.color_name,
-  		 s.seller_name,
-  		 f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
-  	FROM nextjs_shop_stock_hold sh
-  	JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
-  	JOIN nextjs_shop_product p ON p.product_id = pd.product_id
-  	JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-  	LEFT JOIN (
-        SELECT 
-            pi.product_id, 
-            pi.file_id
-        FROM nextjs_shop_product_image pi
-        INNER JOIN (
-            SELECT 
-                product_id, 
-                MIN(sort_key) AS min_sort_key
-            FROM nextjs_shop_product_image
-            GROUP BY product_id
-        ) min_pi 
-        ON pi.product_id = min_pi.product_id 
-        AND pi.sort_key = min_pi.min_sort_key
-    ) tpi ON tpi.product_id = p.product_id
- 	LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-  	WHERE sh.user_no = #{userNo} 
-    AND sh.status = 'HOLD'
-    AND sh.active_hold = 1
-    AND sh.expires_at > NOW()
-    AND s.approval_status = 'APPROVED'
-  	AND p.sale_stop = 0
-    ORDER BY sh.created_at DESC
-  </select>
+  	<select id="getOrderStock">
+		SELECT sh.hold_id, sh.count, 
+			pd.product_option_id, pd.add_price, pd.size,
+			p.product_id, p.name, p.color_name,
+			s.seller_name,
+			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+		FROM nextjs_shop_stock_hold sh
+		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN (
+			SELECT 
+				pi.product_id, 
+				pi.file_id
+			FROM nextjs_shop_product_image pi
+			INNER JOIN (
+				SELECT 
+					product_id, 
+					MIN(sort_key) AS min_sort_key
+				FROM nextjs_shop_product_image
+				GROUP BY product_id
+			) min_pi 
+			ON pi.product_id = min_pi.product_id 
+			AND pi.sort_key = min_pi.min_sort_key
+		) tpi ON tpi.product_id = p.product_id
+		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
+		WHERE sh.user_no = #{userNo} 
+		AND sh.status = 'HOLD'
+		AND sh.active_hold = 1
+		AND sh.expires_at > NOW()
+		AND s.approval_status = 'APPROVED'
+		AND p.sale_stop = 0
+		ORDER BY sh.created_at DESC
+	</select>
   
-  <!-- 점유상품에 사용가능한 쿠폰조회 -->
-  <select id="getAvailableCoupon">
-  	SELECT c.coupon_id, c.description, c.discount_type, c.discount_value, c.max_discount, c.minimum_order_before_amount,
-  		uc.user_coupon_id, 
-		uc.used
-	FROM nextjs_shop_coupon c
-	JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id
-	LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
-	WHERE uc.user_no = #{userNo} AND c.status = 'ACTIVE'
-	AND uc.used = 0
-	AND (
-		ca.product_id IN 
-		<foreach collection="productIds" item="id" open="(" separator="," close=")">
-	      #{id}
-	    </foreach>
-	    OR ca.product_id IS NULL
-		OR seller_no is NULL
-	)
-  </select>
+	<!-- 점유상품에 사용가능한 쿠폰조회 -->
+	<select id="getAvailableCoupon">
+		SELECT c.coupon_id, c.description, c.discount_type, c.discount_value, c.max_discount, c.minimum_order_before_amount,
+			uc.user_coupon_id, 
+			uc.used
+		FROM nextjs_shop_coupon c
+		JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id
+		LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
+		WHERE uc.user_no = #{userNo} AND c.status = 'ACTIVE'
+		AND uc.used = 0
+		AND (
+			ca.product_id IN 
+			<foreach collection="productIds" item="id" open="(" separator="," close=")">
+			#{id}
+			</foreach>
+			OR ca.product_id IS NULL
+			OR seller_no is NULL
+		)
+	</select>
   
    <select id="getProductWithCoupons">
   	  SELECT
