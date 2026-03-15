@@ -138,11 +138,20 @@
 	</insert>
 	
 	<update id="unselectOutOfStockItems">
-	    UPDATE nextjs_shop_cart c
-	    JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
-	    SET c.selected = 0
-	    WHERE c.user_no = #{userNo}
-	      AND pd.stock &lt; c.quantity
+		UPDATE nextjs_shop_cart c
+		JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
+		SET c.selected = 0
+		WHERE c.user_no = #{userNo}
+		AND (
+			pd.stock - COALESCE((
+				SELECT SUM(sh.count)
+				FROM nextjs_shop_stock_hold sh
+				WHERE sh.product_option_id = pd.product_option_id
+				AND sh.status = 'HOLD'
+				AND sh.active_hold = 1
+				AND sh.expires_at > NOW()
+			), 0)
+		) &lt; c.quantity
 	</update>
 	
 	<select id="getCartList">
