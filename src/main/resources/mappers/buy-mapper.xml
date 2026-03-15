@@ -65,61 +65,74 @@
 	<!-- 멱등 업서트: 유니크(UQ_user_pd_status) 충돌 시 count/TTL 갱신 -->
 	<!-- 판매가능 조건을 통과한 옵션만 upsert -->
 	<insert id="upsertHolds" parameterType="map">
-	  INSERT INTO nextjs_shop_stock_hold
-	    (user_no, product_option_id, count, status, active_hold, expires_at, created_at)
-	  SELECT
-	    x.user_no,
-	    x.product_option_id,
-	    x.count,
-	    'HOLD',
-	    1,
-	    DATE_ADD(NOW(), INTERVAL x.ttl_seconds SECOND),
-	    NOW()
-	  FROM (
-	    <foreach collection="rows" item="r" separator=" UNION ALL ">
-	      SELECT
-	        #{r.userNo}          AS user_no,
-	        #{r.productOptionId} AS product_option_id,
-	        #{r.count}           AS count,
-	        #{r.ttlSeconds}      AS ttl_seconds
-	    </foreach>
-	  ) x
-	  JOIN nextjs_shop_product_option po ON po.product_option_id = x.product_option_id
-	  JOIN nextjs_shop_product p ON p.product_id = po.product_id
-	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-	  WHERE s.approval_status = 'APPROVED'
-	    AND p.sale_stop = 0
-	  ON DUPLICATE KEY UPDATE
-	    count      = VALUES(count),
-	    expires_at = VALUES(expires_at),
-	    status     = 'HOLD',
-	    active_hold= 1
+		INSERT INTO nextjs_shop_stock_hold
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+		SELECT
+			x.user_no,
+			x.product_option_id,
+			x.cart_id,
+			x.count,
+			'HOLD',
+			1,
+			DATE_ADD(NOW(), INTERVAL x.ttl_seconds SECOND),
+			NOW()
+		FROM (
+			<foreach collection="rows" item="r" separator=" UNION ALL ">
+			SELECT
+				#{r.userNo}          AS user_no,
+				#{r.productOptionId} AS product_option_id,
+				#{r.cartId}          AS cart_id,
+				#{r.count}           AS count,
+				#{r.ttlSeconds}      AS ttl_seconds
+			</foreach>
+		) x
+		JOIN nextjs_shop_product_option po ON po.product_option_id = x.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		WHERE s.approval_status = 'APPROVED'
+			AND p.sale_stop = 0
+		ON DUPLICATE KEY UPDATE
+			cart_id     = VALUES(cart_id),
+			count       = VALUES(count),
+			expires_at  = VALUES(expires_at),
+			status      = 'HOLD',
+			active_hold = 1
 	</insert>
 
-
-  <!-- ↑ MySQL에서 VALUES(expires_at) 사용 불가 이슈 회피:
-       expires_at를 직접 다시 계산해서 갱신 -->
-  <insert id="upsertHolds" databaseId="mysql">
-    INSERT INTO nextjs_shop_stock_hold
-      (user_no, product_option_id, count, status, expires_at, created_at)
-    VALUES
-      <foreach collection="rows" item="r" separator=",">
-        (#{r.userNo}, #{r.productOptionId}, #{r.count}, 'HOLD',
-         DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND), NOW())
-      </foreach>
-    ON DUPLICATE KEY UPDATE
-      count = VALUES(count),
-      expires_at = DATE_ADD(NOW(), INTERVAL
-        <choose>
-          <when test="rows != null and rows.size() == 1">
-            #{rows[0].ttlSeconds}
-          </when>
-          <otherwise>
-            180
-          </otherwise>
-        </choose>
-        SECOND)
-  </insert>
+	<!-- ↑ MySQL에서 VALUES(expires_at) 사용 불가 이슈 회피:
+		expires_at를 직접 다시 계산해서 갱신 -->
+	<insert id="upsertHolds" databaseId="mysql">
+		INSERT INTO nextjs_shop_stock_hold
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+		VALUES
+			<foreach collection="rows" item="r" separator=",">
+			(
+				#{r.userNo},
+				#{r.productOptionId},
+				#{r.cartId},
+				#{r.count},
+				'HOLD',
+				1,
+				DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND),
+				NOW()
+			)
+			</foreach>
+		ON DUPLICATE KEY UPDATE
+			cart_id = VALUES(cart_id),
+			count = VALUES(count),
+			active_hold = 1,
+			status = 'HOLD',
+			expires_at = DATE_ADD(NOW(), INTERVAL
+			<choose>
+				<when test="rows != null and rows.size() == 1">
+				#{rows[0].ttlSeconds}
+				</when>
+				<otherwise>
+				180
+				</otherwise>
+			</choose>
+			SECOND)
+	</insert>
 
   <!-- 최신 HOLD (유저+pdId별 1건) -->
   <select id="selectLatestHolds" resultType="me._hanho.nextjs_shop.buy.HoldBrief">
@@ -174,6 +187,7 @@
 
 	<insert id="applyCoupons" parameterType="list">
 		INSERT INTO nextjs_shop_stock_hold_coupon (hold_id, user_coupon_id)
+		VALUES
 		<foreach collection="holdCoupons" item="ac" separator=",">
 			(#{ac.holdId}, #{ac.userCouponId})
 		</foreach>
