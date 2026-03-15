@@ -42,6 +42,9 @@ public class MypageService {
 	}
 	@Transactional
 	public CartSummaryResponse getCartSummary(Integer userNo) {
+		// 장바구니 조회 시 점유한 상품이 있으면 해제
+		mypageMapper.releaseHoldIfExists(userNo);
+		
 		CartSummaryResponse cartSummary = new CartSummaryResponse();
 		// 재고 부족한 얘들 선택 해제
 		int updated = mypageMapper.unselectOutOfStockItems(userNo);

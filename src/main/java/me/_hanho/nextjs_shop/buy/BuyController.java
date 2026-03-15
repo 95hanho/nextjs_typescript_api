@@ -49,7 +49,7 @@ public class BuyController {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 	    Map<String, Object> result = new HashMap<>();
 
-        HoldTryResult res = buyService.tryHoldUpsertAllOrNothing(buyCheck, userNo);
+        HoldTryResult res = buyService.preparePurchaseWithHold(buyCheck, userNo);
 
         if (!res.isOk()) {
             throw new BusinessException(ErrorCode.STOCK_HOLD_FAILED);

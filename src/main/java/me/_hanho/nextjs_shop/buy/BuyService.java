@@ -3,8 +3,10 @@ package me._hanho.nextjs_shop.buy;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -13,121 +15,259 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.StockHoldCoupon;
 
 @Service
 @RequiredArgsConstructor
 public class BuyService {
 	
-	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	// private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
 	
 	private final BuyMapper buyMapper;
 	
+    @lombok.Data
+    public static class HoldTryResult {
+        private boolean ok;
+        private java.util.List<HoldBrief> holds;
+
+        public static HoldTryResult ok(java.util.List<HoldBrief> holds) {
+            var r = new HoldTryResult();
+            r.ok = true;
+            r.holds = holds;
+            return r;
+        }
+
+        public static HoldTryResult fail() {
+            var r = new HoldTryResult();
+            r.ok = false;
+            r.holds = java.util.List.of();
+            return r;
+        }
+    }
+
     @Transactional
-    public HoldTryResult tryHoldUpsertAllOrNothing(BuyCheckRequest req, Integer userNo) {
-    	// 0. 요청 정리
+    public HoldTryResult preparePurchaseWithHold(BuyCheckRequest req, Integer userNo) {
+        // 0. 요청 정리
+        // productOptionId 기준으로 수량은 합산하되,
+        // 같은 옵션의 cartId는 함께 관리한다.
         Map<Integer, Integer> mergedCountByPd = new HashMap<>();
+        Map<Integer, Integer> cartIdByPd = new HashMap<>();
+
         for (var x : req.getBuyList()) {
             int pdId = x.getProductOptionId();
-            int cnt  = Math.max(1, x.getCount());
+            int cnt = Math.max(1, x.getCount());
+            Integer cartId = x.getCartId(); // 장바구니 구매면 값 존재, 바로구매면 null
+
             mergedCountByPd.merge(pdId, cnt, Integer::sum);
+
+            // 같은 상품옵션이 여러 번 들어올 수는 있지만,
+            // 현재 hold 구조는 productOptionId 기준 1건으로 관리하므로
+            // 서로 다른 cartId가 섞이면 어느 cart를 대표로 저장할지 애매하다.
+            // 따라서 같은 옵션에 서로 다른 cartId가 들어오면 예외 처리한다.
+            if (cartIdByPd.containsKey(pdId)) {
+                Integer existingCartId = cartIdByPd.get(pdId);
+
+                if (!java.util.Objects.equals(existingCartId, cartId)) {
+                    throw new BusinessException(ErrorCode.BAD_REQUEST);
+                }
+            } else {
+                cartIdByPd.put(pdId, cartId);
+            }
         }
-        if (mergedCountByPd.isEmpty()) return HoldTryResult.fail();
+
+        if (mergedCountByPd.isEmpty()) {
+            return HoldTryResult.fail();
+        }
 
         var requestedDetailIds = new ArrayList<>(mergedCountByPd.keySet());
 
-        // 1. 유저의 모든 현재 HOLD(미만료) 다 가져오기 (※ 여기서는 detailIds 필터 걸지 말고 전체)
+        // 1. 유저의 현재 활성 HOLD 전체 조회
         List<Integer> allExistingHolds = buyMapper.selectAllActiveHoldsByUser(userNo);
-        // ↑ 새로 하나 만들어야 돼. selectExistingHolds(userId, detailIds) 말고.
 
-        // 2. 이번 요청에 포함되지 않은 hold 들은 RELEASE
+        // 2. 기존 활성 HOLD 해제
+        // 현재 구조상 구매 진입 시 기존 점유는 모두 정리하고 새 요청 기준으로 다시 맞춤
         List<Integer> toRelease = new ArrayList<>();
         for (Integer h : allExistingHolds) {
             toRelease.add(h);
         }
+
         if (!toRelease.isEmpty()) {
-            buyMapper.releaseHolds(toRelease, userNo); // status='RELEASED', active_hold=NULL
+            buyMapper.releaseHolds(toRelease, userNo);
         }
 
-        // 3. 가용수량 체크 (지금 있는 로직과 유사)
+        // 3. 가용 수량 체크
         var availableMap = buyMapper.selectAvailability(requestedDetailIds).stream()
             .collect(Collectors.toMap(
                 AvailabilityRow::getProductOptionId,
                 AvailabilityRow::getAvailable
             ));
 
-        // 요청된 detailId 중 아직 남아 있는 active HOLD만 다시 조회
-        var remainingHolds = buyMapper.selectExistingHolds(
-        	userNo,
-            requestedDetailIds
-        );
+        // 4. 현재 요청 옵션 기준 남아 있는 active hold 재조회
+        var remainingHolds = buyMapper.selectExistingHolds(userNo, requestedDetailIds);
 
-        // product_option_id -> count 합산
+        // product_option_id -> 기존 hold count 합산
         Map<Integer, Integer> existingCountSum = new HashMap<>();
         for (var h : remainingHolds) {
             existingCountSum.merge(h.getProductOptionId(), h.getCount(), Integer::sum);
         }
 
         for (var entry : mergedCountByPd.entrySet()) {
-            int pdId   = entry.getKey();
+            int pdId = entry.getKey();
             int reqCnt = entry.getValue();
             int existingCnt = existingCountSum.getOrDefault(pdId, 0);
 
             int needed = Math.max(0, reqCnt - existingCnt);
             int availableGlobal = availableMap.getOrDefault(pdId, 0);
+
             if (availableGlobal < needed) {
                 return HoldTryResult.fail();
             }
         }
 
-        // 4. 가능하면 upsert (요청된 detailId들만)
+        // 5. hold upsert
+        // productOptionId별로 cartId를 함께 넣어 저장한다.
         var upserts = new ArrayList<UpsertHoldRow>();
         for (var entry : mergedCountByPd.entrySet()) {
+            Integer productOptionId = entry.getKey();
+            Integer count = entry.getValue();
+            Integer cartId = cartIdByPd.get(productOptionId);
+
             upserts.add(new UpsertHoldRow(
                 userNo,
-                entry.getKey(),
-                entry.getValue(), // 최종 수량
+                productOptionId,
+                cartId,
+                count,
                 HOLD_TTL_SECONDS
             ));
         }
         buyMapper.upsertHolds(upserts);
 
-        // 5. 최종 결과 반환
+        // 6. 최종 hold 조회
         var holds = buyMapper.selectLatestHolds(userNo, requestedDetailIds);
-        
-	     // optionId -> heldCount
-	        Map<Integer, Integer> heldCountMap = new HashMap<>();
-	        for (var h : holds) {
-	            heldCountMap.put(h.getProductOptionId(), h.getCount());
-	        }
-	
-	        // 요청한 옵션이 전부 존재 + 수량이 일치하는지 체크
-	        for (var e : mergedCountByPd.entrySet()) {
-	            int optionId = e.getKey();
-	            int expected = e.getValue();
-	            Integer actual = heldCountMap.get(optionId);
-	
-	            if (actual == null || actual != expected) {
-	                // 판매중단/판매금지로 필터되었거나, 중간에 상태가 바뀌었거나, upsert가 일부만 반영된 케이스
-	            	throw new BusinessException(ErrorCode.STOCK_HOLD_UPSERT_INCOMPLETE);
-	            }
-	        }
+
+        // 7. 요청한 옵션이 전부 정상 점유되었는지 검증
+        Map<Integer, Integer> heldCountMap = new HashMap<>();
+        for (var h : holds) {
+            heldCountMap.put(h.getProductOptionId(), h.getCount());
+        }
+
+        for (var e : mergedCountByPd.entrySet()) {
+            int optionId = e.getKey();
+            int expected = e.getValue();
+            Integer actual = heldCountMap.get(optionId);
+
+            if (actual == null || actual != expected) {
+                throw new BusinessException(ErrorCode.STOCK_HOLD_UPSERT_INCOMPLETE);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // 8. 선택 쿠폰 다운로드 + hold_coupon 매핑 저장
+        // ------------------------------------------------------------------
+
+        // 8-1. buyList에서 선택된 couponId 전체 수집
+        //      중복 제거를 위해 Set 사용
+        Set<Integer> requestedCouponIds = new LinkedHashSet<>();
+        for (var item : req.getBuyList()) {
+            if (item.getCouponIds() == null || item.getCouponIds().isEmpty()) {
+                continue;
+            }
+
+            for (Integer couponId : item.getCouponIds()) {
+                if (couponId != null) {
+                    requestedCouponIds.add(couponId);
+                }
+            }
+        }
+
+        // 쿠폰 선택이 있는 경우에만 처리
+        if (!requestedCouponIds.isEmpty()) {
+
+            // 8-2. 선택된 쿠폰을 유저 쿠폰 테이블에 다운로드
+            //      이미 받은 쿠폰은 INSERT IGNORE / NOT EXISTS 등으로 중복 방지
+            buyMapper.downloadCoupons(new ArrayList<>(requestedCouponIds), userNo);
+
+            // 8-3. 방금 선택한 couponId들에 대해
+            //      user_coupon_id 매핑 정보 조회
+            //      (coupon_id -> user_coupon_id)
+            List<UserCouponRow> downloadedUserCoupons =
+                buyMapper.selectUserCouponsByCouponIds(userNo, new ArrayList<>(requestedCouponIds));
+
+            Map<Integer, Integer> userCouponIdByCouponId = new HashMap<>();
+            for (var uc : downloadedUserCoupons) {
+                userCouponIdByCouponId.put(uc.getCouponId(), uc.getUserCouponId());
+            }
+
+            // 8-4. 점유된 hold를 product_option_id 기준으로 매핑
+            //      (product_option_id -> hold_id)
+            Map<Integer, Integer> holdIdByProductOptionId = new HashMap<>();
+            for (var hold : holds) {
+                holdIdByProductOptionId.put(hold.getProductOptionId(), hold.getHoldId());
+            }
+
+            // 8-5. 기존 hold_coupon 매핑 삭제
+            //      같은 hold에 대해 구매페이지 재진입/재선택 시 중복 저장 방지
+            List<Integer> holdIds = holds.stream()
+                .map(HoldBrief::getHoldId)
+                .collect(Collectors.toList());
+
+            if (!holdIds.isEmpty()) {
+                buyMapper.deleteHoldCouponsByHoldIds(holdIds);
+            }
+
+            // 8-6. 상품별 선택 쿠폰을 hold_id + user_coupon_id 형태로 변환
+            //      예: 상품옵션 A -> [쿠폰1, 쿠폰2]
+            //          => hold_id(A) + user_coupon_id(쿠폰1), hold_id(A) + user_coupon_id(쿠폰2)
+            List<StockHoldCoupon> holdCouponRows = new ArrayList<>();
+
+            for (var item : req.getBuyList()) {
+                Integer holdId = holdIdByProductOptionId.get(item.getProductOptionId());
+
+                // hold 매핑이 없으면 비정상 상태
+                if (holdId == null) {
+                    throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
+                }
+
+                if (item.getCouponIds() == null || item.getCouponIds().isEmpty()) {
+                    continue;
+                }
+
+                for (Integer couponId : item.getCouponIds()) {
+                    if (couponId == null) {
+                        continue;
+                    }
+
+                    Integer userCouponId = userCouponIdByCouponId.get(couponId);
+
+                    // 다운로드 후에도 user_coupon_id를 못 찾으면 비정상
+                    if (userCouponId == null) {
+                        throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
+                    }
+
+                    holdCouponRows.add(new StockHoldCoupon(
+                        0,
+                        holdId,
+                        userCouponId
+                    ));
+                }
+            }
+
+            // 8-7. hold_coupon 테이블 저장
+            if (!holdCouponRows.isEmpty()) {
+                int inserted = buyMapper.applyCoupons(holdCouponRows);
+
+                if (inserted != holdCouponRows.size()) {
+                    throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
+                }
+            }
+        }
 
         return HoldTryResult.ok(holds);
     }
+    /* -------------------------------------------------------------------------------- */
 
-    public static record Item(int pdId, int count) {}
-
-    @lombok.Data
-    public static class HoldTryResult {
-        private boolean ok;
-        private java.util.List<HoldBrief> holds;
-        public static HoldTryResult ok(java.util.List<HoldBrief> holds) {
-            var r = new HoldTryResult(); r.ok = true; r.holds = holds; return r;
-        }
-        public static HoldTryResult fail() {
-            var r = new HoldTryResult(); r.ok = false; r.holds = java.util.List.of(); return r;
-        }
-    }
+    // public static record Item(int pdId, int count) {}
     
 	public List<Integer> selectAllActiveHoldsByUser(Integer userNo) {
 		return buyMapper.selectAllActiveHoldsByUser(userNo);

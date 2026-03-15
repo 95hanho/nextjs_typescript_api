@@ -1,6 +1,5 @@
 package me._hanho.nextjs_shop.model;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
@@ -14,6 +13,7 @@ public class StockHold {
 	private int holdId;
 	private int userNo;
 	private int productOptionId;
+	private int cartId;
 	private int count;
 	private String status; // 'HOLD','PAY','RELEASED'
 	private boolean activeHold;
