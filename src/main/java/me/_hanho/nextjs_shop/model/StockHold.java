@@ -1,6 +1,5 @@
 package me._hanho.nextjs_shop.model;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;

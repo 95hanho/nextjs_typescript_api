@@ -43,6 +43,8 @@ public enum ErrorCode {
 
 	/* 구매 */
 	STOCK_HOLD_FAILED(HttpStatus.CONFLICT, "STOCK_HOLD_FAILED", "상품 확인 및 점유에 실패하였습니다."),
+	COUPON_DOWNLOAD_FAILED(HttpStatus.CONFLICT, "COUPON_DOWNLOAD_FAILED", "쿠폰 다운로드에 실패하였습니다."),
+	COUPON_APPLY_FAILED(HttpStatus.CONFLICT, "COUPON_APPLY_FAILED", "쿠폰 적용에 실패하였습니다."),
 	STOCK_HOLD_UPSERT_INCOMPLETE(HttpStatus.CONFLICT, "STOCK_HOLD_UPSERT_INCOMPLETE", "상품 점유 수정, 삽입 중 오류가 발생했습니다."),
 	//
 	HOLD_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "HOLD_IDS_REQUIRED", "요청 연장 ID가 없습니다."),

@@ -140,7 +140,47 @@
       GROUP BY product_option_id
     ) m ON m.max_id = t.hold_id
   </select>
-  
+
+	<!-- nextjs_shop_user_coupon에 없는 쿠폰만 다운로드(insert) -->
+	<insert id="downloadCoupons" parameterType="map">
+		INSERT IGNORE INTO nextjs_shop_user_coupon (user_no, coupon_id)
+		SELECT #{userNo}, c.coupon_id
+		FROM nextjs_shop_coupon c
+		WHERE c.status = 'ACTIVE'
+		AND c.coupon_id IN
+		<foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
+			#{couponId}
+		</foreach>
+		<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
+	</insert>
+
+	<select id="selectUserCouponsByCouponIds" resultType="me._hanho.nextjs_shop.buy.UserCouponRow">
+		SELECT uc.user_coupon_id, uc.coupon_id
+		FROM nextjs_shop_user_coupon uc
+		WHERE uc.user_no = #{userNo}
+		AND uc.coupon_id IN
+		<foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
+			#{couponId}
+		</foreach>
+	</select>
+
+	<delete id="deleteHoldCouponsByHoldIds">
+		DELETE FROM nextjs_shop_stock_hold_coupon
+		WHERE hold_id IN
+		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+			#{holdId}
+		</foreach>
+	</delete>
+
+	<insert id="applyCoupons" parameterType="list">
+		INSERT INTO nextjs_shop_stock_hold_coupon (hold_id, user_coupon_id)
+		<foreach collection="holdCoupons" item="ac" separator=",">
+			(#{ac.holdId}, #{ac.userCouponId})
+		</foreach>
+	</insert>
+
+	<!-- ================================= -->
+	
 	<!-- 점유 연장: 활성(HOLD & active_hold=1) 인 것만 NOW()+TTL 로 갱신 -->
 	<update id="extendHolds">
 	  UPDATE nextjs_shop_stock_hold sh
