@@ -17,6 +17,7 @@ public class StockHold {
 	private int count;
 	private String status; // 'HOLD','PAY','RELEASED'
 	private boolean activeHold;
+	private String returnUrl;
 	private Timestamp expiresAt;
 	private Timestamp createdAt;
 	private Timestamp updatedAt;

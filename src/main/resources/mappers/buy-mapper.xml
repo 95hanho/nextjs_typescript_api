@@ -48,7 +48,7 @@
 	<!-- 판매가능 조건을 통과한 옵션만 upsert -->
 	<insert id="upsertHolds" parameterType="map">
 		INSERT INTO nextjs_shop_stock_hold
-			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at, return_url)
 		SELECT
 			x.user_no,
 			x.product_option_id,
@@ -57,7 +57,8 @@
 			'HOLD',
 			1,
 			DATE_ADD(NOW(), INTERVAL x.ttl_seconds SECOND),
-			NOW()
+			NOW(),
+			x.return_url
 		FROM (
 			<foreach collection="rows" item="r" separator=" UNION ALL ">
 			SELECT
@@ -65,7 +66,8 @@
 				#{r.productOptionId} AS product_option_id,
 				#{r.cartId}          AS cart_id,
 				#{r.count}           AS count,
-				#{r.ttlSeconds}      AS ttl_seconds
+				#{r.ttlSeconds}      AS ttl_seconds,
+				#{r.returnUrl}       AS return_url
 			</foreach>
 		) x
 		JOIN nextjs_shop_product_option po ON po.product_option_id = x.product_option_id
@@ -85,7 +87,7 @@
 		expires_at를 직접 다시 계산해서 갱신 -->
 	<insert id="upsertHolds" databaseId="mysql">
 		INSERT INTO nextjs_shop_stock_hold
-			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at, return_url)
 		VALUES
 			<foreach collection="rows" item="r" separator=",">
 			(
@@ -96,7 +98,8 @@
 				'HOLD',
 				1,
 				DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND),
-				NOW()
+				NOW(),
+				#{r.returnUrl}
 			)
 			</foreach>
 		ON DUPLICATE KEY UPDATE
@@ -215,16 +218,18 @@
 			</foreach>
  	</update>
 
-   <!-- 점유하고 있는 상품조회 -->
-  	<select id="getOrderStock">
+   	<!-- 점유하고 있는 상품조회 -->
+  	<select id="getStockHoldProductList">
 		SELECT sh.hold_id, sh.count, 
 			pd.product_option_id, pd.add_price, pd.size,
-			p.product_id, p.name, p.color_name,
-			s.seller_name,
+			p.product_id, p.name AS productName, p.origin_price, p.final_price, p.color_name,
+			w.wish_id,
+			s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
 			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
 		FROM nextjs_shop_stock_hold sh
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = sh.user_no
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		LEFT JOIN (
 			SELECT 
@@ -250,25 +255,85 @@
 		AND p.sale_stop = 0
 		ORDER BY sh.created_at DESC
 	</select>
-  
-	<!-- 점유상품에 사용가능한 쿠폰조회 -->
-	<select id="getAvailableCoupon">
-		SELECT c.coupon_id, c.description, c.discount_type, c.discount_value, c.max_discount, c.minimum_order_before_amount,
+
+	<!-- 점유상품에 사용가능한 장바구니 쿠폰조회 -->
+	<select id="getAvailableCartCouponsAtBuy">
+		SELECT 
 			uc.user_coupon_id, 
-			uc.used
-		FROM nextjs_shop_coupon c
-		JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id
+			c.coupon_id, c.description, c.discount_type, c.discount_value, 
+			c.max_discount, c.minimum_order_before_amount,
+			c.is_stackable, c.is_product_restricted,
+			c.amount, c.start_date, c.end_date, c.issue_method,
+			ca.coupon_allowed_id, ca.product_id
+		FROM nextjs_shop_user_coupon uc
+		JOIN nextjs_shop_coupon c ON uc.coupon_id = c.coupon_id
 		LEFT JOIN nextjs_shop_coupon_allowed ca ON ca.coupon_id = c.coupon_id
-		WHERE uc.user_no = #{userNo} AND c.status = 'ACTIVE'
-		AND uc.used = 0
-		AND (
-			ca.product_id IN 
-			<foreach collection="productIds" item="id" open="(" separator="," close=")">
-			#{id}
+		AND ca.product_id IN
+			<foreach collection="productIds" item="productId" open="(" separator="," close=")">
+				#{productId}
 			</foreach>
-			OR ca.product_id IS NULL
-			OR seller_no is NULL
-		)
+		WHERE 
+			uc.user_no = #{userNo} AND uc.used = 0
+			AND c.is_deleted = 0 AND c.status = 'ACTIVE' AND c.amount > 0
+			AND (
+				c.is_product_restricted = 0
+				OR ca.product_id IS NOT NULL
+			)
+			AND (
+				c.issue_method = 'CLAIM'
+				OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
+			)
+			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
+	</select>
+  
+	<!-- 점유상품에 사용가능한 판매자 쿠폰조회 -->
+	<select id="getAvailableSellerCouponsAtBuy">
+		SELECT 
+			uc.user_coupon_id, 
+			c.coupon_id, c.description, c.discount_type, c.discount_value, 
+			c.max_discount, c.minimum_order_before_amount,
+			c.is_stackable, c.is_product_restricted,
+			c.amount, c.start_date, c.end_date, c.issue_method,
+			ca.coupon_allowed_id, ca.product_id,
+			s.seller_name
+		FROM nextjs_shop_user_coupon uc
+		JOIN nextjs_shop_coupon c ON uc.coupon_id = c.coupon_id AND uc.used = 0
+		JOIN nextjs_shop_product p ON c.seller_no = p.seller_no
+			AND p.product_id IN
+			<foreach collection="productIds" item="productId" open="(" separator="," close=")">
+				#{productId}
+			</foreach>
+		LEFT JOIN nextjs_shop_coupon_allowed ca 
+			ON ca.coupon_id = c.coupon_id AND ca.product_id = p.product_id
+		JOIN nextjs_shop_seller s ON c.seller_no = s.seller_no
+		WHERE 
+			uc.user_no = #{userNo} 
+			AND c.is_deleted = 0 AND c.status = 'ACTIVE' AND c.amount > 0
+			AND (
+				c.is_product_restricted = 0
+				OR ca.product_id IS NOT NULL
+			)
+			AND (
+				c.issue_method = 'CLAIM'
+				OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
+			)
+			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
+	</select>
+
+	<select id="selectHoldCouponsByHoldIds">
+		SELECT *
+		FROM nextjs_shop_stock_hold_coupon
+		WHERE hold_id IN
+			<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+				#{holdId}	
+			</foreach>
+	</select>
+
+	<select id="getDefaultAddress">
+		SELECT address_id, address_name, recipient_name, address_phone,
+		 zonecode, address, address_detail, memo
+		FROM nextjs_shop_user_address
+		WHERE user_no = #{userNo} AND default_address = 1
 	</select>
   
    <select id="getProductWithCoupons">

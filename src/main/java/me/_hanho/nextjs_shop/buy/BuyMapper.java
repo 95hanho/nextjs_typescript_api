@@ -36,9 +36,15 @@ public interface BuyMapper {
 
     int extendHolds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo, @Param("ttlSeconds") int ttlSeconds);
     
-	List<OrderStockResponse> getOrderStock(Integer userNo);
+	List<OrderStockResponse> getStockHoldProductList(Integer userNo);
+
+	List<AvailableCartCouponAtBuyResponse> getAvailableCartCouponsAtBuy(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	
-	List<AvailableCouponResponse> getAvailableCoupon(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
+	List<AvailableSellerCouponAtBuyResponse> getAvailableSellerCouponsAtBuy(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
+
+	List<StockHoldCoupon> selectHoldCouponsByHoldIds(@Param("holdIds") List<Integer> holdIds);
+
+	List<DefaultAddressResponse> getDefaultAddress(Integer userNo);
 	
 	List<ProductWithCouponResponse> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("userNo") Integer userNo);
 	

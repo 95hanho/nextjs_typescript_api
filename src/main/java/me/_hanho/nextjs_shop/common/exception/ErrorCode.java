@@ -50,6 +50,7 @@ public enum ErrorCode {
 	HOLD_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "HOLD_IDS_REQUIRED", "요청 연장 ID가 없습니다."),
 	STOCK_HOLD_EXPIRED(HttpStatus.CONFLICT, "STOCK_HOLD_EXPIRED", "상품들 점유 시간 만료되었습니다."),
 	STOCK_HOLD_PARTIAL_EXPIRED(HttpStatus.CONFLICT, "STOCK_HOLD_PARTIAL_EXPIRED", "일부 상품들 점유시간이 만료되었습니다."),
+	NO_ACTIVE_HOLDS(HttpStatus.CONFLICT, "NO_ACTIVE_HOLDS", "활성화된 점유가 없습니다."),
 
 	/* 파일 */
 

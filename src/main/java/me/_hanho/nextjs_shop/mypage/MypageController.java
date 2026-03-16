@@ -108,14 +108,14 @@ public class MypageController {
 		CartSummaryResponse cartSummary = mypageService.getCartSummary(userNo);
 
 		// 장바구니에 담긴 제품들에 대한 이용가능 장바구니 쿠폰 조회
-		List<AvailableCouponAtCartResponse> availableCouponsAtCart = mypageService.getAvailableCouponsAtCart(userNo);
+		List<AvailableCartCouponAtCartResponse> availableCartCoupons = mypageService.getAvailableCartCouponsAtCart(cartSummary.getProductIds(), userNo);
 		// 장바구니에 담긴 제품들에 대한 이용가능 판매자 쿠폰 조회 
-		List<AvailableCouponForProductResponse> availableCouponsForProduct = mypageService.getAvailableCouponsForProducts(cartSummary.getProductIds(), userNo);
+		List<AvailableSellerCouponAtCartResponse> availableSellerCoupons = mypageService.getAvailableSellerCouponsAtCart(cartSummary.getProductIds(), userNo);
 
 		result.put("isExceedQuantity", cartSummary.isExceedQuantity());
 		result.put("cartList", cartSummary.getCartList());
-		result.put("availableCouponsAtCart", availableCouponsAtCart);
-		result.put("availableCouponsForProduct", availableCouponsForProduct);
+		result.put("availableCartCoupons", availableCartCoupons);
+		result.put("availableSellerCoupons", availableSellerCoupons);
 		result.put("message", "CART_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
