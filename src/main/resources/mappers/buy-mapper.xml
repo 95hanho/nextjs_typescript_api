@@ -48,7 +48,7 @@
 	<!-- 판매가능 조건을 통과한 옵션만 upsert -->
 	<insert id="upsertHolds" parameterType="map">
 		INSERT INTO nextjs_shop_stock_hold
-			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at, return_url)
 		SELECT
 			x.user_no,
 			x.product_option_id,
@@ -57,7 +57,8 @@
 			'HOLD',
 			1,
 			DATE_ADD(NOW(), INTERVAL x.ttl_seconds SECOND),
-			NOW()
+			NOW(),
+			x.return_url
 		FROM (
 			<foreach collection="rows" item="r" separator=" UNION ALL ">
 			SELECT
@@ -65,7 +66,8 @@
 				#{r.productOptionId} AS product_option_id,
 				#{r.cartId}          AS cart_id,
 				#{r.count}           AS count,
-				#{r.ttlSeconds}      AS ttl_seconds
+				#{r.ttlSeconds}      AS ttl_seconds,
+				#{r.returnUrl}       AS return_url
 			</foreach>
 		) x
 		JOIN nextjs_shop_product_option po ON po.product_option_id = x.product_option_id
@@ -85,7 +87,7 @@
 		expires_at를 직접 다시 계산해서 갱신 -->
 	<insert id="upsertHolds" databaseId="mysql">
 		INSERT INTO nextjs_shop_stock_hold
-			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at)
+			(user_no, product_option_id, cart_id, count, status, active_hold, expires_at, created_at, return_url)
 		VALUES
 			<foreach collection="rows" item="r" separator=",">
 			(
@@ -96,7 +98,8 @@
 				'HOLD',
 				1,
 				DATE_ADD(NOW(), INTERVAL #{r.ttlSeconds} SECOND),
-				NOW()
+				NOW(),
+				#{r.returnUrl}
 			)
 			</foreach>
 		ON DUPLICATE KEY UPDATE

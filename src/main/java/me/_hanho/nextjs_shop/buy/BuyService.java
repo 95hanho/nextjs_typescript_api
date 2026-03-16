@@ -138,7 +138,8 @@ public class BuyService {
                 productOptionId,
                 cartId,
                 count,
-                HOLD_TTL_SECONDS
+                HOLD_TTL_SECONDS,
+                req.getReturnUrl()
             ));
         }
         buyMapper.upsertHolds(upserts);

@@ -7,4 +7,5 @@ public class UpsertHoldRow {
     private Integer cartId;
     private Integer count;
     private Integer ttlSeconds;
+    private String returnUrl;
 }

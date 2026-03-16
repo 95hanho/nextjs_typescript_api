@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BuyCheckRequest {
 	private List<BuyProductOptionList> buyList;
+	private String returnUrl;
 }
