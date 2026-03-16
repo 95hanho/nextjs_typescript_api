@@ -201,34 +201,46 @@
 		) tpi ON tpi.product_id = p.product_id
 		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE c.user_no = #{userNo}
-		ORDER BY (p.final_price * c.quantity) DESC
+		ORDER BY c.created_at DESC,
+			(p.final_price * c.quantity) DESC
 	</select>
 
-	<select id="getAvailableCouponsAtCart">
-        SELECT
-            c.coupon_id, c.description, c.discount_type, c.discount_value,
-            c.max_discount, c.minimum_order_before_amount, c.status,
-            c.is_stackable, c.is_product_restricted,
-            c.amount, c.start_date, c.end_date, c.issue_method,
-            uc.user_coupon_id,
-            NULL AS seller_name
-        FROM nextjs_shop_coupon c
-        LEFT JOIN nextjs_shop_user_coupon uc 
-            ON uc.coupon_id = c.coupon_id AND uc.user_no = #{userNo} AND uc.used = 0
-        WHERE
+	<select id="getAvailableCartCouponsAtCart">
+		SELECT
+			c.coupon_id, c.description, c.discount_type, c.discount_value,
+			c.max_discount, c.minimum_order_before_amount,
+			c.is_stackable, c.is_product_restricted,
+			c.amount, c.start_date, c.end_date, c.issue_method,
+			ca.coupon_allowed_id, ca.product_id,
+			uc.user_coupon_id
+		FROM nextjs_shop_coupon c
+		LEFT JOIN nextjs_shop_user_coupon uc 
+			ON uc.coupon_id = c.coupon_id AND uc.user_no = #{userNo} AND uc.used = 0
+		LEFT JOIN nextjs_shop_coupon_allowed ca 
+			ON ca.coupon_id = c.coupon_id
+		AND ca.product_id IN
+			<foreach collection="productIds" item="productId" open="(" separator="," close=")">
+				#{productId}
+			</foreach>
+		WHERE
 			c.seller_no IS NULL AND c.admin_no IS NOT NULL
 			AND c.is_deleted = 0 AND c.status = 'ACTIVE' AND c.amount > 0
-            AND (
-                c.issue_method = 'CLAIM'
-                OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
-            )
-    </select>
+			AND (
+				c.is_product_restricted = 0
+				OR ca.product_id IS NOT NULL
+			)
+			AND (
+				c.issue_method = 'CLAIM'
+				OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
+			)
+			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
+	</select>
 
-    <select id="getAvailableCouponsForProducts">
+    <select id="getAvailableSellerCouponsAtCart">
         SELECT
             p.product_id,
             c.coupon_id, c.description, c.discount_type, c.discount_value,
-            c.max_discount, c.minimum_order_before_amount, c.status,
+            c.max_discount, c.minimum_order_before_amount,
             c.is_stackable, c.is_product_restricted,
             c.amount, c.start_date, c.end_date, c.issue_method,
             ca.coupon_allowed_id,
@@ -256,6 +268,7 @@
                 c.issue_method = 'CLAIM'
                 OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
             )
+			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
     </select>
 
     

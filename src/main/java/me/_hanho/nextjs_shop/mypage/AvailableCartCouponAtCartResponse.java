@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AvailableCouponAtCartResponse {
+public class AvailableCartCouponAtCartResponse {
 	private int couponId;
 	private String description;
     private String discountType;
@@ -26,8 +26,7 @@ public class AvailableCouponAtCartResponse {
     private String issueMethod;
     
     private Integer couponAllowedId;
+    private Integer productId;
     
 	private Integer userCouponId;
-    
-    private String sellerName;
 }

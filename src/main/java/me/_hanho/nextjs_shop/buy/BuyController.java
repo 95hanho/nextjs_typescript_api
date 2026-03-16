@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.StockHoldCoupon;
+import me._hanho.nextjs_shop.model.UserAddress;
 
 @RestController
 @RequiredArgsConstructor
@@ -122,19 +124,36 @@ public class BuyController {
         logger.info("getPayBefore : " + userNo);
         Map<String, Object> body = new HashMap<>();
         
-        List<AvailableCouponResponse> availableCouponList = null;
-        List<OrderStockResponse> orderStock = buyService.getOrderStock(userNo);
-        List<Integer> productIds = orderStock.stream()
-                .map(OrderStockResponse::getProductId)
-                .distinct()
-                .collect(Collectors.toList());
+        List<OrderStockResponse> stockHoldProductList = buyService.getStockHoldProductList(userNo);
+
+		if(stockHoldProductList == null || stockHoldProductList.isEmpty()) {
+			throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
+		}
+
+		List<Integer> holdIds = new java.util.ArrayList<>();
+		List<Integer> productIds = new java.util.ArrayList<>();
+		for (OrderStockResponse os : stockHoldProductList) {
+			holdIds.add(os.getHoldId());
+			productIds.add(os.getProductId());
+		}
+		// 중복 제거
+		productIds = productIds.stream().distinct().collect(Collectors.toList());
+
+		// 점유 제품들에 대한 이용가능 장바구니 쿠폰 조회
+		List<AvailableCartCouponAtBuyResponse> availableCartCoupons = buyService.getAvailableCartCouponsAtBuy(productIds, userNo);
+		// 점유 제품들에 대한 이용가능 판매자 쿠폰 조회
+		List<AvailableSellerCouponAtBuyResponse> availableSellerCoupons = buyService.getAvailableSellerCouponsAtBuy(productIds, userNo);
+		// 점유 제품들에 대한 초기 쿠폰 선택값
+		List<StockHoldCoupon> holdCoupons = buyService.getInitialHoldCoupons(holdIds);
+
+		// 기본 배송지 조회
+		DefaultAddressResponse defaultAddress = buyService.getDefaultAddress(userNo); 
         
-        if(productIds.size() > 0) {
-        	availableCouponList = buyService.getAvailableCoupon(productIds, userNo);
-        }
-        
-        body.put("orderStock", orderStock);
-        body.put("availableCouponList", availableCouponList);
+        body.put("stockHoldProductList", stockHoldProductList);
+        body.put("availableCartCoupons", availableCartCoupons);
+        body.put("availableSellerCoupons", availableSellerCoupons);
+        body.put("holdCoupons", holdCoupons);
+		body.put("defaultAddress", defaultAddress);
         body.put("message", "success");
         return ResponseEntity.ok(body);
     }

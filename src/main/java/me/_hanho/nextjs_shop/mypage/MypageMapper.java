@@ -26,9 +26,9 @@ public interface MypageMapper {
 	
 	List<CartProductResponse> getCartList(Integer userNo);
 
-	List<AvailableCouponAtCartResponse> getAvailableCouponsAtCart(Integer userNo);
+	List<AvailableCartCouponAtCartResponse> getAvailableCartCouponsAtCart(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 
-	List<AvailableCouponForProductResponse> getAvailableCouponsForProducts(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
+	List<AvailableSellerCouponAtCartResponse> getAvailableSellerCouponsAtCart(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	
 	int updateCart(@Param("c") UpdateCartRequest cart, @Param("userNo") Integer userNo);
 	

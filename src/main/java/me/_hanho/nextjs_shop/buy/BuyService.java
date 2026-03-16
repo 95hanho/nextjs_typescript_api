@@ -286,13 +286,30 @@ public class BuyService {
         return buyMapper.releaseHolds(holdIds, userNo);
     }
     
-	public List<OrderStockResponse> getOrderStock(Integer userNo) {
-		return buyMapper.getOrderStock(userNo);
+	public List<OrderStockResponse> getStockHoldProductList(Integer userNo) {
+		return buyMapper.getStockHoldProductList(userNo);
+	}
+
+    
+    public List<AvailableCartCouponAtBuyResponse> getAvailableCartCouponsAtBuy(List<Integer> productIds, Integer userNo) {
+		return buyMapper.getAvailableCartCouponsAtBuy(productIds, userNo);
 	}
 	
-	public List<AvailableCouponResponse> getAvailableCoupon(List<Integer> productIds, Integer userNo) {
-		return buyMapper.getAvailableCoupon(productIds, userNo);
+	public List<AvailableSellerCouponAtBuyResponse> getAvailableSellerCouponsAtBuy(List<Integer> productIds, Integer userNo) {
+		return buyMapper.getAvailableSellerCouponsAtBuy(productIds, userNo);
 	}
+
+    public List<StockHoldCoupon> getInitialHoldCoupons(List<Integer> holdIds) {
+        return buyMapper.selectHoldCouponsByHoldIds(holdIds);
+    }
+
+    public DefaultAddressResponse getDefaultAddress(Integer userNo) {
+        List<DefaultAddressResponse> addresses = buyMapper.getDefaultAddress(userNo);
+        if (addresses == null || addresses.isEmpty()) {
+            return null; // 기본 배송지가 없는 경우 null 반환
+        }
+        return addresses.get(0); // 기본 배송지는 하나라고 가정하고 첫 번째 항목 반환
+    }
 	
 	public List<ProductWithCouponResponse> getProductWithCoupons(List<BuyProduct> products, Integer userNo) {
 		return buyMapper.getProductWithCoupons(products, userNo);

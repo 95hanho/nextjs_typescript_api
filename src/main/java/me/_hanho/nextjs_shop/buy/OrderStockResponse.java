@@ -16,10 +16,17 @@ public class OrderStockResponse {
 	private String size;
 	
 	private int productId;
-	private String name;
+	private String productName;
+	private int originPrice;
+	private int finalPrice;
 	private String colorName;
+
+	private Integer wishId; // 찜 여부 확인용 (null이면 찜 안한 것)
 	
 	private String sellerName;
+	private int baseShippingFee; // 기본 배송비
+    private int freeShippingMinAmount; // 무료배송 최소 주문금액
+    private int extraShippingFee; // 제주/도서산간 추가 배송비
 	
 	private String fileName;
 	private String storeName;

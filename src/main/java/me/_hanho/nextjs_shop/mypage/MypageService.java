@@ -65,12 +65,12 @@ public class MypageService {
 		cartSummary.setExceedQuantity(updated > 0);
 		return cartSummary;
 	}
-	public List<AvailableCouponAtCartResponse> getAvailableCouponsAtCart(Integer userNo) {
-		return mypageMapper.getAvailableCouponsAtCart(userNo);
+	public List<AvailableCartCouponAtCartResponse> getAvailableCartCouponsAtCart(List<Integer> productIds, Integer userNo) {
+		return mypageMapper.getAvailableCartCouponsAtCart(productIds, userNo);
 	}
 
-	public List<AvailableCouponForProductResponse> getAvailableCouponsForProducts(List<Integer> productIds, Integer userNo) {
-		return mypageMapper.getAvailableCouponsForProducts(productIds, userNo);
+	public List<AvailableSellerCouponAtCartResponse> getAvailableSellerCouponsAtCart(List<Integer> productIds, Integer userNo) {
+		return mypageMapper.getAvailableSellerCouponsAtCart(productIds, userNo);
 	}
 
 	public void updateCart(UpdateCartRequest cart, Integer userNo) {
