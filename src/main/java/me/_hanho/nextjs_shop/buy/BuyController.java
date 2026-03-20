@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -112,6 +113,25 @@ public class BuyController {
         result.put("message", "success");
         return ResponseEntity.ok(result);
     }
+
+	// 점유 쿠폰 추가/삭제
+    @PostMapping("/stock-hold/coupon")
+    public ResponseEntity<Map<String, Object>> manageStockHoldCoupon(
+			@ModelAttribute ManageStockHoldCouponRequest request,
+    		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+    	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+        logger.info("manageStockHoldCoupon userNo=", userNo);
+        Map<String, Object> result = new HashMap<>();
+        
+		if(request.getIsAdd()) {
+			// buyService.addHoldCoupon(request.getHoldId(), request.getUserCouponId(), userNo);
+		} else {
+			// buyService.removeHoldCoupon(request.getHoldCouponId(), userNo);
+		}
+        
+		result.put("message", "success");
+        return ResponseEntity.ok(result);
+    }
     
     /**
      * 제품판매여부, 판매자 중단여부 확인 후 바꼈을 지 어떻게 할지 넣어야할듯... 
@@ -158,6 +178,7 @@ public class BuyController {
         return ResponseEntity.ok(body);
     }
 	
+
 	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제화면)
 	@PostMapping("pay-price")
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest, 
