@@ -218,6 +218,23 @@
 			</foreach>
  	</update>
 
+	<!-- 점유쿠폰 추가 -->
+	<insert id="addHoldCoupon">
+		INSERT INTO nextjs_shop_stock_hold_coupon (hold_id, user_coupon_id)
+		VALUES (#{holdId}, #{userCouponId})
+	</insert>
+
+	<!-- 점유쿠폰 제거 -->
+	<delete id="removeHoldCoupon">
+		DELETE FROM nextjs_shop_stock_hold_coupon
+		WHERE hold_coupon_id = #{holdCouponId}
+			AND hold_id IN (
+			SELECT hold_id
+		FROM nextjs_shop_stock_hold
+		WHERE user_no = #{userNo} AND status = 'HOLD' AND active_hold = 1
+		)
+	</delete>
+
    	<!-- 점유하고 있는 상품조회 -->
   	<select id="getStockHoldProductList">
 		SELECT sh.hold_id, sh.count, 
@@ -274,6 +291,7 @@
 			</foreach>
 		WHERE 
 			uc.user_no = #{userNo} AND uc.used = 0
+			AND c.seller_no IS NULL AND c.admin_no IS NOT NULL
 			AND c.is_deleted = 0 AND c.status = 'ACTIVE' AND c.amount > 0
 			AND (
 				c.is_product_restricted = 0
