@@ -124,9 +124,9 @@ public class BuyController {
         Map<String, Object> result = new HashMap<>();
         
 		if(request.getIsAdd()) {
-			// buyService.addHoldCoupon(request.getHoldId(), request.getUserCouponId(), userNo);
+			buyService.addHoldCoupon(request.getHoldId(), request.getUserCouponId(), userNo);
 		} else {
-			// buyService.removeHoldCoupon(request.getHoldCouponId(), userNo);
+			buyService.removeHoldCoupon(request.getHoldCouponId(), userNo);
 		}
         
 		result.put("message", "success");

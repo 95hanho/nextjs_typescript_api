@@ -285,6 +285,14 @@ public class BuyService {
         // HOLD 상태(활성) → RELEASED, activeHold=NULL
         return buyMapper.releaseHolds(holdIds, userNo);
     }
+
+    public void addHoldCoupon(Integer holdId, Integer userCouponId, Integer userNo) {
+        buyMapper.addHoldCoupon(holdId, userCouponId, userNo);
+    }
+
+    public void removeHoldCoupon(Integer holdCouponId, Integer userNo) {
+        buyMapper.removeHoldCoupon(holdCouponId, userNo);
+    }
     
 	public List<OrderStockResponse> getStockHoldProductList(Integer userNo) {
 		return buyMapper.getStockHoldProductList(userNo);
