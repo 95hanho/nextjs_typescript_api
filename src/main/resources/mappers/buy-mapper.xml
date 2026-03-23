@@ -219,20 +219,21 @@
  	</update>
 
 	<!-- 점유쿠폰 추가 -->
-	<insert id="addHoldCoupon">
+	<insert id="addStockHoldCoupons" parameterType="map">
 		INSERT INTO nextjs_shop_stock_hold_coupon (hold_id, user_coupon_id)
-		VALUES (#{holdId}, #{userCouponId})
+		VALUES
+		<foreach collection="holdCouponRequests" item="request" separator=",">
+			(#{request.holdId}, #{request.userCouponId})
+		</foreach>
 	</insert>
 
 	<!-- 점유쿠폰 제거 -->
-	<delete id="removeHoldCoupon">
+	<delete id="deleteStockHoldCoupons">
 		DELETE FROM nextjs_shop_stock_hold_coupon
-		WHERE hold_coupon_id = #{holdCouponId}
-			AND hold_id IN (
-			SELECT hold_id
-		FROM nextjs_shop_stock_hold
-		WHERE user_no = #{userNo} AND status = 'HOLD' AND active_hold = 1
-		)
+		WHERE (hold_id, user_coupon_id) IN
+		<foreach collection="holdCouponRequests" item="request" open="(" separator="," close=")">
+			(#{request.holdId}, #{request.userCouponId})
+		</foreach>
 	</delete>
 
    	<!-- 점유하고 있는 상품조회 -->
@@ -349,7 +350,7 @@
 
 	<select id="getDefaultAddress">
 		SELECT address_id, address_name, recipient_name, address_phone,
-		 zonecode, address, address_detail, memo
+		 zonecode, address, address_detail, memo, default_address
 		FROM nextjs_shop_user_address
 		WHERE user_no = #{userNo} AND default_address = 1
 	</select>

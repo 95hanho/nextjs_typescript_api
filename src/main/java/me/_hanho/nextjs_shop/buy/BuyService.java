@@ -286,12 +286,12 @@ public class BuyService {
         return buyMapper.releaseHolds(holdIds, userNo);
     }
 
-    public void addHoldCoupon(Integer holdId, Integer userCouponId, Integer userNo) {
-        buyMapper.addHoldCoupon(holdId, userCouponId, userNo);
+    public void addStockHoldCoupons(List<ManageStockHoldCoupon> holdCouponRequests) {
+        buyMapper.addStockHoldCoupons(holdCouponRequests);
     }
 
-    public void removeHoldCoupon(Integer holdCouponId, Integer userNo) {
-        buyMapper.removeHoldCoupon(holdCouponId, userNo);
+    public void deleteStockHoldCoupons(List<ManageStockHoldCoupon> holdCouponRequests) {
+        buyMapper.deleteStockHoldCoupons(holdCouponRequests);
     }
     
 	public List<OrderStockResponse> getStockHoldProductList(Integer userNo) {
