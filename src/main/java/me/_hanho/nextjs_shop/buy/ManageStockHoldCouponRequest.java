@@ -1,5 +1,7 @@
 package me._hanho.nextjs_shop.buy;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,8 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ManageStockHoldCouponRequest {
-    private Integer holdCouponId;
+    private List<ManageStockHoldCoupon> holdCoupons;
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class ManageStockHoldCoupon {
     private Integer holdId;
     private Integer userCouponId;
-    private Boolean isAdd;
 }

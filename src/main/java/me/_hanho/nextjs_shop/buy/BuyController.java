@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -114,20 +116,31 @@ public class BuyController {
         return ResponseEntity.ok(result);
     }
 
-	// 점유 쿠폰 추가/삭제
+	// 점유 쿠폰 추가
     @PostMapping("/stock-hold/coupon")
-    public ResponseEntity<Map<String, Object>> manageStockHoldCoupon(
-			@ModelAttribute ManageStockHoldCouponRequest request,
+    public ResponseEntity<Map<String, Object>> addStockHoldCoupons(
+			@RequestBody ManageStockHoldCouponRequest holdCouponRequests,
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
     	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("manageStockHoldCoupon userNo=", userNo);
+        logger.info("addStockHoldCoupons userNo=", userNo);
         Map<String, Object> result = new HashMap<>();
         
-		if(request.getIsAdd()) {
-			buyService.addHoldCoupon(request.getHoldId(), request.getUserCouponId(), userNo);
-		} else {
-			buyService.removeHoldCoupon(request.getHoldCouponId(), userNo);
-		}
+		buyService.addStockHoldCoupons(holdCouponRequests.getHoldCoupons());
+        
+		result.put("message", "success");
+        return ResponseEntity.ok(result);
+    }
+
+	// 점유 쿠폰 삭제
+    @PutMapping("/stock-hold/coupon")
+    public ResponseEntity<Map<String, Object>> deleteStockHoldCoupons(
+			@RequestBody ManageStockHoldCouponRequest holdCouponRequests,
+    		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+    	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+        logger.info("deleteStockHoldCoupon userNo=", userNo);
+        Map<String, Object> result = new HashMap<>();
+        
+		buyService.deleteStockHoldCoupons(holdCouponRequests.getHoldCoupons());
         
 		result.put("message", "success");
         return ResponseEntity.ok(result);

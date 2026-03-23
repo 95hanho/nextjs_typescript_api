@@ -1,7 +1,5 @@
 package me._hanho.nextjs_shop.buy;
 
-import java.security.Timestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,4 +16,5 @@ public class DefaultAddressResponse {
 	private String address;
 	private String addressDetail;
 	private String memo;
+	private boolean defaultAddress;
 }
