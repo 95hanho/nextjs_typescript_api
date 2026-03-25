@@ -44,6 +44,8 @@ public class MypageService {
 	public CartSummaryResponse getCartSummary(Integer userNo) {
 		// 장바구니 조회 시 점유한 상품이 있으면 해제
 		mypageMapper.releaseHoldIfExists(userNo);
+
+		// Must : 판매 중지된 상품 삭제, 판매자가 정지계정인 상품 삭제
 		
 		CartSummaryResponse cartSummary = new CartSummaryResponse();
 		// 재고 부족한 얘들 선택 해제
