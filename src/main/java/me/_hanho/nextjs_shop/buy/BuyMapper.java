@@ -1,5 +1,7 @@
 package me._hanho.nextjs_shop.buy;
 
+import java.security.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -41,6 +43,10 @@ public interface BuyMapper {
 	void deleteStockHoldCoupons(@Param("holdCouponRequests") List<ManageStockHoldCoupon> holdCouponRequests);
 
 	List<OrderStockResponse> getStockHoldProductList(Integer userNo);
+
+	LocalDateTime getMaxCreatedAtStockHold(Integer userNo);
+
+	List<LatestHoldInfo> getLatestHoldsInfo(@Param("userNo") Integer userNo, @Param("latestCreatedAt") LocalDateTime latestCreatedAt);
 
 	List<AvailableCartCouponAtBuyResponse> getAvailableCartCouponsAtBuy(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	
