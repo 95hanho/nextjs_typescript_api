@@ -51,6 +51,10 @@ public enum ErrorCode {
 	STOCK_HOLD_EXPIRED(HttpStatus.CONFLICT, "STOCK_HOLD_EXPIRED", "상품들 점유 시간 만료되었습니다."),
 	STOCK_HOLD_PARTIAL_EXPIRED(HttpStatus.CONFLICT, "STOCK_HOLD_PARTIAL_EXPIRED", "일부 상품들 점유시간이 만료되었습니다."),
 	NO_ACTIVE_HOLDS(HttpStatus.CONFLICT, "NO_ACTIVE_HOLDS", "활성화된 점유가 없습니다."),
+	ALREADY_PAID_HOLD(HttpStatus.CONFLICT, "ALREADY_PAID_HOLD", "이미 결제된 점유가 포함되어 있습니다."),
+	HOLD_EXPIRED(HttpStatus.CONFLICT, "HOLD_EXPIRED", "점유가 만료되었습니다."),
+	PRODUCT_SALE_STOPPED(HttpStatus.CONFLICT, "PRODUCT_SALE_STOPPED", "판매 중지된 상품이 포함되어 있습니다."),
+	SELLER_UNAVAILABLE(HttpStatus.CONFLICT, "SELLER_UNAVAILABLE", "판매자 이용 불가"),
 
 	/* 파일 */
 

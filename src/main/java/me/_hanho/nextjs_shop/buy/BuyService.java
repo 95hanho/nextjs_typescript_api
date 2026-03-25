@@ -1,6 +1,8 @@
 package me._hanho.nextjs_shop.buy;
 
 import java.math.BigDecimal;
+import java.security.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -298,7 +300,12 @@ public class BuyService {
 		return buyMapper.getStockHoldProductList(userNo);
 	}
 
-    
+    public List<LatestHoldInfo> getLatestHoldsInfo(Integer userNo) {
+        LocalDateTime latestCreatedAt = buyMapper.getMaxCreatedAtStockHold(userNo);
+
+        return buyMapper.getLatestHoldsInfo(userNo, latestCreatedAt);
+    }
+
     public List<AvailableCartCouponAtBuyResponse> getAvailableCartCouponsAtBuy(List<Integer> productIds, Integer userNo) {
 		return buyMapper.getAvailableCartCouponsAtBuy(productIds, userNo);
 	}

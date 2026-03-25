@@ -274,6 +274,28 @@
 		ORDER BY sh.created_at DESC
 	</select>
 
+	<!-- 최신 생성일 기준 점유 정보 조회 -->
+	<select id="getMaxCreatedAtStockHold">
+		SELECT MAX(created_at)
+		FROM nextjs_shop_stock_hold
+		WHERE user_no = #{userNo}
+	</select>
+
+	<!-- 최신 생성일 기준 점유 정보 조회 -->
+	<select id="getLatestHoldsInfo">
+		SELECT sh.hold_id, sh.return_url, sh.status, sh.active_hold, sh.expires_at, 
+			po.is_displayed, 
+			p.product_id, p.sale_stop, 
+			s.approval_status
+		FROM nextjs_shop_stock_hold sh
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		WHERE sh.user_no = #{userNo}
+		AND sh.created_at = #{latestCreatedAt}
+		ORDER BY sh.hold_id DESC
+	</select>
+
 	<!-- 점유상품에 사용가능한 장바구니 쿠폰조회 -->
 	<select id="getAvailableCartCouponsAtBuy">
 		SELECT 

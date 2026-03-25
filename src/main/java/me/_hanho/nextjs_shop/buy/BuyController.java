@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.buy;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
-import me._hanho.nextjs_shop.model.UserAddress;
 
 @RestController
 @RequiredArgsConstructor
@@ -150,6 +148,8 @@ public class BuyController {
      * 제품판매여부, 판매자 중단여부 확인 후 바꼈을 지 어떻게 할지 넣어야할듯... 
      */
 	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제화면)
+	// 포트폴리오 단계에서는 userNo 기준으로 점유를 관리하며,
+	// 다중 기기/세션 단위 구매 흐름 식별은 추후 hold_session_id 도입으로 확장 가능
 	@GetMapping("/pay")
     public ResponseEntity<Map<String, Object>> getStockHoldProduct(
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
@@ -160,6 +160,61 @@ public class BuyController {
         List<OrderStockResponse> stockHoldProductList = buyService.getStockHoldProductList(userNo);
 
 		if(stockHoldProductList == null || stockHoldProductList.isEmpty()) {
+			// throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
+			List<LatestHoldInfo> latestHolds = buyService.getLatestHoldsInfo(userNo);
+
+			System.out.println("latestHolds = " + latestHolds);
+
+			if (latestHolds == null || latestHolds.isEmpty()) {
+				throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
+			}
+
+			// 만료된지 한 시간보다 최근인지
+			boolean isExpireWithinOneHour = latestHolds.stream().anyMatch(h ->
+				h.getExpiresAt() != null
+				&& !h.getExpiresAt().toLocalDateTime().isBefore(LocalDateTime.now())
+				&& !h.getExpiresAt().toLocalDateTime().isAfter(LocalDateTime.now().plusHours(1))
+			);
+
+    		String returnUrl = latestHolds.get(0).getReturnUrl();
+
+			boolean hasPaid = latestHolds.stream().anyMatch(h ->
+				"PAY".equals(h.getStatus())
+			);
+			if (hasPaid) {
+				// 이미 결제된 점유 - 메인페이지로 보내기
+				throw new BusinessException(ErrorCode.ALREADY_PAID_HOLD, returnUrl);
+			}
+
+			boolean hasExpired = latestHolds.stream().anyMatch(h ->
+				"HOLD".equals(h.getStatus())
+				&& h.isActiveHold()
+				&& h.getExpiresAt() != null
+				&& h.getExpiresAt().toLocalDateTime().isBefore(LocalDateTime.now())
+			);
+
+			if (hasExpired) {
+				List<Integer> holdIds = latestHolds.stream().map(LatestHoldInfo::getHoldId).collect(Collectors.toList());
+				buyService.releaseHolds(holdIds, userNo);
+				// HOLD상태이지만 이미 만료된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
+				throw new BusinessException(ErrorCode.HOLD_EXPIRED, returnUrl);
+			}
+
+			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.isSaleStop() || !h.isDisplayed());
+			if (hasSaleStopped) {
+				// 판매 중지된 상품이 포함된 점유 - 
+				throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
+			}
+
+			boolean hasSellerUnavailable = latestHolds.stream().anyMatch(h ->
+				!"APPROVED".equals(h.getApprovalStatus())
+			);
+			if (hasSellerUnavailable) {
+				//
+				throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
+			}
+
+			// 그 외의 경우
 			throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
 		}
 
@@ -169,6 +224,10 @@ public class BuyController {
 			holdIds.add(os.getHoldId());
 			productIds.add(os.getProductId());
 		}
+
+		// 최초 진입 시 점유 연장
+		buyService.extendHolds(holdIds, userNo);
+
 		// 중복 제거
 		productIds = productIds.stream().distinct().collect(Collectors.toList());
 
@@ -267,6 +326,8 @@ public class BuyController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		buyService.pay(payRequest, userNo);
+
+		// 카트에 있었을 시 해당 cart 삭제
 		
 		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
