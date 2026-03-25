@@ -160,21 +160,14 @@ public class BuyController {
         List<OrderStockResponse> stockHoldProductList = buyService.getStockHoldProductList(userNo);
 
 		if(stockHoldProductList == null || stockHoldProductList.isEmpty()) {
-			// throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
 			List<LatestHoldInfo> latestHolds = buyService.getLatestHoldsInfo(userNo);
 
-			System.out.println("latestHolds = " + latestHolds);
+			System.out.println("latestHolds(" + latestHolds.size() + ") = " + latestHolds);
 
 			if (latestHolds == null || latestHolds.isEmpty()) {
-				throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
+				// 해당 계정으로 점유 자체가 없을 경우 - 메인 페이지로 보내기(잘 못 된 접근)
+				throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS, "/");
 			}
-
-			// 만료된지 한 시간보다 최근인지
-			boolean isExpireWithinOneHour = latestHolds.stream().anyMatch(h ->
-				h.getExpiresAt() != null
-				&& !h.getExpiresAt().toLocalDateTime().isBefore(LocalDateTime.now())
-				&& !h.getExpiresAt().toLocalDateTime().isAfter(LocalDateTime.now().plusHours(1))
-			);
 
     		String returnUrl = latestHolds.get(0).getReturnUrl();
 
@@ -183,8 +176,16 @@ public class BuyController {
 			);
 			if (hasPaid) {
 				// 이미 결제된 점유 - 메인페이지로 보내기
-				throw new BusinessException(ErrorCode.ALREADY_PAID_HOLD, returnUrl);
+				throw new BusinessException(ErrorCode.ALREADY_PAID_HOLD, "/");
 			}
+
+			// 만료된지 한 시간 이내인지
+			boolean isExpireWithinOneHour = latestHolds.stream().anyMatch(h ->
+				h.getExpiresAt() != null
+				&& h.getExpiresAt().toLocalDateTime().isBefore(LocalDateTime.now())
+				&& h.getExpiresAt().toLocalDateTime().isAfter(LocalDateTime.now().minusHours(1))
+			);
+			System.out.println("isExpireWithinOneHour = " + isExpireWithinOneHour);
 
 			boolean hasExpired = latestHolds.stream().anyMatch(h ->
 				"HOLD".equals(h.getStatus())
@@ -197,25 +198,37 @@ public class BuyController {
 				List<Integer> holdIds = latestHolds.stream().map(LatestHoldInfo::getHoldId).collect(Collectors.toList());
 				buyService.releaseHolds(holdIds, userNo);
 				// HOLD상태이지만 이미 만료된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
-				throw new BusinessException(ErrorCode.HOLD_EXPIRED, returnUrl);
+				if(isExpireWithinOneHour) {
+					throw new BusinessException(ErrorCode.HOLD_EXPIRED, returnUrl);
+				} else {
+					throw new BusinessException(ErrorCode.HOLD_EXPIRED, "/");
+				}
 			}
 
 			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.isSaleStop() || !h.isDisplayed());
 			if (hasSaleStopped) {
-				// 판매 중지된 상품이 포함된 점유 - 
-				throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
+				// 판매 중지된 상품이 포함된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
+				if(isExpireWithinOneHour) {
+					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
+				} else {
+					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, "/");
+				}
 			}
 
 			boolean hasSellerUnavailable = latestHolds.stream().anyMatch(h ->
 				!"APPROVED".equals(h.getApprovalStatus())
 			);
 			if (hasSellerUnavailable) {
-				//
-				throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
+				// 판매자가 정지계정인 상품인 경우 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
+				if(isExpireWithinOneHour) {
+					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
+				} else {
+					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, "/");
+				}
 			}
 
-			// 그 외의 경우
-			throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS);
+			// 그 외의 경우 - 메인페이지로
+			throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS, "/");
 		}
 
 		List<Integer> holdIds = new java.util.ArrayList<>();
