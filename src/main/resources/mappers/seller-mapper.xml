@@ -235,7 +235,7 @@
 	    JOIN nextjs_shop_product_option d ON d.product_option_id = c.product_option_id
 	    JOIN nextjs_shop_product p        ON p.product_id = d.product_id
 	    JOIN nextjs_shop_user u           ON u.user_id = c.user_id
-	    WHERE p.seller_no = #{sellerNo}
+	    WHERE p.seller_no = #{sellerNo} AND c.is_deleted = 0
 	    GROUP BY c.user_id, u.name
 	    ORDER BY c.created_at DESC
 	</select>

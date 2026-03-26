@@ -14,8 +14,8 @@ public class OrderGroup {
     private int orderId; // 
     private Timestamp orderDate; // 주문일자
     private int userNo;
-    private BigDecimal eachCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
-    private BigDecimal commonCouponDiscountTotal; // 공용쿠폰 할인값 총합
+    private BigDecimal sellerCouponDiscountTotal; // 판매자쿠폰 할인값 총합
+    private BigDecimal cartCouponDiscountTotal; // 공용쿠폰 할인값 총합
     private BigDecimal shippingFee; // 배송비
     private int usedMileage; // 사용된 마일리지
     private int remainingMileage; // 남은 마일리지
@@ -26,6 +26,12 @@ public class OrderGroup {
     private Timestamp shippingDate; // 발송일지
     private Timestamp deliveredDate; // 배송완료일자
     private Timestamp returnDate; // 반송일자
-    private int userCouponId;
     private int addressId;
+    private String addressName;
+	private String recipientName;
+	private String addressPhone;
+	private String zonecode;
+	private String address;
+	private String addressDetail;
+	private String memo;
 }

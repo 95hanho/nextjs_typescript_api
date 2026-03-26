@@ -1,11 +1,11 @@
 package me._hanho.nextjs_shop.buy;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -271,77 +271,16 @@ public class BuyController {
 		logger.info("[pay] userNo={}, payRequest={}", userNo, payRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		// buyService.pay(payRequest, userNo);
+		// holdId 중복 체크
+		Set<Integer> holdIdSet = new LinkedHashSet<>(payRequest.getHoldIds());
+		if (holdIdSet.size() != payRequest.getHoldIds().size()) {
+			throw new BusinessException(ErrorCode.BAD_REQUEST);
+		}
 
-		// 카트에 있었을 시 해당 cart 삭제
-		
+		buyService.pay(payRequest, userNo);
+
 		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-	
-	/* 필요없을 듯!!! */
-	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제화면)
-	@PostMapping("pay-price")
-	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest, 
-			@RequestAttribute(value="userNo", required=false) Integer userNo) {
-		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-	    logger.info("pay-price : {}", payPriceRequest);
-	    Map<String, Object> result = new HashMap<>();
-	    
-	    List<ProductWithCouponResponse> items =
-	        buyService.getProductWithCoupons(payPriceRequest.getProducts(), userNo);
-	    
-	    // 1) 각 상품 쿠폰 먼저 적용
-	    PriceCalculatorService.applyDiscounts(items);
-
-	    BigDecimal zero = BigDecimal.ZERO;
-	    
-	    BigDecimal couponDiscountTotal = items.stream()
-	            .map(ProductWithCouponResponse::getDiscountAmount)
-	            .filter(Objects::nonNull)
-	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인된 가격 
-
-	    BigDecimal couponFinalTotal = items.stream()
-	            .map(ProductWithCouponResponse::getResultPrice)
-	            .filter(Objects::nonNull)
-	            .reduce(zero, BigDecimal::add); // 각각 상품 쿠폰으로만 할인받은 최종가격  
-	    
-	    // 2) 공용 쿠폰(mainCoupon) 적용 (상품쿠폰 이후, 마일리지 이전)
-	    AvailableCouponResponse mainCoupon = payPriceRequest.getCommonCoupon();
-	    BigDecimal mainCouponDiscount = PriceCalculatorService.calcCommonCouponDiscount(couponFinalTotal, mainCoupon);
-
-	    BigDecimal afterMainCouponTotal = couponFinalTotal.subtract(mainCouponDiscount);
-	    
-	    // 3) 마일리지 적용
-	    BigDecimal requestedMileage = BigDecimal.valueOf(Math.max(0, payPriceRequest.getUseMileage())); // 요청된 마일리지
-	    BigDecimal mileageApplied = requestedMileage.min(afterMainCouponTotal); // 적용된 마일리지
-
-	    // 4) 배송비 판단(마일리지까지 적용한 금액 기준)
-	    BigDecimal totalFinalBeforeDelivery = afterMainCouponTotal.subtract(mileageApplied);
-
-	    // 🚚 배송비 계산
-	    BigDecimal deliveryFee = totalFinalBeforeDelivery.compareTo(new BigDecimal("20000")) >= 0
-	            ? zero
-	            : new BigDecimal("3000");
-
-	    BigDecimal totalFinal = totalFinalBeforeDelivery.add(deliveryFee);  // 총 금액
-	    
-	    // 총 할인 = (각 상품쿠폰 합) + (공용쿠폰 할인) + (마일리지)
-	    BigDecimal totalDiscount = couponDiscountTotal.add(mainCouponDiscount).add(mileageApplied);
-	    
-	    // 응답
-	    result.put("items", items);
-	    result.put("onlyEachCouponDiscountTotal", couponDiscountTotal); // 각각 상품 쿠폰으로만 할인된 가격 
-	    result.put("onlyEachCouponFinalTotal",   couponFinalTotal); // 각각 상품 쿠폰으로만 할인받은 최종가격
-	    result.put("mainCouponDiscount",         mainCouponDiscount);     // 공용쿠폰 할인
-	    result.put("afterMainCouponTotal",       afterMainCouponTotal);   // 공용쿠폰 적용 후 합계
-	    result.put("mileageRequested", requestedMileage); // 요청된 마일리지
-	    result.put("mileageApplied",  mileageApplied); // 적용된 마일리지
-	    result.put("deliveryFee",     deliveryFee); // 배송비
-	    result.put("totalDiscount",   totalDiscount); // 총 할인비(쿠폰할인 + 마일리지)
-	    result.put("totalFinal",      totalFinal); // 총 금액
-	    result.put("message", "success");
-	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 }

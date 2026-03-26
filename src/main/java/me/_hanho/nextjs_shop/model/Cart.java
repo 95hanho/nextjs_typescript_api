@@ -17,4 +17,5 @@ public class Cart {
 	private int userNo;
 	private int quantity;
 	private boolean selected;
+	private boolean isDeleted;
 }

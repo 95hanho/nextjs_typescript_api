@@ -55,6 +55,9 @@ public enum ErrorCode {
 	HOLD_EXPIRED(HttpStatus.CONFLICT, "HOLD_EXPIRED", "점유가 만료되었습니다."),
 	PRODUCT_SALE_STOPPED(HttpStatus.CONFLICT, "PRODUCT_SALE_STOPPED", "판매 중지된 상품이 포함되어 있습니다."),
 	SELLER_UNAVAILABLE(HttpStatus.CONFLICT, "SELLER_UNAVAILABLE", "판매자 이용 불가"),
+	// 구매 관련 추가
+	NOT_MATCHED_HOLD(HttpStatus.CONFLICT, "NOT_MATCHED_HOLD", "요청된 holdId와 일치하는 점유가 없습니다."),
+	COUPON_UNAVAILABLE_FAILED(HttpStatus.CONFLICT, "COUPON_UNAVAILABLE_FAILED", "쿠폰 사용 불가 처리에 실패하였습니다."),
 
 	/* 파일 */
 

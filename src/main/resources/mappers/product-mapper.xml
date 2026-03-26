@@ -133,7 +133,7 @@
 		    FROM nextjs_shop_product_option
 		    WHERE product_id = #{productId}
 		)
-		AND user_no = #{userNo}
+		AND user_no = #{userNo} AND is_deleted = 0
 	</select>
 
 	<select id="getCartQtyMap" resultType="me._hanho.nextjs_shop.product.CartQtyRow">
@@ -141,7 +141,7 @@
 			c.product_option_id AS productOptionId,
 			c.quantity AS quantity
 		FROM nextjs_shop_cart c
-		WHERE c.user_no = #{userNo}
+		WHERE c.user_no = #{userNo} AND c.is_deleted = 0
 			AND c.product_option_id IN
 			<foreach collection="cartList" item="item" open="(" separator="," close=")">
 			#{item.productOptionId}
@@ -195,7 +195,7 @@
 		JOIN nextjs_shop_product_option po
 			ON po.product_option_id = t.product_option_id
 		LEFT JOIN nextjs_shop_cart c
-			ON c.user_no = #{userNo}
+			ON c.user_no = #{userNo} AND c.is_deleted = 0
 			AND c.product_option_id = t.product_option_id
 	</select>
 
