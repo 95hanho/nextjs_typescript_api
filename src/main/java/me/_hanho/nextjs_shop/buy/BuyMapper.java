@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.model.OrderGroup;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
 
 @Mapper
@@ -61,4 +62,18 @@ public interface BuyMapper {
 	List<OrderStockResponse> getStockHoldProductListByHoldIds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
 
 	List<PayAvailableCoupon> getAvailableCouponsByHoldIds(@Param("holdIds") List<Integer> holdIds);
+
+	void insertUserAddress(@Param("address") ShippingAddressRequest address, @Param("setAsDefault") Boolean setAsDefault, @Param("userNo") Integer userNo);
+
+	int getLatestAddressIdByUserNo(Integer userNo);
+
+	void updateUserAddressCancelDefault(@Param("userNo") Integer userNo);
+
+	void updateUserAddressDefault(@Param("addressId") Integer addressId, @Param("userNo") Integer userNo);
+
+	int getUserMileage(Integer userNo);
+
+	void insertOrderGroup(OrderGroup orderGroup);
+
+	int getOrderId(Integer userNo);
 }

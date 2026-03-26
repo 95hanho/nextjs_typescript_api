@@ -2,9 +2,7 @@ package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

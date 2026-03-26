@@ -462,4 +462,67 @@
 			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
 	</select>
 
+	<insert id="insertUserAddress">
+		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, 
+			zonecode, address, address_detail, memo,
+			default_address, user_no)
+		VALUES
+			(#{address.addressName}, #{address.recipientName}, #{address.addressPhone},
+			 #{address.zonecode}, #{address.address}, #{address.addressDetail}, #{address.memo},
+			 #{setAsDefault}, #{userNo})
+	</insert>
+
+	<select id="getLatestAddressIdByUserNo">
+		SELECT address_id
+		FROM nextjs_shop_user_address
+		WHERE user_no = #{userNo}
+		ORDER BY created_at DESC, address_id DESC
+		LIMIT 1
+	</select>
+	
+	<update id="updateUserAddressCancelDefault">
+		UPDATE nextjs_shop_user_address
+		SET default_address = 0
+		WHERE user_no = #{userNo} AND default_address = 1
+	</update>
+
+	<update id="updateUserAddressDefault">
+		UPDATE nextjs_shop_user_address
+		SET default_address = 1
+		WHERE user_no = #{userNo} AND address_id = #{addressId}
+	</update>
+
+	<select id="getUserMileage">
+		SELECT mileage
+		FROM nextjs_shop_user
+		WHERE user_no = #{userNo}
+	</select>
+
+	<insert id="insertOrderGroup">
+		INSERT INTO nextjs_shop_order_group(
+			user_no, seller_coupon_discount_total, 
+			cart_coupon_discount_total,
+			shipping_fee, used_mileage, remaining_mileage, 
+			total_price, payment_method, payment_code, 
+			status,
+			address_id, address_name, recipient_name, 
+			address_phone, zonecode,
+			address, address_detail, memo)
+		VALUES(#{orderGroup.userNo}, #{orderGroup.sellerCouponDiscountTotal}, 
+			#{orderGroup.cartCouponDiscountTotal},
+			#{orderGroup.shippingFee}, #{orderGroup.usedMileage}, #{orderGroup.remainingMileage},
+			#{orderGroup.totalPrice}, #{orderGroup.paymentMethod}, #{orderGroup.paymentCode}, 
+			#{orderGroup.status},
+			#{orderGroup.addressId}, #{orderGroup.addressName}, #{orderGroup.recipientName}, 
+			#{orderGroup.addressPhone}, #{orderGroup.zonecode}, 
+			#{orderGroup.address}, #{orderGroup.addressDetail}, #{orderGroup.memo})
+	</insert>
+
+	<select id="getOrderId">
+		SELECT order_id
+		FROM nextjs_shop_order_group
+		WHERE user_no = #{userNo}
+		ORDER BY created_at DESC, order_id DESC
+		LIMIT 1
+	</select>
 </mapper>

@@ -4,12 +4,14 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class OrderGroup {
     private int orderId; // 
     private Timestamp orderDate; // 주문일자
@@ -23,7 +25,7 @@ public class OrderGroup {
     private String paymentMethod; // 결제 방식
     private String paymentCode; // 결제 코드
     private String status; // 상태값 'ORDERED','CANCELLED','PAID','SHIPPED','DELIVERED','PREPARING'
-    private Timestamp shippingDate; // 발송일지
+    private Timestamp shippingDate; // 발송일자
     private Timestamp deliveredDate; // 배송완료일자
     private Timestamp returnDate; // 반송일자
     private int addressId;
