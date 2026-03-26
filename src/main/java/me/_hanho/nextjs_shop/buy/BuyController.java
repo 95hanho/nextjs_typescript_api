@@ -174,6 +174,10 @@ public class BuyController {
 				throw new BusinessException(ErrorCode.ALREADY_PAID_HOLD, "/");
 			}
 
+			// 일단 점유가 된 상품이 있으면 모두 해제 (판매 중지됐는지, 만료됐는지 등은 상관없이 일단 해제)
+			List<Integer> holdIds = latestHolds.stream().map(LatestHoldInfo::getHoldId).collect(Collectors.toList());
+			buyService.releaseHolds(holdIds, userNo);
+
 			// 만료된지 한 시간 이내인지
 			boolean isExpireWithinOneHour = latestHolds.stream().anyMatch(h ->
 				h.getExpiresAt() != null
@@ -181,6 +185,30 @@ public class BuyController {
 				&& h.getExpiresAt().toLocalDateTime().isAfter(LocalDateTime.now().minusHours(1))
 			);
 
+			// 판매 중지된 상품이 포함된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
+			// 판매 중지 상품 = 재고 0이거나, 진열 중지이거나, 판매 중지인 상품
+			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.getStock() <= 0 || !h.isDisplayed() ||  h.isSaleStop());
+			if (hasSaleStopped) {
+				if(isExpireWithinOneHour) {
+					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
+				} else {
+					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, "/");
+				}
+			}
+
+			// 판매자가 정지계정인 상품인 경우 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
+			boolean hasSellerUnavailable = latestHolds.stream().anyMatch(h ->
+				!"APPROVED".equals(h.getApprovalStatus())
+			);
+			if (hasSellerUnavailable) {
+				if(isExpireWithinOneHour) {
+					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
+				} else {
+					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, "/");
+				}
+			}
+
+			// HOLD상태이지만 이미 만료된 점유가 있는 경우 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
 			boolean hasExpired = latestHolds.stream().anyMatch(h ->
 				"HOLD".equals(h.getStatus())
 				&& h.isActiveHold()
@@ -189,35 +217,11 @@ public class BuyController {
 			);
 
 			if (hasExpired) {
-				List<Integer> holdIds = latestHolds.stream().map(LatestHoldInfo::getHoldId).collect(Collectors.toList());
-				buyService.releaseHolds(holdIds, userNo);
 				// HOLD상태이지만 이미 만료된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
 				if(isExpireWithinOneHour) {
 					throw new BusinessException(ErrorCode.HOLD_EXPIRED, returnUrl);
 				} else {
 					throw new BusinessException(ErrorCode.HOLD_EXPIRED, "/");
-				}
-			}
-
-			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.getStock() <= 0 || !h.isDisplayed() ||  h.isSaleStop());
-			if (hasSaleStopped) {
-				// 판매 중지된 상품이 포함된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
-				if(isExpireWithinOneHour) {
-					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
-				} else {
-					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, "/");
-				}
-			}
-
-			boolean hasSellerUnavailable = latestHolds.stream().anyMatch(h ->
-				!"APPROVED".equals(h.getApprovalStatus())
-			);
-			if (hasSellerUnavailable) {
-				// 판매자가 정지계정인 상품인 경우 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
-				if(isExpireWithinOneHour) {
-					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
-				} else {
-					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, "/");
 				}
 			}
 
