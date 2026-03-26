@@ -58,6 +58,7 @@ public enum ErrorCode {
 	// 구매 관련 추가
 	NOT_MATCHED_HOLD(HttpStatus.CONFLICT, "NOT_MATCHED_HOLD", "요청된 holdId와 일치하는 점유가 없습니다."),
 	COUPON_UNAVAILABLE_FAILED(HttpStatus.CONFLICT, "COUPON_UNAVAILABLE_FAILED", "쿠폰 사용 불가 처리에 실패하였습니다."),
+	MILEAGE_UNAVAILABLE_FAILED(HttpStatus.CONFLICT, "MILEAGE_UNAVAILABLE_FAILED", "마일리지 사용 불가 처리에 실패하였습니다."),
 
 	/* 파일 */
 

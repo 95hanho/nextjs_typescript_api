@@ -11,15 +11,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.catalina.servlets.DefaultServlet.SortManager.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.OrderGroup;
 import me._hanho.nextjs_shop.model.OrderItem;
 import me._hanho.nextjs_shop.model.OrderItemCoupon;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
+import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 
 @Service
 @RequiredArgsConstructor
@@ -355,6 +358,7 @@ public class BuyService {
         BigDecimal cartCouponDiscountTotal = BigDecimal.ZERO; // 공용 쿠폰 할인 총액
         BigDecimal shippingFee = BigDecimal.ZERO; // 배송비
         BigDecimal totalPrice = BigDecimal.ZERO; // 최종 결제 금액
+        OrderGroup orderGroup; // 주문 그룹 정보
         List<OrderItem> orderItems = new ArrayList<>(); // 주문 아이템 목록
         List<OrderItemCoupon> orderItemCoupons = new ArrayList<>(); // 주문 아이템 쿠폰 목록
 
@@ -367,7 +371,7 @@ public class BuyService {
 
         for (OrderStockResponse sh : stockHoldProductList) {
              // 할인적용 전 가격
-            int priceBeforeCoupon = sh.getFinalPrice() * sh.getCount();
+            int priceBeforeCoupon = (sh.getFinalPrice() + sh.getAddPrice()) * sh.getCount();
 
             // ---- 배송비 계산을 위한 저장 ----
             if(!deliveryMap.containsKey(sh.getSellerName())) {
@@ -438,13 +442,13 @@ public class BuyService {
             totalPrice = totalPrice.add(BigDecimal.valueOf(priceBeforeCoupon));
             OrderItem orderItem = OrderItem.builder()
                 .holdId(sh.getHoldId())
-                .product_name(sh.getProductName())
+                .productName(sh.getProductName())
                 .count(sh.getCount())
                 .size(sh.getSize())
-                .orderPrice(sh.getOriginPrice())
+                .originPrice(sh.getOriginPrice())
                 .finalPrice(sh.getFinalPrice())
                 .addPrice(sh.getAddPrice()) // 옵션 추가 금액 있으면 계산해서 넣어주기
-                .couponDiscountedPrice(BigDecimal.valueOf(sh.getFinalPrice() * sh.getCount() - priceBeforeCoupon)) // 만드는 서비스 메소드 만들어서 붙여주기
+                .couponDiscountedPrice(BigDecimal.valueOf((sh.getFinalPrice() + sh.getAddPrice()) * sh.getCount() - priceBeforeCoupon)) // 만드는 서비스 메소드 만들어서 붙여주기
                 .totalPrice(BigDecimal.valueOf(priceBeforeCoupon))
                 .build();
             orderItems.add(orderItem);
@@ -458,14 +462,57 @@ public class BuyService {
             }
         });
 
-        // [Mapper] : 신규주소일 시 주소 추가
+        // 주소 id number | null
+        Integer addressId = payRequest.getShippingAddress().getAddressId();
 
-        // [Mapper] : '기본주소로 설정'시 해당 주소로 변경
+        // [Mapper] : 신규주소일 시 주소 추가
+        if(payRequest.getShippingAddress() != null && payRequest.getShippingAddress().getAddressId() == null) {
+            buyMapper.insertUserAddress(payRequest.getShippingAddress(), payRequest.getSetAsDefault() , userNo);
+            addressId = buyMapper.getLatestAddressIdByUserNo(userNo); // 방금 추가한 주소의 ID 조회
+        }
+
+        // [Mapper] : 신규주소가 아니고, '기본주소로 설정이면' 기본주소를 해당 주소로 변경
+        if(payRequest.getShippingAddress() != null && payRequest.getShippingAddress().getAddressId() != null && payRequest.getSetAsDefault()) {
+            // 원래 기본주소 취소
+            buyMapper.updateUserAddressCancelDefault(userNo);
+            // 선택한 주소를 기본주소로 변경
+            buyMapper.updateUserAddressDefault(payRequest.getShippingAddress().getAddressId(), userNo);
+        }
+
+        // [Mapper] :유저의 마일리지 조회
+        int hasMileage = buyMapper.getUserMileage(userNo);
+        // Check : 사용 마일리지 검증(보유 마일리지보다 사용 마일리지가 많으면 예외 처리("마일리지 사용 과정 중 오류가 발생했습니다."))
+        if(payRequest.getUsedMileage() > hasMileage) {
+            throw new BusinessException(ErrorCode.MILEAGE_UNAVAILABLE_FAILED);
+        }
 
         // 주문프로세스 만들기
         // 결제코드 가상 생성
+        String payCode = OrderCodeGenerator.generatePayCode();
+        orderGroup = OrderGroup.builder()
+            .userNo(userNo)
+            .sellerCouponDiscountTotal(sellerCouponDiscountTotal)
+            .cartCouponDiscountTotal(cartCouponDiscountTotal)
+            .shippingFee(shippingFee)
+            .usedMileage(payRequest.getUsedMileage())
+            .remainingMileage(hasMileage - payRequest.getUsedMileage())
+            .totalPrice(totalPrice)
+            .paymentMethod(payRequest.getPaymentMethod())
+            .paymentCode(payCode)
+            .status("ORDERED")
+            .addressId(addressId)
+            .addressName(payRequest.getShippingAddress().getAddressName())
+            .recipientName(payRequest.getShippingAddress().getRecipientName())
+            .addressPhone(payRequest.getShippingAddress().getAddressPhone())
+            .zonecode(payRequest.getShippingAddress().getZonecode())
+            .address(payRequest.getShippingAddress().getAddress())
+            .addressDetail(payRequest.getShippingAddress().getAddressDetail())
+            .memo(payRequest.getShippingAddress().getMemo())
+            .build();
 
         // [Mapper] : 주문프로세스 INSERT(order_group)
+        buyMapper.insertOrderGroup(orderGroup);
+        int order_id = buyMapper.getOrderId(userNo); // 방금 생성된 주문 그룹 ID 조회
 
         // 주문목록 만들기
 

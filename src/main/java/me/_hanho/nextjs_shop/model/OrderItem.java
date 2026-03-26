@@ -15,10 +15,10 @@ public class OrderItem {
     private int orderListId;
     private int orderId;
     private int holdId;
-    private String product_name;
+    private String productName;
     private int count;
     private String size;
-    private int orderPrice;
+    private int originPrice;
     private int finalPrice;
     private int addPrice;
     private BigDecimal couponDiscountedPrice;
