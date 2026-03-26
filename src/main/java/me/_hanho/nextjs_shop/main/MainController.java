@@ -26,7 +26,7 @@ public class MainController {
 	// 메뉴 가져오기
 	@GetMapping("/menu")
 	public ResponseEntity<Map<String, Object>> getMenuList() {
-		logger.info("getMenuList");
+		logger.info("[getMenuList]");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<MenuResponse> menuList = mainService.getMenuList();
@@ -39,7 +39,7 @@ public class MainController {
 	// 메인 슬라이드 제품 가져오기 - 지금은 가장 오래된거 10개 그냥 가져오지만 나중에 규칙만들어서 뽑기
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProducts() {
-		logger.info("getProducts");
+		logger.info("[getProducts]");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts();

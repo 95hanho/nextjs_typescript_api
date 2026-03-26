@@ -42,7 +42,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getUserCoupons(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserCoupons : " + userNo);
+		logger.info("[getUserCoupons] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<UserCouponResponse> couponList = mypageService.getUserCoupons(userNo);
@@ -57,7 +57,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getMyOrderList(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getMyOrderList : " + userNo);
+		logger.info("[getMyOrderList] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<MyOrderGroupResponse> myOrderList = mypageService.getMyOrderListWithReview(userNo);
@@ -72,7 +72,7 @@ public class MypageController {
 			@PathVariable("orderId") String orderId,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getMyReviews : " + orderId);
+		logger.info("[getMyOrderDetail] orderId={}, userNo={}", orderId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		MyOrderDetailResponse myOrderDetail = mypageService.getMyOrderDetail(orderId, userNo);
@@ -87,7 +87,7 @@ public class MypageController {
 			@Valid @ModelAttribute AddReviewRequest review, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addReview review {} : " + review + ", userNo : " + userNo);
+		logger.info("[addReview] review={}, userNo={}", review, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		mypageService.insertReview(review, userNo);
@@ -101,7 +101,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> selectCart(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("selectCart : " + userNo);
+		logger.info("[selectCart] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// 장바구니 제품리스트, 장바구니 제품 Ids, 재고 부족 여부 조회
@@ -125,7 +125,7 @@ public class MypageController {
 			@Valid @ModelAttribute UpdateCartRequest cart, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateCart : " + cart.getCartId());
+		logger.info("[updateCart] cartId={}, userNo={}", cart.getCartId(), userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		mypageService.updateCart(cart, userNo);
@@ -140,7 +140,7 @@ public class MypageController {
 			@RequestParam("selected") Boolean selected,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateSelectedCart cartIdList {} : " + cartIdList + ", selected : " + selected);
+		logger.info("[updateSelectedCart] cartIdList={}, selected={}, userNo={}", cartIdList, selected, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		mypageService.updateSelectedCart(cartIdList, selected, userNo);
@@ -154,7 +154,7 @@ public class MypageController {
 			@RequestParam("cartIdList") List<Integer> cartIdList,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("deleteCart : " + cartIdList);
+		logger.info("[deleteCart] cartIdList={}, userNo={}", cartIdList, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		mypageService.deleteCart(cartIdList, userNo);
@@ -166,7 +166,7 @@ public class MypageController {
 	@GetMapping("/cart/option")
 	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(
 			@RequestParam("productId") Integer productId) {
-		logger.info("getCartOptionProductOptionList : " + productId);
+		logger.info("[getCartOptionProductOptionList] productId={}", productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductOptionResponse> cartOptionProductOptionList = productService.getProductOptionList(productId);
@@ -180,7 +180,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getWishList(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getWishList : " + userNo);
+		logger.info("[getWishList] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<WishlistItemResponse> wishlistItems = mypageService.getWishlistItems(userNo);
@@ -197,7 +197,7 @@ public class MypageController {
 	public ResponseEntity<Map<String, Object>> getUserAddressList(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserAddress : " + userNo);
+		logger.info("[getUserAddressList] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<UserAddressResponse> userAddressList = mypageService.getUserAddressList(userNo);
@@ -212,7 +212,7 @@ public class MypageController {
 			@Valid @ModelAttribute AddUserAddressRequest userAddress,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addUserAddress : " + userAddress);
+		logger.info("[addUserAddress] userAddress={}, userNo={}", userAddress, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		mypageService.insertUserAddress(userAddress, userNo);
@@ -226,7 +226,7 @@ public class MypageController {
 			@Valid @ModelAttribute UpdateUserAddressRequest userAddress,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateUserAddress : " + userAddress);
+		logger.info("[updateUserAddress] userAddress={}, userNo={}", userAddress, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		mypageService.updateUserAddress(userAddress, userNo);
@@ -240,7 +240,7 @@ public class MypageController {
 			@PathVariable("addressId") Integer addressId,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("deleteUserAddress : " + addressId);
+		logger.info("[deleteUserAddress] addressId={}, userNo={}", addressId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		mypageService.deleteUserAddress(addressId, userNo);

@@ -50,6 +50,7 @@ public class BuyController {
 	        @RequestBody BuyCheckRequest buyCheck,
 	        @RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[saleStatusCheck] userNo={}, buyCheck={}", userNo, buyCheck);
 	    Map<String, Object> result = new HashMap<>();
 
         HoldTryResult res = buyService.preparePurchaseWithHold(buyCheck, userNo);
@@ -68,7 +69,7 @@ public class BuyController {
     public ResponseEntity<Map<String, Object>> extendStockHold(
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
     	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("extendStockHold userNo=", userNo);
+        logger.info("[extendStockHold] userNo={}", userNo);
         Map<String, Object> result = new HashMap<>();
         
         List<Integer> holdIds = buyService.selectAllActiveHoldsByUser(userNo);
@@ -100,7 +101,7 @@ public class BuyController {
     public ResponseEntity<Map<String, Object>> release(
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
     	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("release holds");
+        logger.info("[release] userNo={}", userNo);
         Map<String, Object> result = new HashMap<>();
         
         List<Integer> holdIds = buyService.selectAllActiveHoldsByUser(userNo);
@@ -120,7 +121,7 @@ public class BuyController {
 			@RequestBody ManageStockHoldCouponRequest holdCouponRequests,
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
     	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("addStockHoldCoupons userNo=", userNo);
+        logger.info("[addStockHoldCoupons] userNo={}", userNo);
         Map<String, Object> result = new HashMap<>();
         
 		buyService.addStockHoldCoupons(holdCouponRequests.getHoldCoupons());
@@ -135,7 +136,7 @@ public class BuyController {
 			@RequestBody ManageStockHoldCouponRequest holdCouponRequests,
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
     	if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("deleteStockHoldCoupon userNo=", userNo);
+        logger.info("[deleteStockHoldCoupons] userNo={}", userNo);
         Map<String, Object> result = new HashMap<>();
         
 		buyService.deleteStockHoldCoupons(holdCouponRequests.getHoldCoupons());
@@ -151,7 +152,7 @@ public class BuyController {
     public ResponseEntity<Map<String, Object>> getStockHoldProduct(
     		@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-        logger.info("getPayBefore : " + userNo);
+        logger.info("[getStockHoldProduct] userNo={}", userNo);
         Map<String, Object> body = new HashMap<>();
         
         List<OrderStockResponse> stockHoldProductList = buyService.getStockHoldProductList(userNo);
@@ -267,7 +268,7 @@ public class BuyController {
 			@RequestBody PayRequest payRequest, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("pay : {}" + payRequest);
+		logger.info("[pay] userNo={}, payRequest={}", userNo, payRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// buyService.pay(payRequest, userNo);

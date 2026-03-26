@@ -40,7 +40,8 @@ public class ProductController {
 			@RequestParam(name = "lastCreatedAt", required = false) Timestamp lastCreatedAt,
 			@RequestParam(name = "lastProductId", required = false) Integer lastProductId, 
 			@RequestParam(name = "lastPopularity", required = false) Integer lastPopularity) {
-		logger.info("getProductList");
+		logger.info("[getProductList] sort={}, menuSubId={}, lastCreatedAt={}, lastProductId={}, lastPopularity={}", 
+		sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 		Map<String, Object> result = new HashMap<String, Object>();
 		// 
 		List<ProductListResponse> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
@@ -55,7 +56,7 @@ public class ProductController {
 			@RequestParam("productId") Integer productId,
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getProductList");
+		logger.info("[setLike] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		productService.setLike(productId, userNo);
@@ -69,7 +70,7 @@ public class ProductController {
 			@RequestParam("productId") Integer productId, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("setWish productId : " + productId);
+		logger.info("[setWish] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		productService.setWish(productId, userNo);
@@ -83,7 +84,7 @@ public class ProductController {
 			@RequestParam("productId") Integer productId, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("cartCheck productId : " + productId);
+		logger.info("[cartCheck] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		boolean hasCart = productService.getProductHasCart(productId, userNo);
@@ -99,7 +100,7 @@ public class ProductController {
 			@RequestBody AddCartRequest addCartRequest, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addCart" + addCartRequest);
+		logger.info("[addCart] addCartRequest={}, userNo={}", addCartRequest, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		CartAddResult addCartResult = productService.addCart(addCartRequest, userNo);
@@ -124,7 +125,7 @@ public class ProductController {
 	public ResponseEntity<Map<String, Object>> getProductDetail(
 			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("getProductDetail productId : " + productId + ", userNo : " + userNo);
+		logger.info("[getProductDetail] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
@@ -143,7 +144,7 @@ public class ProductController {
 			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getProductDetailAvailableCoupon productId : " + productId + ", userNo : " + userNo);
+		logger.info("[getProductDetailAvailableCoupon] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<AvailableProductCouponResponse> availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);
@@ -158,7 +159,7 @@ public class ProductController {
 			@RequestParam("couponId") Integer couponId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("couponDownload couponId : " + couponId + ", userNo : " + userNo);
+		logger.info("[couponDownload] couponId={}, userNo={}", couponId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 
@@ -182,7 +183,7 @@ public class ProductController {
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
 			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("getProductReviewList productId : " + productId);
+		logger.info("[getProductReviewList] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
@@ -198,7 +199,7 @@ public class ProductController {
 	public ResponseEntity<Map<String, Object>> getProductQnaList(
 			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("getProductQnaList productId : " + productId);
+		logger.info("[getProductQnaList] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductQnaResponse> ProductQnaList = productService.getProductQnaList(productId, userNo);

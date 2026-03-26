@@ -44,7 +44,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> login(
 			@RequestParam("sellerId") String sellerId, 
 			@RequestParam("password") String password) {
-		logger.info("sellerLogin :" + sellerId);
+		logger.info("[sellerLogin] sellerId={}", sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerLogin checkSeller = sellerService.isSeller(sellerId);
@@ -73,8 +73,8 @@ public class SellerController {
 	        @RequestHeader("x-forwarded-for") String forwardedFor
 	) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", sellerNo : " + sellerNo + 
-				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		logger.info("[tokenStore] refreshToken={}, sellerNo={}, userAgent={}, forwardedFor={}", 
+				refreshToken.substring(refreshToken.length() - 10), sellerNo, userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 	    tokenService.parseJwtRefreshToken(refreshToken); // 여기서 유효하지 않으면 예외 던지게
@@ -95,9 +95,8 @@ public class SellerController {
 	        @RequestHeader("user-agent") String userAgent,
 	        @RequestHeader("x-forwarded-for") String forwardedFor
 	) {
-		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
-				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
-				", x-forwarded-for : " + forwardedFor);
+		logger.info("[updateToken] beforeToken={}, refreshToken={}, userAgent={}, forwardedFor={}", 
+				beforeToken.substring(beforeToken.length() - 10), refreshToken.substring(refreshToken.length() - 10), userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 	    tokenService.parseJwtRefreshToken(beforeToken);
@@ -121,7 +120,7 @@ public class SellerController {
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getSeller(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSeller :" + sellerNo);
+		logger.info("[getSeller] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerInfoResponse sellerInfo = sellerService.getSeller(sellerNo);
@@ -133,7 +132,7 @@ public class SellerController {
 	// 판매자id 중복확인
 	@PostMapping("/id")
 	public ResponseEntity<Map<String, Object>> sellerIdDuplCheck(@RequestParam("sellerId") String sellerId) {
-		logger.info("sellerIdDuplCheck sellerId=" + sellerId);
+		logger.info("[sellerIdDuplCheck] sellerId={}", sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		boolean hasId = sellerService.hasId(sellerId);
@@ -150,7 +149,7 @@ public class SellerController {
 	// 판매자 등록요청(회원가입)
 	@PostMapping("/registration")
 	public ResponseEntity<Map<String, Object>> sellerRegister(@Valid @ModelAttribute SellerRegisterRequest seller) {
-		logger.info("sellerRegister");
+		logger.info("[sellerRegister] sellerId={}", seller);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.setSeller(seller);
@@ -162,7 +161,7 @@ public class SellerController {
 	@GetMapping("/product")
 	public ResponseEntity<Map<String, Object>> getSellerProductList(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerProductList sellerNo=" + sellerNo);
+		logger.info("[getSellerProductList] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<SellerProductResponse> sellerProductList = sellerService.getSellerProductList(sellerNo);
@@ -177,7 +176,7 @@ public class SellerController {
 		 	@Valid @ModelAttribute AddProductRequest product,
 		 	@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("sellerAddProduct " + product);
+		logger.info("[addProduct] product={}, sellerNo={}", product, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.addProduct(product, sellerNo);
@@ -190,7 +189,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
 			@Valid @ModelAttribute UpdateProductRequest product) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("sellerUpdateProduct " + product);
+		logger.info("[updateProduct] product={}, sellerNo={}", product, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.updateProduct(product, sellerNo);
@@ -203,7 +202,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
 			@PathVariable("productId") int productId) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getProductDetail " + productId);
+		logger.info("[getProductDetail] productId={}, sellerNo={}", productId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// 실제리스트에 뜨는 예시도 보여주고
@@ -230,7 +229,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> setSellerProductOption(@Valid @ModelAttribute AddProductOptionRequest productOption,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("setSellerProductOption " + productOption);
+		logger.info("[setSellerProductOption] productOption={}, sellerNo={}", productOption, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.addProductOption(productOption, sellerNo);
@@ -243,7 +242,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> updateSellerProductOption(@Valid @ModelAttribute UpdateProductOptionRequest productOption,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateSellerProductOption " + productOption);
+		logger.info("[updateSellerProductOption] productOption={}, sellerNo={}", productOption, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		sellerService.updateProductOption(productOption, sellerNo);
@@ -256,7 +255,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> deleteSellerProductOption(@PathVariable("productOptionId") Integer productOptionId, 
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("deleteSellerProductOption " + productOptionId);
+		logger.info("[deleteSellerProductOption] productOptionId={}, sellerNo={}", productOptionId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		sellerService.deleteProductOption(productOptionId, sellerNo);
@@ -269,7 +268,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> getSellerCouponList(
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerCouponList "+ sellerNo);
+		logger.info("[getSellerCouponList] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<SellerCouponResponse> couponList = sellerService.getSellerCouponList(sellerNo);
@@ -283,7 +282,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> addCoupon(@Valid @ModelAttribute AddCouponRequest coupon,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addSellerCoupon "+ coupon);
+		logger.info("[addCoupon] coupon={}, sellerNo={}", coupon, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// discount_type에 따른 규칙
@@ -309,7 +308,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> updateCoupon(@Valid @ModelAttribute UpdateCouponRequest coupon,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateCoupon "+ coupon);
+		logger.info("[updateCoupon] coupon={}, sellerNo={}", coupon, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// discount_type에 따른 규칙
@@ -335,7 +334,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> deleteCoupon(@PathVariable("couponId") Integer couponId,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("deleteCoupon "+ couponId);
+		logger.info("[deleteCoupon] couponId={}, sellerNo={}", couponId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.deleteCoupon(couponId, sellerNo);
@@ -348,7 +347,7 @@ public class SellerController {
 	public ResponseEntity<Map<String, Object>> getSellerProductCouponAllowed(@RequestParam("couponId") String couponId,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerProductCouponAllowed "+ couponId);
+		logger.info("[getSellerProductCouponAllowed] couponId={}, sellerNo={}", couponId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<SellerProductCouponAllowedResponse> CouponAllowedProductList = sellerService.getSellerCouponAllow(couponId, sellerNo);
@@ -365,7 +364,7 @@ public class SellerController {
 			@RequestParam("allow") Boolean allow, 
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("setSellerCouponAllow couponId={}, productIds={}, allow={}", couponId, productIds, allow);
+		logger.info("[setSellerCouponAllow] couponId={}, productIds={}, allow={}, sellerNo={}", couponId, productIds, allow, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		sellerService.setSellerCouponAllow(couponId, productIds, allow, sellerNo);
@@ -375,8 +374,9 @@ public class SellerController {
 	}
 	// 쿠폰을 유저에게 발행하기 - 특정 조건의 유저에게 발급하기!!! 아래 API와 연동하여서
 	@PostMapping("/coupon/user-coupon")
-	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(@RequestParam("couponId") String couponId, @RequestParam("userNoList") List<Integer> userNoList) {
-		logger.info("issueCouponsToUsers "+ couponId + " : " + userNoList);
+	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(@RequestParam("couponId") String couponId, @RequestParam("userNoList") List<Integer> userNoList, @RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[issueCouponsToUsers] couponId={}, userNoList={}, sellerNo={}", couponId, userNoList, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		result.put("message", "SELLER_COUPON_ISSUE_SUCCESS");
@@ -386,7 +386,7 @@ public class SellerController {
 	@GetMapping("/user/interesting")
 	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerInterestingUser "+ sellerNo);
+		logger.info("[getSellerInterestingUser] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductViewCountResponse> productViewCountList = sellerService.getProductViewCountList(sellerNo);
@@ -410,7 +410,7 @@ public class SellerController {
 	@GetMapping("/coupon/user-coupon")
 	public ResponseEntity<Map<String, Object>> getSellerUsercouponUsed(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerUsercouponUsed "+ sellerNo);
+		logger.info("[getSellerUsercouponUsed] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
