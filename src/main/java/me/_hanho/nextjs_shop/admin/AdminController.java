@@ -44,7 +44,7 @@ public class AdminController {
 	// 암호화 비번 출력
 	@PostMapping("/hash-password")
 	public ResponseEntity<Map<String, Object>> getEncryptionPassword(@RequestParam("password") String password) {
-		logger.info("getEncryptionPassword :" + password);
+		logger.info("[getEncryptionPassword] :" + password);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String encryptionPassword = adminService.getEncryptionPassword(password);
@@ -58,7 +58,7 @@ public class AdminController {
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getAdminInfo(@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getAdminNoInfo : adminNo=" + adminNo);
+		logger.info("[getAdminInfo] : adminNo={}", adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		AdminInfoResponse admin = adminService.getAdminInfo(adminNo);
@@ -72,7 +72,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> login(
 			@RequestParam("adminId") String adminId, 
 			@RequestParam("password") String password) {
-		logger.info("adminLogin :" + adminId);
+		logger.info("[login] adminId={}", adminId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		AdminLogin checkAdmin = adminService.isAdmin(adminId);
@@ -102,8 +102,8 @@ public class AdminController {
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", adminNo : " + adminNo + 
-				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		logger.info("[tokenStore] refreshToken={}, adminNo={}, userAgent={}, forwardedFor={}", 
+				refreshToken.substring(refreshToken.length() - 10), adminNo, userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		tokenService.parseJwtRefreshToken(refreshToken);
@@ -123,9 +123,8 @@ public class AdminController {
 			@RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
-				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
-				", x-forwarded-for : " + forwardedFor);
+		logger.info("[updateToken] beforeToken={}, refreshToken={}, userAgent={}, forwardedFor={}", 
+				beforeToken.substring(beforeToken.length() - 10), refreshToken.substring(refreshToken.length() - 10), userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		tokenService.parseJwtRefreshToken(beforeToken);
@@ -149,7 +148,7 @@ public class AdminController {
 	@GetMapping("/seller")
 	public ResponseEntity<Map<String, Object>> getSellerList(@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getSellerList " + adminNo);
+		logger.info("[getSellerList] adminNo={}", adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		List<Seller> sellerList = adminService.getSellerList();
@@ -163,7 +162,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> addSeller(@Valid @ModelAttribute SellerRegisterRequest seller,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addSeller " + seller);
+		logger.info("[addSeller] seller={}, adminNo={}", seller, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		if(adminService.hasSeller(seller.getSellerId())) {
@@ -180,7 +179,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> setSellerApproval(@Valid @ModelAttribute SellerApprovalRequest sellerApproval,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("setSellerApproval {} : " + sellerApproval);
+		logger.info("[setSellerApproval] sellerApproval={}, adminNo={}", sellerApproval, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		if("REJECTED".equals(sellerApproval.getApprovalStatus()) && sellerApproval.getRejectReason() == null) {
@@ -197,7 +196,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> getUserList(
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserList adminNo : " + adminNo);
+		logger.info("[getUserList] adminNo={}", adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<UserResponse> userList = adminService.getUserList();
@@ -212,7 +211,7 @@ public class AdminController {
 			@RequestParam("userNo") Integer userNo,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserInfoUnmasked userNo : " + userNo);
+		logger.info("[getUserInfoUnmasked] userNo={}, adminNo={}", userNo, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		UserInfoInAdminResponse userInfo = adminService.getUserInfoUnmasked(userNo);
@@ -228,7 +227,7 @@ public class AdminController {
 			@RequestParam("withdrawalStatus") String withdrawalStatus,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateUserWithdrawalStatus userNoList {} : " + userNoList + "withdrawalStatus : " + withdrawalStatus);
+		logger.info("[updateUserWithdrawalStatus] userNoList={}, withdrawalStatus={}, adminNo={}", userNoList, withdrawalStatus, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		adminService.updateUserWithdrawalStatus(userNoList, withdrawalStatus);
@@ -241,7 +240,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> getCommonCouponList(
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getCommonCouponList  : ");
+		logger.info("[getCommonCouponList] adminNo={}", adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<CommonCouponResponse> commonCouponList = adminService.getCommonCouponList();
@@ -256,7 +255,7 @@ public class AdminController {
 			@Valid @ModelAttribute AddCommonCouponRequest commonCoupon,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("addCommonCoupon commonCoupon {} : " + commonCoupon);
+		logger.info("[addCommonCoupon] commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// discount_type에 따른 규칙
@@ -283,7 +282,7 @@ public class AdminController {
 			@Valid @ModelAttribute UpdateCommonCouponRequest commonCoupon,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("updateCommonCoupon commonCoupon {} : " + commonCoupon);
+		logger.info("[updateCommonCoupon] commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		// discount_type에 따른 규칙
@@ -310,7 +309,7 @@ public class AdminController {
 			@PathVariable("couponId") Integer couponId,
 			@RequestAttribute(name = "adminNo", required = false) Integer adminNo) {
 		if (adminNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("deleteCommonCoupon couponId : " + couponId);
+		logger.info("[deleteCommonCoupon] couponId={}, adminNo={}", couponId, adminNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		adminService.deleteCommonCoupon(couponId);

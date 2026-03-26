@@ -17,6 +17,7 @@ public class LatestHoldInfo {
 	private boolean activeHold;
 	private Timestamp expiresAt;
 
+	private int stock;
     private boolean isDisplayed;
 
     private int productId;

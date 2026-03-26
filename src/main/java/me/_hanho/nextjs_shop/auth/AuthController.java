@@ -45,7 +45,7 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> getUserInfo(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserInfo : userNo=" + userNo);
+		logger.info("[getUserInfo] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		UserInfoResponse user = authService.getUserInfo(userNo);
@@ -64,7 +64,7 @@ public class AuthController {
 			@RequestParam("password") String password, 
 			@RequestHeader("User-Agent") String agent
 			, HttpServletRequest request) {
-		logger.info("login :" + userId);
+		logger.info("[login] userId={}", userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		UserLoginResponse checkUser = authService.getUserForPassword(userId);
@@ -84,8 +84,8 @@ public class AuthController {
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("insertToken refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", userNo : " + userNo + 
-				", user-agent : " + userAgent + ", x-forwarded-for : " + forwardedFor);
+		logger.info("[insertToken] refreshToken={}, userNo={}, user-agent={}, x-forwarded-for={}", 
+				refreshToken.substring(refreshToken.length() - 10), userNo, userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		tokenService.parseJwtRefreshToken(refreshToken);
@@ -105,9 +105,8 @@ public class AuthController {
 			@RequestParam("refreshToken") String refreshToken,
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor) {
-		logger.info("updateToken beforeToken : " + beforeToken.substring(beforeToken.length() - 10) + 
-				", refreshToken : " + refreshToken.substring(refreshToken.length() - 10) + ", user-agent : " + userAgent + 
-				", x-forwarded-for : " + forwardedFor);
+		logger.info("[updateToken] beforeToken={}, refreshToken={}, user-agent={}, x-forwarded-for={}", 
+				beforeToken.substring(beforeToken.length() - 10), refreshToken.substring(refreshToken.length() - 10), userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		tokenService.parseJwtRefreshToken(beforeToken);
@@ -134,7 +133,7 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> getUserId(
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("getUserId userNo : " + userNo);
+		logger.info("[getUserId] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String userId = authService.getUserId(userNo);
@@ -147,11 +146,11 @@ public class AuthController {
 	// 아이디 중복확인
 	@PostMapping("/id")
 	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("userId") String userId) {
-		logger.info("idDuplcheck userId : " + userId);
+		logger.info("[idDuplcheck] userId={}", userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		boolean hasId = authService.hasId(userId);
-		logger.info("hasId : " + hasId);
+		logger.info("[idDuplcheck] hasId={}", hasId);
 		
 		if(hasId) throw new BusinessException(ErrorCode.ID_DUPLICATED);
 		
@@ -167,7 +166,7 @@ public class AuthController {
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor,
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
-		logger.info("phoneAuth - phone :, mode :, phoneAuthToken : {}, userNo : {}", phone, mode, phoneAuthToken, userNo);
+		logger.info("[sendPhoneAuth] phone={}, mode={}, phoneAuthToken={}, userNo={}", phone, mode, phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
@@ -176,7 +175,7 @@ public class AuthController {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 			String type = claims.get("type", String.class);
-            logger.info("type : " + type);
+            logger.info("[sendPhoneAuth] type={}", type);
             if (type == null) {
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
             }
@@ -213,14 +212,14 @@ public class AuthController {
 	public ResponseEntity<Map<String, Object>> phoneAuthCheck(
 			@RequestParam("authNumber") String authNumber,
 			@RequestParam("phoneAuthToken") String phoneAuthToken) {
-		logger.info("phoneAuthCheck - authNumber=" + authNumber);
+		logger.info("[phoneAuthCheck] authNumber={}, phoneAuthToken={}", authNumber, phoneAuthToken);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		try {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
 			String type = claims.get("type", String.class);
-            logger.info("type : " + type);
+            logger.info("[phoneAuthCheck] type={}", type);
             if (type == null) {
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
             }
@@ -273,7 +272,7 @@ public class AuthController {
 	// 회원가입
 	@PostMapping("/user")
 	public ResponseEntity<Map<String, Object>> join(@Valid @ModelAttribute JoinRequest user) {
-		logger.info("join : " + user);
+		logger.info("[join] user={}", user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		authService.joinUser(user);
@@ -287,7 +286,7 @@ public class AuthController {
 			@Valid @ModelAttribute UpdateUserRequest user, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("userInfoUpdate : 회원 정보 변경 - " + user);
+		logger.info("[userInfoUpdate] userNo={}, user={}", userNo, user);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		authService.userInfoUpdate(user, userNo);
@@ -308,7 +307,7 @@ public class AuthController {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(pwdResetToken);
 			String type = claims.get("type", String.class);
-            logger.info("type : " + type);
+            logger.info("[passwordChange] type={}", type);
             if (type == null) {
                 throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_INVALID);
             }
@@ -350,7 +349,7 @@ public class AuthController {
 	@DeleteMapping("/user")
 	public ResponseEntity<Map<String, Object>> withDrawalUser(@RequestAttribute(value="userNo", required=false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("withDrawalUser userNo : " + userNo);
+		logger.info("[withDrawalUser] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		authService.withDrawalUser(userNo);

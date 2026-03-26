@@ -200,7 +200,7 @@
 			AND pi_inner.sort_key   = first_img.min_sort_key
 		) tpi ON tpi.product_id = p.product_id
 		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-		WHERE c.user_no = #{userNo}
+		WHERE c.user_no = #{userNo} AND c.is_deleted = 0
 		ORDER BY c.created_at DESC,
 			(p.final_price * c.quantity) DESC
 	</select>
@@ -286,14 +286,15 @@
             #{cartId}
           </foreach>
 	</update>
-	<delete id="deleteCart">
-		DELETE FROM nextjs_shop_cart
-		WHERE user_no= #{userNo} 
+	<update id="deleteCart">
+		UPDATE nextjs_shop_cart
+		SET is_deleted = 1
+		WHERE user_no= #{userNo} AND is_deleted = 0
 			AND cart_id IN
           <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
             #{cartId}
           </foreach>
-	</delete>
+	</update>
 	
 	<select id="getWishlistItems">
 		SELECT w.wish_id, 

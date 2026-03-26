@@ -56,37 +56,9 @@ public interface BuyMapper {
 
 	List<DefaultAddressResponse> getDefaultAddress(Integer userNo);
 	
-	List<ProductWithCouponResponse> getProductWithCoupons(@Param("products") List<BuyProduct> products, @Param("userNo") Integer userNo);
-	
 	// --------------------------
-	void updateUserMileageByBuy(PayRequest payRequest);
 	
-	int getUserMileage(Integer userNo);
-    
-	void insertOrderGroup(BuyOrderGroup orderGroup);
-	
-	int getOrderId(Integer userNo);
+	List<OrderStockResponse> getStockHoldProductListByHoldIds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
 
-	void insertOrderList(@Param("productList") List<ProductWithCouponResponse> items, @Param("orderId") int orderId,
-			@Param("userNo") Integer userNo);
-	
-	void updateCancelStockHold(@Param("productList") List<ProductWithCouponResponse> items);
-
-	void updateProductOptionByBuy(@Param("productList") List<ProductWithCouponResponse> items);
-
-	void updateUserCouponUsed(@Param("productList") List<ProductWithCouponResponse> items, @Param("userCouponId") int userCouponId);
-
-	void updateCommonCouponByBuy(@Param("userCouponId") int userCouponId);
-
-	void updateEachCouponByBuy(@Param("productList") List<ProductWithCouponResponse> items);
-
-	
-
-	
-
-	
-
-	
-	
-
+	List<PayAvailableCoupon> getAvailableCouponsByHoldIds(@Param("holdIds") List<Integer> holdIds);
 }

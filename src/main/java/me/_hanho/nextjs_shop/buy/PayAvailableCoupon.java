@@ -10,26 +10,27 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AvailableCouponResponse {
-	
+public class PayAvailableCoupon {
+    private int holdCouponId;
+    private int holdId;
+
+    private int userCouponId;
+
     private int couponId;
     private String description;
-    private String couponCode;
     private String discountType;
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
     private BigDecimal minimumOrderBeforeAmount;
-    private String status;
     private Boolean isStackable;
     private Boolean isProductRestricted;
     private int amount;
     private Timestamp startDate;
     private Timestamp endDate;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
-    private String sellerId;
-    //
-    private int userCouponId; 
-	private boolean used; 
-	
+    private String issueMethod;
+
+	private Integer couponAllowedId;
+    private Integer productId;
+    
+    private String sellerName;
 }
