@@ -144,9 +144,6 @@ public class BuyController {
         return ResponseEntity.ok(result);
     }
     
-    /**
-     * 제품판매여부, 판매자 중단여부 확인 후 바꼈을 지 어떻게 할지 넣어야할듯... 
-     */
 	// 점유 중인 상품 및 사용 가능 쿠폰 조회(결제화면)
 	// 포트폴리오 단계에서는 userNo 기준으로 점유를 관리하며,
 	// 다중 기기/세션 단위 구매 흐름 식별은 추후 hold_session_id 도입으로 확장 가능
@@ -161,8 +158,6 @@ public class BuyController {
 
 		if(stockHoldProductList == null || stockHoldProductList.isEmpty()) {
 			List<LatestHoldInfo> latestHolds = buyService.getLatestHoldsInfo(userNo);
-
-			System.out.println("latestHolds(" + latestHolds.size() + ") = " + latestHolds);
 
 			if (latestHolds == null || latestHolds.isEmpty()) {
 				// 해당 계정으로 점유 자체가 없을 경우 - 메인 페이지로 보내기(잘 못 된 접근)
@@ -185,7 +180,6 @@ public class BuyController {
 				&& h.getExpiresAt().toLocalDateTime().isBefore(LocalDateTime.now())
 				&& h.getExpiresAt().toLocalDateTime().isAfter(LocalDateTime.now().minusHours(1))
 			);
-			System.out.println("isExpireWithinOneHour = " + isExpireWithinOneHour);
 
 			boolean hasExpired = latestHolds.stream().anyMatch(h ->
 				"HOLD".equals(h.getStatus())
@@ -205,7 +199,7 @@ public class BuyController {
 				}
 			}
 
-			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.isSaleStop() || !h.isDisplayed());
+			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.getStock() <= 0 || !h.isDisplayed() ||  h.isSaleStop());
 			if (hasSaleStopped) {
 				// 판매 중지된 상품이 포함된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
 				if(isExpireWithinOneHour) {
@@ -263,7 +257,24 @@ public class BuyController {
         return ResponseEntity.ok(body);
     }
 	
+	// 상품 구매/결제
+	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액, 
+	public ResponseEntity<Map<String, Object>> pay(
+			@RequestBody PayRequest payRequest, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("pay : {}" + payRequest);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		// buyService.pay(payRequest, userNo);
 
+		// 카트에 있었을 시 해당 cart 삭제
+		
+		result.put("message", "success");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
+	/* 필요없을 듯!!! */
 	// 상품 쿠폰, 마일리지, 배송비 여부의 변경에 따라 가격계산해서 보여줌.(결제화면)
 	@PostMapping("pay-price")
 	public ResponseEntity<Map<String, Object>> payPrice(@RequestBody PayPriceRequest payPriceRequest, 
@@ -312,7 +323,6 @@ public class BuyController {
 	    
 	    // 총 할인 = (각 상품쿠폰 합) + (공용쿠폰 할인) + (마일리지)
 	    BigDecimal totalDiscount = couponDiscountTotal.add(mainCouponDiscount).add(mileageApplied);
-
 	    
 	    // 응답
 	    result.put("items", items);
@@ -327,23 +337,6 @@ public class BuyController {
 	    result.put("totalFinal",      totalFinal); // 총 금액
 	    result.put("message", "success");
 	    return new ResponseEntity<>(result, HttpStatus.OK);
-	}
-	
-	// 상품 구매/결제
-	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액, 
-	public ResponseEntity<Map<String, Object>> pay(
-			@RequestBody PayRequest payRequest, 
-			@RequestAttribute(value="userNo", required=false) Integer userNo) {
-		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("pay : {}" + payRequest);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		buyService.pay(payRequest, userNo);
-
-		// 카트에 있었을 시 해당 cart 삭제
-		
-		result.put("message", "success");
-		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 }

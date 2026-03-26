@@ -239,14 +239,14 @@
    	<!-- 점유하고 있는 상품조회 -->
   	<select id="getStockHoldProductList">
 		SELECT sh.hold_id, sh.count, 
-			pd.product_option_id, pd.add_price, pd.size,
+			po.product_option_id, po.add_price, po.size,
 			p.product_id, p.name AS productName, p.origin_price, p.final_price, p.color_name,
 			w.wish_id,
 			s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
 			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
 		FROM nextjs_shop_stock_hold sh
-		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
-		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
 		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = sh.user_no
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		LEFT JOIN (
@@ -270,6 +270,8 @@
 		AND sh.active_hold = 1
 		AND sh.expires_at > NOW()
 		AND s.approval_status = 'APPROVED'
+		AND po.stock > 0
+		AND po.is_displayed = 1
 		AND p.sale_stop = 0
 		ORDER BY sh.created_at DESC
 	</select>
@@ -284,7 +286,7 @@
 	<!-- 최신 생성일 기준 점유 정보 조회 -->
 	<select id="getLatestHoldsInfo">
 		SELECT sh.hold_id, sh.return_url, sh.status, sh.active_hold, sh.expires_at, 
-			po.is_displayed, 
+			po.stock, po.is_displayed,
 			p.product_id, p.sale_stop, 
 			s.approval_status
 		FROM nextjs_shop_stock_hold sh
