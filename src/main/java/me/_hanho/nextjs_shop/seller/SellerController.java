@@ -23,10 +23,27 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
-import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.auth.TokenService;
+import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
+import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
+import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
+import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
+import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerProductCouponAllowedResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerToken;
+import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
+import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
+import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
+import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
+import me._hanho.nextjs_shop.seller.dto.UserInCartCountResponse;
 
 @RestController
 @RequiredArgsConstructor

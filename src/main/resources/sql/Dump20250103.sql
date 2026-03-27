@@ -60,7 +60,7 @@ WHERE usedate_at IS NOT NULL;
 
 
 
-SELECT ol.order_list_id AS orderListId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice,
+SELECT ol.order_list_id AS orderItemId, ol.order_id AS orderId, ol.count, ol.order_price AS orderPrice, ol.discount_price AS discountPrice,
 	ol.final_price AS finalPrice,
 	sh.hold_id AS holdId,
 	pd.product_option_id, pd.add_price, pd.size,

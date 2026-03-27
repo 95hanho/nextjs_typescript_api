@@ -134,7 +134,7 @@
 			#{userNo}
 		FROM nextjs_shop_order_item oi
 		JOIN nextjs_shop_order_group og ON og.order_id = oi.order_id AND og.user_no = #{userNo}
-		WHERE oi.order_list_id = #{review.orderListId}
+		WHERE oi.order_list_id = #{review.orderItemId}
 	</insert>
 	
 	<update id="releaseHoldIfExists">

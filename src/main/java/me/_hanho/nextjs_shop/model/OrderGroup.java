@@ -24,10 +24,7 @@ public class OrderGroup {
     private BigDecimal totalPrice; // 총합 금액
     private String paymentMethod; // 결제 방식
     private String paymentCode; // 결제 코드
-    private String status; // 상태값 'ORDERED','CANCELLED','PAID','SHIPPED','DELIVERED','PREPARING'
-    private Timestamp shippingDate; // 발송일자
-    private Timestamp deliveredDate; // 배송완료일자
-    private Timestamp returnDate; // 반송일자
+
     private int addressId;
     private String addressName;
 	private String recipientName;

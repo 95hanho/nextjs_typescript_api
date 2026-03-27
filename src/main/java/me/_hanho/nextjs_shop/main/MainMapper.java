@@ -4,6 +4,10 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import me._hanho.nextjs_shop.main.dto.MenuResponse;
+import me._hanho.nextjs_shop.main.dto.MenuSubDTO;
+import me._hanho.nextjs_shop.main.dto.ProductMainSlideResponse;
+
 @Mapper
 public interface MainMapper {
 	

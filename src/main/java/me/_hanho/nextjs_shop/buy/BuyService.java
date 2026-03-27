@@ -11,16 +11,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.catalina.servlets.DefaultServlet.SortManager.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.buy.dto.AvailabilityRow;
+import me._hanho.nextjs_shop.buy.dto.AvailableCartCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.AvailableSellerCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.BuyCheckRequest;
+import me._hanho.nextjs_shop.buy.dto.DefaultAddressResponse;
+import me._hanho.nextjs_shop.buy.dto.DeliveryInfoBySeller;
+import me._hanho.nextjs_shop.buy.dto.HoldBrief;
+import me._hanho.nextjs_shop.buy.dto.LatestHoldInfo;
+import me._hanho.nextjs_shop.buy.dto.ManageStockHoldCoupon;
+import me._hanho.nextjs_shop.buy.dto.OrderItemCouponWithHoldId;
+import me._hanho.nextjs_shop.buy.dto.OrderStockResponse;
+import me._hanho.nextjs_shop.buy.dto.PayAvailableCoupon;
+import me._hanho.nextjs_shop.buy.dto.PayRequest;
+import me._hanho.nextjs_shop.buy.dto.PaymentPrepareResult;
+import me._hanho.nextjs_shop.buy.dto.UpsertHoldRow;
+import me._hanho.nextjs_shop.buy.dto.UserCouponRow;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.OrderGroup;
 import me._hanho.nextjs_shop.model.OrderItem;
-import me._hanho.nextjs_shop.model.OrderItemCoupon;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
 import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 
@@ -28,8 +42,8 @@ import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 @RequiredArgsConstructor
 public class BuyService {
 	
-	// private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
-	private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
+	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	// private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
 	
 	private final BuyMapper buyMapper;
 	
@@ -330,37 +344,114 @@ public class BuyService {
         }
         return addresses.get(0); // 기본 배송지는 하나라고 가정하고 첫 번째 항목 반환
     }
-	
-	@Transactional
-	public void pay(PayRequest payRequest, Integer userNo) {
+        
+    @Transactional
+    public void pay(PayRequest payRequest, Integer userNo) {
         List<Integer> holdIds = payRequest.getHoldIds();
-        // [Mapper] : 가장 최근의 HOLD된 제품 정보 가져오기(조회겸 인증, 재고, 판매자 상태, 제품 상태 등 모두 검사)
+
+        // [Mapper] : HOLD된 제품 정보 가져오기(조회겸 인증, 재고, 판매자 상태, 제품 상태 등 모두 검사)
+        List<OrderStockResponse> stockHoldProductList = getValidatedStockHoldProductList(holdIds, userNo);
+
+        // [Mapper] : 적용된 쿠폰 갯수 조회(stock_hold_coupon 테이블에서 holdId 기준으로 user_coupon_id 개수 조회)
+        // [Mapper] : 쿠폰가져오기 (holdId 기준, stock_hold_coupon에서 실제 사용할 수 있는 쿠폰)
+        List<PayAvailableCoupon> availableCoupons = getValidatedAvailableCoupons(holdIds, userNo);
+
+        // ----------- 결제 진행 -----------
+
+        // 결제 금액 계산
+        PaymentPrepareResult paymentPrepareResult = preparePaymentData(stockHoldProductList, availableCoupons);
+
+        // 주소 id number | null
+        Integer addressId = resolveAddressId(payRequest, userNo);
+
+        // [Mapper] :유저의 마일리지 조회
+        int hasMileage = getValidatedMileage(payRequest, userNo);
+
+        // 주문프로세스 만들기
+        // 결제코드 가상 생성
+        OrderGroup orderGroup = createOrderGroup(
+            payRequest,
+            userNo,
+            addressId,
+            hasMileage,
+            paymentPrepareResult
+        );
+
+        // [Mapper] : 주문프로세스 INSERT(order_group)
+        buyMapper.insertOrderGroup(orderGroup);
+        int order_id = orderGroup.getOrderId(); // 방금 생성된 주문 그룹 ID 조회
+
+        // 주문목록 만들기
+        // order_id 달기
+        setOrderIdToOrderItems(paymentPrepareResult.getOrderItems(), order_id);
+
+        // [Mapper] : 주문목록 INSERT(order_item)
+        buyMapper.insertOrderItems(paymentPrepareResult.getOrderItems());
+        List<OrderItem> orderItemIds = buyMapper.getOrderItems(order_id); // 방금 생성된 주문 아이템 조회
+
+        // [Mapper] : product_option stock, sales_count 수량 변경
+        updateProductOptionStock(holdIds);
+
+        // 주문목록 쿠폰 만들기 -> 쿠폰이 있을 때만 처리
+        processOrderItemCoupons(paymentPrepareResult.getOrderItemCoupons(), orderItemIds);
+
+        // [Mapper] : user mileage 차감, 적립 처리(보유 마일리지 부족 시 실패 처리  -> 이미 처리됨.)
+        updateUserMileage(payRequest, userNo);
+
+        // [Mapper] : stock_hold status를 PAID로 변경(row count 검증)
+        updateStockHoldStatus(holdIds, userNo);
+
+        // [Mapper] : 장바구니 정보 있으면 장바구니 삭제
+        buyMapper.deleteCartItemsByHoldIds(holdIds, userNo);
+
+        System.out.println("결제 완료 - orderId: " + order_id);
+        // 테스트용 강제 롤백
+        throw new RuntimeException("테스트 롤백");
+    }
+
+    // ------ pay() 내부에서 호출되는 세부 메소드들 ------
+
+    // [Mapper] : HOLD된 제품 정보 조회 및 holdId 정합성 검증
+    private List<OrderStockResponse> getValidatedStockHoldProductList(List<Integer> holdIds, Integer userNo) {
+        // [Mapper] : HOLD된 제품 정보 가져오기(조회겸 인증, 재고, 판매자 상태, 제품 상태 등 모두 검사)
         List<OrderStockResponse> stockHoldProductList = buyMapper.getStockHoldProductListByHoldIds(holdIds, userNo);
+
         // Check : request의 holdId와 일치하는지 검증(집합 비교)
-        if(stockHoldProductList.size() != holdIds.size()) {
+        if (stockHoldProductList.size() != holdIds.size()) {
             // > ERROR : 일치하지 한꺼번에 않으면 예외 처리("구매과정 중 오류가 발생했습니다.")
             throw new BusinessException(ErrorCode.NOT_MATCHED_HOLD);
         }
+
+        return stockHoldProductList;
+    }
+    // [Mapper] : 적용된 쿠폰 조회 및 사용 가능 쿠폰 검증
+    private List<PayAvailableCoupon> getValidatedAvailableCoupons(List<Integer> holdIds, Integer userNo) {
         // [Mapper] : 적용된 쿠폰 갯수 조회(stock_hold_coupon 테이블에서 holdId 기준으로 user_coupon_id 개수 조회)
         int appliedCouponCount = buyMapper.selectHoldCouponsByHoldIds(holdIds).size();
+
         // [Mapper] : 쿠폰가져오기 (holdId 기준, stock_hold_coupon에서 실제 사용할 수 있는 쿠폰)
-        List<PayAvailableCoupon> availableCoupons = buyMapper.getAvailableCouponsByHoldIds(holdIds);
+        List<PayAvailableCoupon> availableCoupons = buyMapper.getAvailableCouponsByHoldIds(holdIds, userNo);
+
         // Check : 쿠폰 갯수 비교 (점유에 적용된 쿠폰 갯수와 실제 적용할 수 있는 쿠폰 갯수 비교)
-        if(appliedCouponCount != availableCoupons.size()) {
+        if (appliedCouponCount != availableCoupons.size()) {
             // > ERROR : 일치하지 않으면 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
             throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
         }
 
-        // ----------- 결제 진행 -----------
-
+        return availableCoupons;
+    }
+    // [Service] : 쿠폰 적용, 배송비 계산, 주문 아이템 및 쿠폰 정보 생성
+    private PaymentPrepareResult preparePaymentData(
+        List<OrderStockResponse> stockHoldProductList,
+        List<PayAvailableCoupon> availableCoupons
+    ) {
         // 결제 금액 계산
         BigDecimal sellerCouponDiscountTotal = BigDecimal.ZERO; // 판매자 쿠폰 할인 총액
         BigDecimal cartCouponDiscountTotal = BigDecimal.ZERO; // 공용 쿠폰 할인 총액
         BigDecimal shippingFee = BigDecimal.ZERO; // 배송비
         BigDecimal totalPrice = BigDecimal.ZERO; // 최종 결제 금액
-        OrderGroup orderGroup; // 주문 그룹 정보
         List<OrderItem> orderItems = new ArrayList<>(); // 주문 아이템 목록
-        List<OrderItemCoupon> orderItemCoupons = new ArrayList<>(); // 주문 아이템 쿠폰 목록
+        List<OrderItemCouponWithHoldId> orderItemCoupons = new ArrayList<>(); // 주문 아이템 쿠폰 목록
 
         // holdId별 쿠폰
         Map<Integer, List<PayAvailableCoupon>> couponMap =
@@ -370,15 +461,15 @@ public class BuyService {
         Map<String, DeliveryInfoBySeller> deliveryMap = new HashMap<>();
 
         for (OrderStockResponse sh : stockHoldProductList) {
-             // 할인적용 전 가격
+            // 할인적용 전 가격
             int priceBeforeCoupon = (sh.getFinalPrice() + sh.getAddPrice()) * sh.getCount();
 
             // ---- 배송비 계산을 위한 저장 ----
-            if(!deliveryMap.containsKey(sh.getSellerName())) {
+            if (!deliveryMap.containsKey(sh.getSellerName())) {
                 DeliveryInfoBySeller info = new DeliveryInfoBySeller();
                 info.setTotalFinalPrice(priceBeforeCoupon);
                 info.setBaseShippingFee(sh.getBaseShippingFee());
-                info.setFreeShippingMinAmount(appliedCouponCount);
+                info.setFreeShippingMinAmount(sh.getFreeShippingMinAmount());
                 deliveryMap.put(sh.getSellerName(), info);
             } else {
                 DeliveryInfoBySeller info = deliveryMap.get(sh.getSellerName());
@@ -386,46 +477,47 @@ public class BuyService {
             }
 
             // ---- 쿠폰 적용 로직 ---
-            boolean useStack = false; // 중복 쿠폰 사용 여부(사용했는데 또 사용하면 오류)
+            boolean hasNonStackableCoupon = false; // 중복 쿠폰 사용 여부(사용했는데 또 사용하면 오류)
             // 해당 점유의 쿠폰
             List<PayAvailableCoupon> matchedCoupons =
                     couponMap.getOrDefault(sh.getHoldId(), Collections.emptyList());
-           
+
             for (PayAvailableCoupon c : matchedCoupons) {
                 // ---- 쿠폰 중복 사용 여부 체크
-                if (c.getIsStackable()) {
-                    useStack = true;
-                } else if (!c.getIsStackable() && useStack) {
+                if (!c.getIsStackable() && !hasNonStackableCoupon) {
+                    // 중복 불가 쿠폰이 사용됨.
+                    hasNonStackableCoupon = true;
+                } else if (!c.getIsStackable() && hasNonStackableCoupon) {
                     // > ERROR : 스택 불가능한 쿠폰이 이미 스택 가능한 쿠폰과 함께 사용된 경우 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
                     throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
                 }
                 // ---- 쿠폰 적용가 계산
                 int discountAmount = 0;
-                if(priceBeforeCoupon < c.getMinimumOrderBeforeAmount().intValue()) {
+                if (priceBeforeCoupon < c.getMinimumOrderBeforeAmount().intValue()) {
                     // > ERROR : 쿠폰의 최소 주문 금액 조건 미충족 시 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
                     throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
                 }
-                if(c.getDiscountType().equals("fixed_amount")) {
+                if (c.getDiscountType().equals("fixed_amount")) {
                     // 정액 할인인 경우 단순히 할인 금액만큼 차감
                     discountAmount = c.getDiscountValue().intValue();
-                } else if(c.getDiscountType().equals("percentage")) {
+                } else if (c.getDiscountType().equals("percentage")) {
                     // 비율 할인인 경우 가격에 비율만큼 차감
                     discountAmount = (int) Math.floor(priceBeforeCoupon * c.getDiscountValue().doubleValue() / 100);
-                    if(discountAmount > c.getMaxDiscount().intValue()) {
+                    if (discountAmount > c.getMaxDiscount().intValue()) {
                         discountAmount = c.getMaxDiscount().intValue();
                     }
                 }
                 // 장바구니 쿠폰
-                if(c.getSellerName() == null) {
+                if (c.getSellerName() == null) {
                     cartCouponDiscountTotal = cartCouponDiscountTotal.add(BigDecimal.valueOf(discountAmount));
-                } 
+                }
                 // 판매자 쿠폰
                 else {
                     sellerCouponDiscountTotal = sellerCouponDiscountTotal.add(BigDecimal.valueOf(discountAmount));
                 }
                 priceBeforeCoupon -= discountAmount;
                 // 주문 아이템 쿠폰 정보 저장
-                OrderItemCoupon orderItemCoupon = OrderItemCoupon.builder()
+                OrderItemCouponWithHoldId orderItemCoupon = OrderItemCouponWithHoldId.builder()
                     .userCouponId(c.getUserCouponId())
                     .discountedPrice(BigDecimal.valueOf(discountAmount))
                     .couponId(c.getCouponId())
@@ -435,6 +527,7 @@ public class BuyService {
                     .discountValue(c.getDiscountValue())
                     .maxDiscount(c.getMaxDiscount())
                     .minimumOrderBeforeAmount(c.getMinimumOrderBeforeAmount())
+                    .holdId(sh.getHoldId())
                     .build();
                 orderItemCoupons.add(orderItemCoupon);
             }
@@ -450,56 +543,80 @@ public class BuyService {
                 .addPrice(sh.getAddPrice()) // 옵션 추가 금액 있으면 계산해서 넣어주기
                 .couponDiscountedPrice(BigDecimal.valueOf((sh.getFinalPrice() + sh.getAddPrice()) * sh.getCount() - priceBeforeCoupon)) // 만드는 서비스 메소드 만들어서 붙여주기
                 .totalPrice(BigDecimal.valueOf(priceBeforeCoupon))
+                .status("ORDERED")
                 .build();
             orderItems.add(orderItem);
         }
 
         // 배송비 계산 shippingFee
-        deliveryMap.forEach((sellerName, info) -> {
-            // 배송비 계산 : 총 결제 금액이 배송비 무료 기준 미만이면 배송비 추가
-            if(info.getTotalFinalPrice() < info.getFreeShippingMinAmount()) {
-                shippingFee.add(BigDecimal.valueOf(info.getBaseShippingFee()));
+        for (DeliveryInfoBySeller info : deliveryMap.values()) {
+            if (info.getTotalFinalPrice() < info.getFreeShippingMinAmount()) {
+                shippingFee = shippingFee.add(BigDecimal.valueOf(info.getBaseShippingFee()));
             }
-        });
-
-        // 주소 id number | null
-        Integer addressId = payRequest.getShippingAddress().getAddressId();
-
-        // [Mapper] : 신규주소일 시 주소 추가
-        if(payRequest.getShippingAddress() != null && payRequest.getShippingAddress().getAddressId() == null) {
-            buyMapper.insertUserAddress(payRequest.getShippingAddress(), payRequest.getSetAsDefault() , userNo);
-            addressId = buyMapper.getLatestAddressIdByUserNo(userNo); // 방금 추가한 주소의 ID 조회
         }
 
-        // [Mapper] : 신규주소가 아니고, '기본주소로 설정이면' 기본주소를 해당 주소로 변경
-        if(payRequest.getShippingAddress() != null && payRequest.getShippingAddress().getAddressId() != null && payRequest.getSetAsDefault()) {
-            // 원래 기본주소 취소
-            buyMapper.updateUserAddressCancelDefault(userNo);
-            // 선택한 주소를 기본주소로 변경
-            buyMapper.updateUserAddressDefault(payRequest.getShippingAddress().getAddressId(), userNo);
-        }
-
-        // [Mapper] :유저의 마일리지 조회
-        int hasMileage = buyMapper.getUserMileage(userNo);
-        // Check : 사용 마일리지 검증(보유 마일리지보다 사용 마일리지가 많으면 예외 처리("마일리지 사용 과정 중 오류가 발생했습니다."))
-        if(payRequest.getUsedMileage() > hasMileage) {
-            throw new BusinessException(ErrorCode.MILEAGE_UNAVAILABLE_FAILED);
-        }
-
-        // 주문프로세스 만들기
-        // 결제코드 가상 생성
-        String payCode = OrderCodeGenerator.generatePayCode();
-        orderGroup = OrderGroup.builder()
-            .userNo(userNo)
+        return PaymentPrepareResult.builder()
             .sellerCouponDiscountTotal(sellerCouponDiscountTotal)
             .cartCouponDiscountTotal(cartCouponDiscountTotal)
             .shippingFee(shippingFee)
+            .totalPrice(totalPrice)
+            .orderItems(orderItems)
+            .orderItemCoupons(orderItemCoupons)
+            .build();
+    }
+    // [Mapper] : 주소 처리(신규주소 생성, 기본주소 설정, addressId 반환)
+    private Integer resolveAddressId(PayRequest payRequest, Integer userNo) {
+        // 주소 id number | null
+        Integer addressId = payRequest.getShippingAddress().getAddressId();
+
+        // [Mapper] : 신규주소일 시 주소 추가 and usedate_at 최신화, addressId 조회
+        if (payRequest.getShippingAddress().getAddressId() == null) {
+            buyMapper.insertUserAddress(payRequest.getShippingAddress(), payRequest.getSetAsDefault(), userNo);
+            addressId = payRequest.getShippingAddress().getAddressId(); // 방금 추가한 주소의 ID 조회
+        }
+
+        // [Mapper] : 신규주소가 아니고, '기본주소로 설정이면' 기본주소를 해당 주소로 변경
+        if (payRequest.getShippingAddress().getAddressId() != null && payRequest.getSetAsDefault()) {
+            // 원래 기본주소 취소
+            buyMapper.updateUserAddressCancelDefault(userNo);
+            // 선택한 주소를 기본주소로 변경 and use_date_at 최신화
+            buyMapper.updateUserAddressDefault(payRequest.getShippingAddress().getAddressId(), userNo);
+        }
+
+        return addressId;
+    }
+    // [Mapper] : 보유 마일리지 조회 및 사용 마일리지 검증
+    private int getValidatedMileage(PayRequest payRequest, Integer userNo) {
+        // [Mapper] :유저의 마일리지 조회
+        int hasMileage = buyMapper.getUserMileage(userNo);
+
+        // Check : 사용 마일리지 검증(보유 마일리지보다 사용 마일리지가 많으면 예외 처리("마일리지 사용 과정 중 오류가 발생했습니다."))
+        if (payRequest.getUsedMileage() > hasMileage) {
+            throw new BusinessException(ErrorCode.MILEAGE_UNAVAILABLE_FAILED);
+        }
+
+        return hasMileage;
+    }
+    // [Service] : 주문 그룹 객체 생성(결제코드 생성 포함)
+    private OrderGroup createOrderGroup(
+        PayRequest payRequest,
+        Integer userNo,
+        Integer addressId,
+        int hasMileage,
+        PaymentPrepareResult paymentPrepareResult
+    ) {
+        String payCode = OrderCodeGenerator.generatePayCode();
+
+        return OrderGroup.builder()
+            .userNo(userNo)
+            .sellerCouponDiscountTotal(paymentPrepareResult.getSellerCouponDiscountTotal())
+            .cartCouponDiscountTotal(paymentPrepareResult.getCartCouponDiscountTotal())
+            .shippingFee(paymentPrepareResult.getShippingFee())
             .usedMileage(payRequest.getUsedMileage())
             .remainingMileage(hasMileage - payRequest.getUsedMileage())
-            .totalPrice(totalPrice)
+            .totalPrice(paymentPrepareResult.getTotalPrice())
             .paymentMethod(payRequest.getPaymentMethod())
             .paymentCode(payCode)
-            .status("ORDERED")
             .addressId(addressId)
             .addressName(payRequest.getShippingAddress().getAddressName())
             .recipientName(payRequest.getShippingAddress().getRecipientName())
@@ -509,38 +626,76 @@ public class BuyService {
             .addressDetail(payRequest.getShippingAddress().getAddressDetail())
             .memo(payRequest.getShippingAddress().getMemo())
             .build();
-
-        // [Mapper] : 주문프로세스 INSERT(order_group)
-        buyMapper.insertOrderGroup(orderGroup);
-        int order_id = buyMapper.getOrderId(userNo); // 방금 생성된 주문 그룹 ID 조회
-
-        // 주문목록 만들기
-
-        // [Mapper] : 주문목록 INSERT(order_item)
-
-        // 주문목록 쿠폰 만들기
-
-        // [Mapper] : 주문목록 쿠폰(order_item_coupon) INSERT
-
+    }
+    // [Service] : 주문 아이템에 orderId 세팅
+    private void setOrderIdToOrderItems(List<OrderItem> orderItems, int orderId) {
+        for (OrderItem item : orderItems) {
+            item.setOrderId(orderId);
+        }
+    }
+    // [Mapper] : 상품 재고 및 판매 수량 차감 처리
+    private void updateProductOptionStock(List<Integer> holdIds) {
         // [Mapper] : product_option stock, sales_count 수량 변경
-        /*
-        // 조건부 차감하기 row count 0 이면 실패처리
-            UPDATE product_option
-            SET stock = stock - #{count},
-                sales_count = sales_count + #{count}
-            WHERE product_option_id = #{productOptionId}
-            AND stock >= #{count}
-        */
+        int updateProductOptionResult = buyMapper.updateProductOptionStockAndSalesCount(holdIds);
 
-        // [Mapper] : user_coupon 사용 처리
-        // [Mapper] : coupon amount 차감
-        // [Mapper] : user mileage 차감, 적립 처리(조건부 업데이트, 보유 마일리지 부족 시 실패 처리)
+        // > ERROR : 재고 변경이 필요한 holdId 수와 실제 변경된 수가 일치하지 않으면 예외 처리("재고 변경 과정 중 오류가 발생했습니다.")
+        if (updateProductOptionResult != holdIds.size()) {
+            throw new BusinessException(ErrorCode.STOCK_UPDATE_FAILED);
+        }
+    }
+    // [Mapper] : 주문 아이템 쿠폰 매핑 및 쿠폰 사용 처리
+    private void processOrderItemCoupons(
+        List<OrderItemCouponWithHoldId> orderItemCoupons,
+        List<OrderItem> orderItemIds
+    ) {
+        // 주문목록 쿠폰 만들기 -> 쿠폰이 있을 때만 처리
+        if (orderItemCoupons.size() > 0) {
+            for (OrderItemCouponWithHoldId coupon : orderItemCoupons) {
+                // order_item_id 달기 (holdId -> order_item_id 매핑 필요)
+                Integer holdId = coupon.getHoldId();
+                Integer orderItemId = null;
+                for (OrderItem oi : orderItemIds) {
+                    if (holdId.equals(oi.getHoldId())) {
+                        orderItemId = oi.getOrderItemId();
+                        break;
+                    }
+                }
+                if (orderItemId == null) {
+                    // > ERROR : holdId에 해당하는 주문 아이템이 없는 경우 예외 처리("주문 처리 중 오류가 발생했습니다.")
+                    throw new BusinessException(ErrorCode.ORDER_ITEM_NOT_FOUND);
+                }
+                coupon.setOrderItemId(orderItemId);
+            }
 
+            // [Mapper] : 주문목록 쿠폰(order_item_coupon) INSERT
+            buyMapper.insertOrderItemCoupons(orderItemCoupons);
+
+            // [Mapper] : user_coupon 사용 처리
+            buyMapper.markUserCouponsAsUsed(orderItemCoupons.stream()
+                .map(OrderItemCouponWithHoldId::getUserCouponId)
+                .collect(Collectors.toList())
+            );
+            // [Mapper] : coupon amount 차감
+            buyMapper.markCouponsAsUsed(orderItemCoupons.stream()
+                .map(OrderItemCouponWithHoldId::getCouponId)
+                .collect(Collectors.toList())
+            );
+        }
+    }
+    // [Mapper] : 사용자 마일리지 차감 처리
+    private void updateUserMileage(PayRequest payRequest, Integer userNo) {
+        // [Mapper] : user mileage 차감, 적립 처리(보유 마일리지 부족 시 실패 처리  -> 이미 처리됨.)
+        int updateUserMileageResult = buyMapper.updateUserMileage(payRequest.getUsedMileage(), userNo);
+        if (updateUserMileageResult != 1) {
+            throw new BusinessException(ErrorCode.MILEAGE_UPDATE_FAILED);
+        }
+    }
+    // [Mapper] : 점유 상태를 PAID로 변경
+    private void updateStockHoldStatus(List<Integer> holdIds, Integer userNo) {
         // [Mapper] : stock_hold status를 PAID로 변경(row count 검증)
-
-        // [Mapper] : 장바구니 정보 있으면 장바구니 삭제
-
-        // [Mapper] : user_address usedate_at 최신화
-	}
-
+        int updateStockHoldStatusResult = buyMapper.updateStockHoldStatusToPaid(holdIds, userNo);
+        if (updateStockHoldStatusResult != holdIds.size()) {
+            throw new BusinessException(ErrorCode.STOCK_HOLD_UPDATE_FAILED);
+        }
+    }
 }

@@ -9,6 +9,19 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
+import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
+import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
+import me._hanho.nextjs_shop.mypage.dto.AvailableSellerCouponAtCartResponse;
+import me._hanho.nextjs_shop.mypage.dto.CartProductResponse;
+import me._hanho.nextjs_shop.mypage.dto.CartSummaryResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
+import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
+import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
+import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
+import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
+import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
 
 @Service
 @RequiredArgsConstructor

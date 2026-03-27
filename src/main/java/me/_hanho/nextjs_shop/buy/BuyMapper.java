@@ -1,13 +1,27 @@
 package me._hanho.nextjs_shop.buy;
 
-import java.security.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.buy.dto.AvailabilityRow;
+import me._hanho.nextjs_shop.buy.dto.AvailableCartCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.AvailableSellerCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.DefaultAddressResponse;
+import me._hanho.nextjs_shop.buy.dto.ExistingHold;
+import me._hanho.nextjs_shop.buy.dto.HoldBrief;
+import me._hanho.nextjs_shop.buy.dto.LatestHoldInfo;
+import me._hanho.nextjs_shop.buy.dto.ManageStockHoldCoupon;
+import me._hanho.nextjs_shop.buy.dto.OrderItemCouponWithHoldId;
+import me._hanho.nextjs_shop.buy.dto.OrderStockResponse;
+import me._hanho.nextjs_shop.buy.dto.PayAvailableCoupon;
+import me._hanho.nextjs_shop.buy.dto.ShippingAddressRequest;
+import me._hanho.nextjs_shop.buy.dto.UpsertHoldRow;
+import me._hanho.nextjs_shop.buy.dto.UserCouponRow;
 import me._hanho.nextjs_shop.model.OrderGroup;
+import me._hanho.nextjs_shop.model.OrderItem;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
 
 @Mapper
@@ -61,11 +75,9 @@ public interface BuyMapper {
 	
 	List<OrderStockResponse> getStockHoldProductListByHoldIds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
 
-	List<PayAvailableCoupon> getAvailableCouponsByHoldIds(@Param("holdIds") List<Integer> holdIds);
+	List<PayAvailableCoupon> getAvailableCouponsByHoldIds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
 
 	void insertUserAddress(@Param("address") ShippingAddressRequest address, @Param("setAsDefault") Boolean setAsDefault, @Param("userNo") Integer userNo);
-
-	int getLatestAddressIdByUserNo(Integer userNo);
 
 	void updateUserAddressCancelDefault(@Param("userNo") Integer userNo);
 
@@ -75,5 +87,22 @@ public interface BuyMapper {
 
 	void insertOrderGroup(OrderGroup orderGroup);
 
-	int getOrderId(Integer userNo);
+	void insertOrderItems(@Param("orderItems") List<OrderItem> orderItems);
+
+	List<OrderItem> getOrderItems(Integer orderId);
+
+	void insertOrderItemCoupons(@Param("orderItemCoupons") List<OrderItemCouponWithHoldId> orderItemCoupons);
+
+	int updateProductOptionStockAndSalesCount(@Param("holdIds") List<Integer> holdIds);
+
+	void markUserCouponsAsUsed(@Param("userCouponIds") List<Integer> userCouponIds);
+
+	void markCouponsAsUsed(@Param("couponIds") List<Integer> couponIds);
+
+	int updateUserMileage(@Param("usedMileage") int usedMileage, @Param("userNo") int userNo);
+
+	int updateStockHoldStatusToPaid(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
+
+	void deleteCartItemsByHoldIds(@Param("holdIds") List<Integer> holdIds, @Param("userNo") Integer userNo);
+
 }

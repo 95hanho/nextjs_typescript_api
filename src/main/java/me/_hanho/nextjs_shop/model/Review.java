@@ -15,7 +15,7 @@ public class Review {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int rating;
-    private int orderListId;
+    private int orderItemId;
     private int productId;
     private int productOptionId;
     private int userNo;

@@ -1,0 +1,22 @@
+package me._hanho.nextjs_shop.main.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductMainSlideResponse {
+    private int productId;
+    private String name;
+    private int originPrice;
+    private int finalPrice;
+    private int viewCount;
+    private int wishCount;
+
+    // 썸네일 정보
+    private String imgPath;
+    private String copyright;
+    private String copyrightUrl;
+}

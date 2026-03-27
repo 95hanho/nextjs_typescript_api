@@ -7,6 +7,17 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.UserCoupon;
+import me._hanho.nextjs_shop.product.dto.AddCartItem;
+import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
+import me._hanho.nextjs_shop.product.dto.CartAppliedRow;
+import me._hanho.nextjs_shop.product.dto.CartQtyRow;
+import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
+import me._hanho.nextjs_shop.product.dto.ProductImageFile;
+import me._hanho.nextjs_shop.product.dto.ProductListResponse;
+import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
+import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
+import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
+import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
 
 @Mapper
 public interface ProductMapper {

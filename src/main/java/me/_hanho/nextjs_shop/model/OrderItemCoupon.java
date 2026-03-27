@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OrderItemCoupon {
     private int orderItemCouponId;
-    private int orderListId;
+    private int orderItemId;
     private int userCouponId;
     private BigDecimal discountedPrice;
     private int couponId;
