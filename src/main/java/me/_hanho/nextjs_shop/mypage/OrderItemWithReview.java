@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderItemWithReview {
 	
-    private int orderListId;
+    private int orderItemId;
     private int orderId;
     private int count;
     private BigDecimal orderPrice;

@@ -59,6 +59,10 @@ public enum ErrorCode {
 	NOT_MATCHED_HOLD(HttpStatus.CONFLICT, "NOT_MATCHED_HOLD", "요청된 holdId와 일치하는 점유가 없습니다."),
 	COUPON_UNAVAILABLE_FAILED(HttpStatus.CONFLICT, "COUPON_UNAVAILABLE_FAILED", "쿠폰 사용 불가 처리에 실패하였습니다."),
 	MILEAGE_UNAVAILABLE_FAILED(HttpStatus.CONFLICT, "MILEAGE_UNAVAILABLE_FAILED", "마일리지 사용 불가 처리에 실패하였습니다."),
+	ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER_ITEM_NOT_FOUND", "주문 아이템을 찾을 수 없습니다."),
+	STOCK_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "STOCK_UPDATE_FAILED", "재고 변경 과정 중 오류가 발생했습니다."),
+	MILEAGE_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MILEAGE_UPDATE_FAILED", "마일리지 변경 과정 중 오류가 발생했습니다."),
+	STOCK_HOLD_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "STOCK_HOLD_UPDATE_FAILED", "점유 상태 변경 과정 중 오류가 발생했습니다."),
 
 	/* 파일 */
 

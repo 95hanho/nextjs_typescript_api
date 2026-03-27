@@ -23,6 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.buy.BuyService.HoldTryResult;
+import me._hanho.nextjs_shop.buy.dto.AvailableCartCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.AvailableSellerCouponAtBuyResponse;
+import me._hanho.nextjs_shop.buy.dto.BuyCheckRequest;
+import me._hanho.nextjs_shop.buy.dto.DefaultAddressResponse;
+import me._hanho.nextjs_shop.buy.dto.LatestHoldInfo;
+import me._hanho.nextjs_shop.buy.dto.ManageStockHoldCouponRequest;
+import me._hanho.nextjs_shop.buy.dto.OrderStockResponse;
+import me._hanho.nextjs_shop.buy.dto.PayRequest;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
@@ -271,6 +279,11 @@ public class BuyController {
 		logger.info("[pay] userNo={}, payRequest={}", userNo, payRequest);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		// 파라미터 체크
+		if(payRequest.getShippingAddress() == null || payRequest.getPaymentMethod() == null || payRequest.getHoldIds() == null) {
+			throw new BusinessException(ErrorCode.BAD_REQUEST, "필수 파라미터가 누락되었습니다.");
+		}
+
 		// holdId 중복 체크
 		Set<Integer> holdIdSet = new LinkedHashSet<>(payRequest.getHoldIds());
 		if (holdIdSet.size() != payRequest.getHoldIds().size()) {

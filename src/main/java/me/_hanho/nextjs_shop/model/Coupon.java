@@ -22,6 +22,7 @@ public class Coupon {
     private boolean isStackable;
     private boolean isProductRestricted;
     private int amount;
+    private int usedCount;
     private Timestamp startDate;
     private Timestamp endDate;
     private Timestamp createdAt;

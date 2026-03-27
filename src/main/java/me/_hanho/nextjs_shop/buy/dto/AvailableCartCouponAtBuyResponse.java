@@ -1,26 +1,32 @@
-package me._hanho.nextjs_shop.model;
+package me._hanho.nextjs_shop.buy.dto;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class OrderItemCoupon {
-    private int orderItemCouponId;
-    private int orderItemId;
+public class AvailableCartCouponAtBuyResponse {
+	
     private int userCouponId;
-    private BigDecimal discountedPrice;
+
     private int couponId;
     private String description;
-    private String couponCode;
     private String discountType;
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
     private BigDecimal minimumOrderBeforeAmount;
+    private Boolean isStackable;
+    private Boolean isProductRestricted;
+    private int amount;
+    private Timestamp startDate;
+    private Timestamp endDate;
+    private String issueMethod;
+
+	private Integer couponAllowedId;
+    private Integer productId;
 }

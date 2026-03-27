@@ -1,4 +1,4 @@
-package me._hanho.nextjs_shop.model;
+package me._hanho.nextjs_shop.buy.dto;
 
 import java.math.BigDecimal;
 
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderItemCoupon {
+public class OrderItemCouponWithHoldId {
     private int orderItemCouponId;
     private int orderItemId;
     private int userCouponId;
@@ -23,4 +23,7 @@ public class OrderItemCoupon {
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
     private BigDecimal minimumOrderBeforeAmount;
+
+    //
+    private int holdId; // 주문 아이템과 연결된 holdId
 }

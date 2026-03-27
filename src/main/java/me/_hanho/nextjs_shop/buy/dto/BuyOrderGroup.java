@@ -1,7 +1,6 @@
-package me._hanho.nextjs_shop.model;
+package me._hanho.nextjs_shop.buy.dto;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,28 +8,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class OrderGroup {
-    private int orderId; // 
-    private Timestamp orderDate; // 주문일자
+public class BuyOrderGroup {
     private int userNo;
-    private BigDecimal sellerCouponDiscountTotal; // 판매자쿠폰 할인값 총합
-    private BigDecimal cartCouponDiscountTotal; // 공용쿠폰 할인값 총합
+    private BigDecimal eachCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
+    private BigDecimal commonCouponDiscountTotal; // 공용쿠폰 할인값 총합
     private BigDecimal shippingFee; // 배송비
     private int usedMileage; // 사용된 마일리지
     private int remainingMileage; // 남은 마일리지
     private BigDecimal totalPrice; // 총합 금액
     private String paymentMethod; // 결제 방식
     private String paymentCode; // 결제 코드
-
+    private String status; // 상태값 'ORDERED','CANCELLED','PAID','SHIPPED','DELIVERED','PREPARING'
+    private int userCouponId;
     private int addressId;
-    private String addressName;
-	private String recipientName;
-	private String addressPhone;
-	private String zonecode;
-	private String address;
-	private String addressDetail;
-	private String memo;
 }

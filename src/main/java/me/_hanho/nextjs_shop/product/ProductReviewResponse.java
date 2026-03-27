@@ -14,7 +14,7 @@ public class ProductReviewResponse {
     private String content;
     private Timestamp reviewDate;
     private int rating;
-    private int orderListId;
+    private int orderItemId;
     private Integer userNo;
     private String userName;
 }

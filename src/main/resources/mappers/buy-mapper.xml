@@ -438,7 +438,9 @@
 			ca.coupon_allowed_id, ca.product_id,
 			s.seller_name
 		FROM nextjs_shop_stock_hold_coupon shc
-		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = shc.hold_id AND sh.status = 'HOLD' AND sh.active_hold = 1 AND sh.expires_at > NOW()
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = shc.hold_id 
+			AND sh.status = 'HOLD' AND sh.active_hold = 1 
+			AND sh.expires_at > NOW() AND sh.user_no = #{userNo}
 		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
 		JOIN nextjs_shop_product p ON po.product_id = p.product_id
 		JOIN nextjs_shop_user_coupon uc ON shc.user_coupon_id = uc.user_coupon_id AND uc.used = 0
@@ -462,23 +464,19 @@
 			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
 	</select>
 
-	<insert id="insertUserAddress">
+	<insert id="insertUserAddress"
+		useGeneratedKeys="true"
+        keyProperty="address.addressId"
+        keyColumn="address_id"
+	>
 		INSERT INTO nextjs_shop_user_address(address_name, recipient_name, address_phone, 
 			zonecode, address, address_detail, memo,
-			default_address, user_no)
+			default_address, usedate_at, user_no)
 		VALUES
 			(#{address.addressName}, #{address.recipientName}, #{address.addressPhone},
 			 #{address.zonecode}, #{address.address}, #{address.addressDetail}, #{address.memo},
-			 #{setAsDefault}, #{userNo})
+			 #{setAsDefault}, NOW(), #{userNo})
 	</insert>
-
-	<select id="getLatestAddressIdByUserNo">
-		SELECT address_id
-		FROM nextjs_shop_user_address
-		WHERE user_no = #{userNo}
-		ORDER BY created_at DESC, address_id DESC
-		LIMIT 1
-	</select>
 	
 	<update id="updateUserAddressCancelDefault">
 		UPDATE nextjs_shop_user_address
@@ -488,7 +486,7 @@
 
 	<update id="updateUserAddressDefault">
 		UPDATE nextjs_shop_user_address
-		SET default_address = 1
+		SET default_address = 1, usedate_at = NOW()
 		WHERE user_no = #{userNo} AND address_id = #{addressId}
 	</update>
 
@@ -498,13 +496,16 @@
 		WHERE user_no = #{userNo}
 	</select>
 
-	<insert id="insertOrderGroup">
+	<insert id="insertOrderGroup"
+		useGeneratedKeys="true"
+        keyProperty="orderId"
+        keyColumn="order_id"
+	>
 		INSERT INTO nextjs_shop_order_group(
 			user_no, seller_coupon_discount_total, 
 			cart_coupon_discount_total,
 			shipping_fee, used_mileage, remaining_mileage, 
 			total_price, payment_method, payment_code, 
-			status,
 			address_id, address_name, recipient_name, 
 			address_phone, zonecode,
 			address, address_detail, memo)
@@ -512,17 +513,112 @@
 			#{orderGroup.cartCouponDiscountTotal},
 			#{orderGroup.shippingFee}, #{orderGroup.usedMileage}, #{orderGroup.remainingMileage},
 			#{orderGroup.totalPrice}, #{orderGroup.paymentMethod}, #{orderGroup.paymentCode}, 
-			#{orderGroup.status},
 			#{orderGroup.addressId}, #{orderGroup.addressName}, #{orderGroup.recipientName}, 
 			#{orderGroup.addressPhone}, #{orderGroup.zonecode}, 
 			#{orderGroup.address}, #{orderGroup.addressDetail}, #{orderGroup.memo})
 	</insert>
 
-	<select id="getOrderId">
-		SELECT order_id
-		FROM nextjs_shop_order_group
-		WHERE user_no = #{userNo}
-		ORDER BY created_at DESC, order_id DESC
-		LIMIT 1
+	<insert id="insertOrderItems">
+		INSERT INTO nextjs_shop_order_item(
+			order_id, hold_id, product_name, 
+			count, size,
+			origin_price, final_price, add_price, 
+			coupon_discounted_price, total_price, status)
+		VALUES
+		<foreach collection="orderItems" item="item" separator=",">
+			(#{item.orderId}, #{item.holdId}, #{item.productName},
+			 #{item.count}, #{item.size},
+			 #{item.originPrice}, #{item.finalPrice}, #{item.addPrice},
+			 #{item.couponDiscountedPrice}, #{item.totalPrice}, #{item.status})
+		</foreach>
+	</insert>
+
+	<select id="getOrderItems">
+		SELECT *
+		FROM nextjs_shop_order_item
+		WHERE order_id = #{orderId}
 	</select>
+
+	<insert id="insertOrderItemCoupons">
+		INSERT INTO nextjs_shop_order_item_coupon(
+			order_item_id, user_coupon_id, discounted_price, 
+			coupon_id, description, coupon_code, discount_type, 
+			discount_value, max_discount, minimum_order_before_amount)
+		VALUES
+		<foreach collection="orderItemCoupons" item="item" separator=",">
+			(#{item.orderItemId}, #{item.userCouponId}, #{item.discountedPrice}, 
+			#{item.couponId}, #{item.description}, #{item.couponCode}, #{item.discountType},
+			#{item.discountValue}, #{item.maxDiscount}, #{item.minimumOrderBeforeAmount})
+		</foreach>
+	</insert>
+
+	<update id="updateProductOptionStockAndSalesCount">
+		UPDATE nextjs_shop_product_option po
+		JOIN nextjs_shop_stock_hold sh ON sh.product_option_id = po.product_option_id
+		SET po.stock = po.stock - sh.count,
+			po.sales_count = po.sales_count + sh.count
+		WHERE sh.hold_id IN
+		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+			#{holdId}
+		</foreach>
+		AND po.stock >= sh.count
+		AND sh.status = 'HOLD'
+		AND sh.active_hold = 1
+		AND sh.expires_at > NOW()
+	</update>
+
+	<update id="markUserCouponsAsUsed">
+		UPDATE nextjs_shop_user_coupon
+		SET used = 1, used_at = NOW()
+		WHERE user_coupon_id IN
+		<foreach collection="userCouponIds" item="userCouponId" open="(" separator="," close=")">
+			#{userCouponId}
+		</foreach>
+		AND used = 0
+	</update>
+
+	<update id="markCouponsAsUsed">
+		UPDATE nextjs_shop_coupon
+		SET amount = amount - 1,
+			used_count = used_count + 1
+		WHERE coupon_id IN
+		<foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
+			#{couponId}
+		</foreach>
+	</update>
+
+	<update id="updateUserMileage">
+		UPDATE nextjs_shop_user
+		SET mileage = mileage - #{usedMileage}
+		WHERE user_no = #{userNo} AND mileage >= #{usedMileage}
+	</update>
+
+	<update id="updateStockHoldStatusToPaid">
+		UPDATE nextjs_shop_stock_hold
+		SET status = 'PAID', active_hold = 0
+		WHERE hold_id IN
+		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+			#{holdId}
+		</foreach>
+		AND status = 'HOLD'
+		AND active_hold = 1
+		AND expires_at > NOW()
+	</update>
+
+	<delete id="deleteCartItemsByHoldIds">
+		DELETE c
+		FROM nextjs_shop_cart c
+		JOIN nextjs_shop_stock_hold sh ON sh.cart_id = c.cart_id
+		WHERE sh.hold_id IN
+		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+			#{holdId}
+		</foreach>
+		AND c.user_no = #{userNo}
+	</delete>
+
+	<update id="updateUserAddressUseDateAt">
+		UPDATE nextjs_shop_user_address
+		SET usedate_at = NOW()
+		WHERE address_id = #{addressId} AND user_no = #{userNo}
+	</update>
 </mapper>

@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class AddReviewRequest {
     @NotBlank private String content;
     @NotNull private Integer rating;
-    @NotNull private Integer orderListId;
+    @NotNull private Integer orderItemId;
 }
