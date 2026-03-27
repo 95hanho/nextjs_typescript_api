@@ -3,7 +3,7 @@
 <mapper namespace="me._hanho.nextjs_shop.buy.BuyMapper">
 
  	<!-- 전역 가용수량: stock - sum(HOLD & 미만료) -->
-	<select id="selectAvailability" resultType="me._hanho.nextjs_shop.buy.AvailabilityRow">
+	<select id="selectAvailability">
 		SELECT
 			po.product_option_id,
 			GREATEST(
@@ -32,7 +32,7 @@
 	</select>
 
   <!-- 본인 미만료 HOLD -->
-  <select id="selectExistingHolds" resultType="me._hanho.nextjs_shop.buy.ExistingHold">
+  <select id="selectExistingHolds">
     SELECT hold_id, product_option_id, count
     FROM nextjs_shop_stock_hold
     WHERE user_no = #{userNo}
@@ -120,7 +120,7 @@
 	</insert>
 
   <!-- 최신 HOLD (유저+pdId별 1건) -->
-  <select id="selectLatestHolds" resultType="me._hanho.nextjs_shop.buy.HoldBrief">
+  <select id="selectLatestHolds">
     SELECT t.product_option_id, t.hold_id, t.count
     FROM nextjs_shop_stock_hold t
     INNER JOIN (
@@ -152,7 +152,7 @@
 		<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
 	</insert>
 
-	<select id="selectUserCouponsByCouponIds" resultType="me._hanho.nextjs_shop.buy.UserCouponRow">
+	<select id="selectUserCouponsByCouponIds">
 		SELECT uc.user_coupon_id, uc.coupon_id
 		FROM nextjs_shop_user_coupon uc
 		WHERE uc.user_no = #{userNo}

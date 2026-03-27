@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
+// import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -37,9 +37,9 @@ import me._hanho.nextjs_shop.model.OrderItem;
 import me._hanho.nextjs_shop.model.StockHoldCoupon;
 import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 
-@Service
+// @Service
 @RequiredArgsConstructor
-public class BuyService {
+public class BuyServiceCopy {
 	
 	// private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
 	private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일

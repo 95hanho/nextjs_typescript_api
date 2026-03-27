@@ -50,7 +50,7 @@
 	  LIMIT 30
 	</select>
 	
-	<select id="getProductImageListByProductIds" parameterType="list" resultType="ProductImageFile">
+	<select id="getProductImageListByProductIds" parameterType="list">
 	  SELECT
 	    pi.product_id,
 	    f.file_id,
@@ -136,7 +136,7 @@
 		AND user_no = #{userNo} AND is_deleted = 0
 	</select>
 
-	<select id="getCartQtyMap" resultType="me._hanho.nextjs_shop.product.CartQtyRow">
+	<select id="getCartQtyMap">
 		SELECT
 			c.product_option_id AS productOptionId,
 			c.quantity AS quantity
@@ -179,7 +179,7 @@
 		WHERE po.stock > 0
 	</insert>
 
-	<select id="getCartAppliedResult" resultType="me._hanho.nextjs_shop.product.CartAppliedRow">
+	<select id="getCartAppliedResult">
 		SELECT
 			t.product_option_id AS productOptionId,
 			t.quantity AS requestedQuantity,
