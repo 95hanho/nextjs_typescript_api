@@ -3,6 +3,14 @@ package me._hanho.nextjs_shop.auth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.auth.dto.FindUser;
+import me._hanho.nextjs_shop.auth.dto.JoinRequest;
+import me._hanho.nextjs_shop.auth.dto.PhoneAuthDTO;
+import me._hanho.nextjs_shop.auth.dto.ReToken;
+import me._hanho.nextjs_shop.auth.dto.UpdateUserRequest;
+import me._hanho.nextjs_shop.auth.dto.UserInfoResponse;
+import me._hanho.nextjs_shop.auth.dto.UserLoginResponse;
+import me._hanho.nextjs_shop.auth.dto.UserToken;
 import me._hanho.nextjs_shop.model.PhoneAuth;
 
 @Mapper

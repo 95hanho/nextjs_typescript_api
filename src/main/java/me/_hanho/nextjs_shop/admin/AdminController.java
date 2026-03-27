@@ -22,13 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.admin.dto.AddCommonCouponRequest;
+import me._hanho.nextjs_shop.admin.dto.AdminInfoResponse;
+import me._hanho.nextjs_shop.admin.dto.AdminLogin;
+import me._hanho.nextjs_shop.admin.dto.AdminToken;
+import me._hanho.nextjs_shop.admin.dto.CommonCouponResponse;
+import me._hanho.nextjs_shop.admin.dto.SellerApprovalRequest;
+import me._hanho.nextjs_shop.admin.dto.UpdateCommonCouponRequest;
+import me._hanho.nextjs_shop.admin.dto.UserInfoInAdminResponse;
+import me._hanho.nextjs_shop.admin.dto.UserResponse;
 import me._hanho.nextjs_shop.auth.AuthService;
-import me._hanho.nextjs_shop.auth.ReToken;
 import me._hanho.nextjs_shop.auth.TokenService;
+import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.Seller;
-import me._hanho.nextjs_shop.seller.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 
 @RestController
 @RequiredArgsConstructor

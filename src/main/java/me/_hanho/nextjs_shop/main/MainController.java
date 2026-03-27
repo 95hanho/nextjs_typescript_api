@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.main.dto.MenuResponse;
+import me._hanho.nextjs_shop.main.dto.ProductMainSlideResponse;
 
 @RestController
 @RequiredArgsConstructor

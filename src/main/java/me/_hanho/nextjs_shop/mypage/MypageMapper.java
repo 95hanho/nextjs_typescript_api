@@ -5,6 +5,21 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
+import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
+import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
+import me._hanho.nextjs_shop.mypage.dto.AvailableSellerCouponAtCartResponse;
+import me._hanho.nextjs_shop.mypage.dto.CartProductResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
+import me._hanho.nextjs_shop.mypage.dto.OrderItemWithReview;
+import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
+import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
+import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
+import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
+import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
+
 @Mapper
 public interface MypageMapper {
 

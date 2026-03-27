@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.main.dto.MenuResponse;
+import me._hanho.nextjs_shop.main.dto.ProductMainSlideResponse;
 
 @Service
 @RequiredArgsConstructor

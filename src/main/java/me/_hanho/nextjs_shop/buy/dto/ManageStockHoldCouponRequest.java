@@ -13,10 +13,3 @@ public class ManageStockHoldCouponRequest {
     private List<ManageStockHoldCoupon> holdCoupons;
 }
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class ManageStockHoldCoupon {
-    private Integer holdId;
-    private Integer userCouponId;
-}
