@@ -16,7 +16,7 @@ public enum ErrorCode {
 
 	/* 관리자 */
 	SELLER_DUPLICATED(HttpStatus.BAD_REQUEST, "SELLER_DUPLICATED", "판매자 중복 (이미 존재) 동일 판매자 존재로 추가 불가"),
-	REASON_NOT_FOUND(HttpStatus.BAD_REQUEST, "SELLER_DUPLICATED", "승인거부 시 이유가 함께 필요합니다."),
+	REASON_NOT_FOUND(HttpStatus.BAD_REQUEST, "REASON_NOT_FOUND", "승인거부 시 이유가 함께 필요합니다."),
 	
 	/* 유저 */
 	LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "아이디 또는 비밀번호가 일치하지 않습니다"),

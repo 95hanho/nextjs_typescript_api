@@ -509,13 +509,13 @@
 			address_id, address_name, recipient_name, 
 			address_phone, zonecode,
 			address, address_detail, memo)
-		VALUES(#{orderGroup.userNo}, #{orderGroup.sellerCouponDiscountTotal}, 
-			#{orderGroup.cartCouponDiscountTotal},
-			#{orderGroup.shippingFee}, #{orderGroup.usedMileage}, #{orderGroup.remainingMileage},
-			#{orderGroup.totalPrice}, #{orderGroup.paymentMethod}, #{orderGroup.paymentCode}, 
-			#{orderGroup.addressId}, #{orderGroup.addressName}, #{orderGroup.recipientName}, 
-			#{orderGroup.addressPhone}, #{orderGroup.zonecode}, 
-			#{orderGroup.address}, #{orderGroup.addressDetail}, #{orderGroup.memo})
+		VALUES(#{userNo}, #{sellerCouponDiscountTotal}, 
+			#{cartCouponDiscountTotal},
+			#{shippingFee}, #{usedMileage}, #{remainingMileage},
+			#{totalPrice}, #{paymentMethod}, #{paymentCode}, 
+			#{addressId}, #{addressName}, #{recipientName}, 
+			#{addressPhone}, #{zonecode}, 
+			#{address}, #{addressDetail}, #{memo})
 	</insert>
 
 	<insert id="insertOrderItems">
@@ -595,7 +595,7 @@
 
 	<update id="updateStockHoldStatusToPaid">
 		UPDATE nextjs_shop_stock_hold
-		SET status = 'PAID', active_hold = 0
+		SET status = 'PAY', active_hold = 0
 		WHERE hold_id IN
 		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
 			#{holdId}

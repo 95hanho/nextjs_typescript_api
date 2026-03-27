@@ -42,8 +42,8 @@ import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 @RequiredArgsConstructor
 public class BuyService {
 	
-	// private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
-	private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
+	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
+	// private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
 	
 	private final BuyMapper buyMapper;
 	
@@ -403,6 +403,10 @@ public class BuyService {
 
         // [Mapper] : 장바구니 정보 있으면 장바구니 삭제
         buyMapper.deleteCartItemsByHoldIds(holdIds, userNo);
+
+        System.out.println("결제 완료 - orderId: " + order_id);
+        // 테스트용 강제 롤백
+        throw new RuntimeException("테스트 롤백");
     }
 
     // ------ pay() 내부에서 호출되는 세부 메소드들 ------
