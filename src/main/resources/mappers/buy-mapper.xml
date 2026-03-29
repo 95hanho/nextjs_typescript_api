@@ -605,16 +605,21 @@
 		AND expires_at > NOW()
 	</update>
 
-	<delete id="deleteCartItemsByHoldIds">
-		DELETE c
-		FROM nextjs_shop_cart c
-		JOIN nextjs_shop_stock_hold sh ON sh.cart_id = c.cart_id
-		WHERE sh.hold_id IN
-		<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
-			#{holdId}
-		</foreach>
-		AND c.user_no = #{userNo}
-	</delete>
+	<update id="deleteCartItemsByHoldIds">
+		UPDATE nextjs_shop_cart
+		SET is_deleted = 1
+		WHERE cart_id IN
+		(
+			SELECT cart_id
+			FROM nextjs_shop_stock_hold
+			WHERE hold_id IN
+			<foreach collection="holdIds" item="holdId" open="(" separator="," close=")">
+				#{holdId}
+			</foreach>
+			AND user_no = #{userNo}
+		)
+		 AND user_no = #{userNo}
+	</update>
 
 	<update id="updateUserAddressUseDateAt">
 		UPDATE nextjs_shop_user_address
