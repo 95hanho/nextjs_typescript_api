@@ -17,6 +17,10 @@ import me._hanho.nextjs_shop.model.PhoneAuth;
 public interface AuthMapper {
 
 	UserInfoResponse getUserInfo(Integer userNo);
+
+	int getCartCount(Integer userNo);
+
+	int getOrderCount(Integer userNo);
 	
 	UserLoginResponse getUserForPassword(String userId);
 	

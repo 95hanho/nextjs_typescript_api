@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.auth.AuthMapper">
+
 	<select id="getUserInfo">
 		SELECT name, zonecode, address, address_detail, birthday, phone, email, created_at, mileage, tall, weight
 		FROM nextjs_shop_user
 		WHERE user_no = #{userNo} AND withdrawal_status = 'ACTIVE'
+	</select>
+
+	<select id="getCartCount" resultType="int">
+		SELECT COUNT(*)
+		FROM nextjs_shop_cart
+		WHERE user_no = #{userNo}
+			AND is_deleted = 0
+	</select>
+	
+	<select id="getOrderCount" resultType="int">
+		SELECT COUNT(*)
+		FROM nextjs_shop_order_group og
+		WHERE og.user_no = #{userNo}
+		AND EXISTS (
+				SELECT 1
+				FROM nextjs_shop_order_item oi
+				WHERE oi.order_id = og.order_id
+				AND oi.status IN ('ORDERED', 'DELIVERED', 'PREPARING')
+		)
 	</select>
 	
 	<select id="getUserForPassword">

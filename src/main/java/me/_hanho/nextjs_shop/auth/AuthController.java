@@ -60,7 +60,13 @@ public class AuthController {
 		if(user == null) {
 			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 		}
+		// 추가 정보
+		int cartCount = authService.getCartCount(userNo);
+		int orderCount = authService.getOrderCount(userNo);
+
 		result.put("user", user);
+		result.put("cartCount", cartCount);
+		result.put("orderCount", orderCount);
 		result.put("message", "USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 		

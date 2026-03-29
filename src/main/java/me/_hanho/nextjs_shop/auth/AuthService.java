@@ -29,6 +29,14 @@ public class AuthService {
 		return authMapper.getUserInfo(userNo);
 	}
 	
+	public int getCartCount(Integer userNo) {
+		return authMapper.getCartCount(userNo);
+	}
+	
+	public int getOrderCount(Integer userNo) {
+		return authMapper.getOrderCount(userNo);
+	}
+	
 	public UserLoginResponse getUserForPassword(String userId) {
 		return authMapper.getUserForPassword(userId);
 	}

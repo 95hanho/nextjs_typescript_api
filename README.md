@@ -4,3 +4,5 @@
 .\gradlew.bat -t classes
 -- 터미널2
 .\gradlew.bat bootRun
+-- 
+./gradlew clean
