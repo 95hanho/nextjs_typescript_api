@@ -69,6 +69,10 @@ public class MypageService {
 		}
 		List<CartProductResponse> cartList = mypageMapper.getCartList(userNo);
 
+		if(cartList.isEmpty()) {
+			throw new BusinessException(ErrorCode.CART_EMPTY, "Cart is empty for userNo: " + userNo);
+		}
+
 		// 장바구니에 담긴 제품들의 Id 조회
 		List<Integer> productIds = cartList.stream()
 		.map(CartProductResponse::getProductId)

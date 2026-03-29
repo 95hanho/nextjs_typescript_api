@@ -22,7 +22,7 @@
 		    og.shipping_fee, og.used_mileage, 
 		    og.address_id, og.total_price, og.payment_method, og.status,
 		    og.shipping_date, og.return_date
-		FROM nextjs_shop_order_group og
+		FROM                     og
 		WHERE og.user_no= #{userNo}
 		ORDER BY og.order_date DESC, og.order_id DESC
 	</select>

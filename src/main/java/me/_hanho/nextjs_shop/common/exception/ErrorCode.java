@@ -69,6 +69,7 @@ public enum ErrorCode {
 	/* 메인 */
 
 	/* 마이페이지 */
+	CART_EMPTY(HttpStatus.NOT_FOUND, "CART_EMPTY", "Cart is empty"),
 	CART_NOT_FOUND(HttpStatus.NOT_FOUND, "CART_NOT_FOUND", "Cart not found"),
 	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Address not found"),
 

@@ -404,9 +404,9 @@ public class BuyService {
         // [Mapper] : 장바구니 정보 있으면 장바구니 삭제
         buyMapper.deleteCartItemsByHoldIds(holdIds, userNo);
 
-        System.out.println("결제 완료 - orderId: " + order_id);
+        // System.out.println("결제 완료 - orderId: " + order_id);
         // 테스트용 강제 롤백
-        throw new RuntimeException("테스트 롤백");
+        // throw new RuntimeException("테스트 롤백");
     }
 
     // ------ pay() 내부에서 호출되는 세부 메소드들 ------
