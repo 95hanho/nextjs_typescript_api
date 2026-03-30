@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.model.OrderItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
@@ -13,7 +14,7 @@ import me._hanho.nextjs_shop.mypage.dto.CartProductResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
-import me._hanho.nextjs_shop.mypage.dto.OrderItemWithReview;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderItemResponse;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
@@ -25,13 +26,15 @@ public interface MypageMapper {
 
 	List<UserCouponResponse> getUserCoupons(Integer userNo);
 
-	List<MyOrderGroupResponse> getMyOrderListGroupList(Integer userNo);
-	
-	List<OrderItemWithReview> getMyOrderListProductWithReview(int orderId);
+	List<MyOrderGroupResponse> getMyOrderListGroupList(@Param("userNo") Integer userNo, @Param("keyword") String keyword);
+
+	List<MyOrderItemResponse> getMyOrderItemsByOrderIds(@Param("orderIds") List<Integer> orderIds);
 	
 	MyOrderDetailResponse getMyOrderDetail(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 	
 	List<MyOrderDetailItem> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
+
+	List<OrderItemCoupon> getOrderItemCouponsByOrderItemIds(@Param("orderItemIds") List<Integer> orderItemIds);
 	
 	void insertReview(@Param("review") AddReviewRequest review, @Param("userNo") Integer userNo);
 	

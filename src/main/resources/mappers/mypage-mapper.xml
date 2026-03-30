@@ -15,126 +15,114 @@
 	</select>
 	
 	<select id="getMyOrderListGroupList">
-		<!-- IN 절에 Step A 결과 바인딩 (MyBatis <foreach> 사용)  -->
-		SELECT
-		    og.order_id, og.order_date,
-		    og.each_coupon_discount_total, og.common_coupon_discount_total,
-		    og.shipping_fee, og.used_mileage, 
-		    og.address_id, og.total_price, og.payment_method, og.status,
-		    og.shipping_date, og.return_date
-		FROM                     og
-		WHERE og.user_no= #{userNo}
-		ORDER BY og.order_date DESC, og.order_id DESC
-	</select>
-	<select id="getMyOrderListProductWithReview">
-		SELECT ol.order_list_id, ol.order_id, ol.count, ol.order_price, ol.discount_price,
-			ol.final_price AS paidUnitPrice,
-			sh.hold_id,
-			pd.product_option_id, pd.add_price, pd.size,
-			p.product_id, p.name AS productName, p.color_name, p.origin_price, p.final_price,
-			s.seller_name,
-			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName, mt.gender,
-			tpi.product_image_id,
-			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
-			r.review_id, r.content, r.created_at AS reviewDate, r.rating
-		FROM nextjs_shop_order_item ol
-		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id
-		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
-		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
-		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
-		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
-		LEFT JOIN (
-	        SELECT 
-	            pi_inner.product_image_id,
-	            pi_inner.product_id,
-	            pi_inner.file_id
-	        FROM nextjs_shop_product_image pi_inner
-	        INNER JOIN (
-	            SELECT 
-	                product_id,
-	                MIN(sort_key) AS min_sort_key
-	            FROM nextjs_shop_product_image
-	            GROUP BY product_id
-	        ) first_img
-	        ON pi_inner.product_id = first_img.product_id
-	        AND pi_inner.sort_key = first_img.min_sort_key
-	    ) tpi ON tpi.product_id = p.product_id
-	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
-		WHERE ol.order_id = #{orderId}
-	</select>
-	<select id="getMyOrderDetail">
-		SELECT og.order_id, og.order_date, og.each_coupon_discount_total, 
-		og.common_coupon_discount_total, og.shipping_fee, og.used_mileage, 
-		og.remaining_mileage, og.total_price, og.payment_method, 
-		og.payment_code, og.status, og.shipping_date, og.delivered_date, og.return_date,
-		og.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
-		c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
-		og.address_id, ua.address_name, ua.recipient_name, ua.address_phone, ua.zonecode,
-		ua.address, ua.address_detail, ua.memo, ua.default_address
+		SELECT DISTINCT og.order_id, og.order_date
 		FROM nextjs_shop_order_group og
-		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = og.user_coupon_id AND uc.used = 1
-		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
+		JOIN nextjs_shop_order_item oi ON oi.order_id = og.order_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		WHERE og.user_no = #{userNo}
+		<if test="keyword != null and keyword != ''">
+			AND (
+				oi.product_name LIKE CONCAT('%', #{keyword}, '%')
+				OR s.seller_name LIKE CONCAT('%', #{keyword}, '%')
+			)
+		</if>
+		ORDER BY og.order_date DESC, og.order_id DESC
+		LIMIT 10
+	</select>
+
+	<select id="getMyOrderItemsByOrderIds">
+		SELECT 
+			oi.order_item_id, oi.order_id, oi.hold_id, 
+			oi.product_name, oi.count, oi.size, oi.origin_price, oi.final_price,
+			oi.add_price, oi.status,
+			r.review_id,
+			s.seller_no, s.seller_name, s.seller_name_en,
+			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, 
+			f.copyright_url, f.file_extension
+		FROM nextjs_shop_order_item oi
+		LEFT JOIN nextjs_shop_review r ON r.order_item_id = oi.order_item_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN nextjs_shop_product_image pi 
+			ON pi.product_image_id = (
+				SELECT pi2.product_image_id
+				FROM nextjs_shop_product_image pi2
+				WHERE pi2.product_id = p.product_id
+				ORDER BY pi2.sort_key ASC, pi2.product_image_id ASC
+				LIMIT 1
+			)
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
+		WHERE oi.order_id IN
+		<foreach collection="orderIds" item="orderId" open="(" separator="," close=")">
+			#{orderId}
+		</foreach>
+	</select>
+
+	<select id="getMyOrderDetail">
+		SELECT og.order_id, og.order_date, og.seller_coupon_discount_total, 
+		og.cart_coupon_discount_total, og.shipping_fee, og.used_mileage, 
+		og.remaining_mileage, og.total_price, og.payment_method,
+		og.address_id, ua.address_name, ua.recipient_name, ua.address_phone, ua.zonecode,
+		ua.address, ua.address_detail, ua.memo
+		FROM nextjs_shop_order_group og
 		JOIN nextjs_shop_user_address ua ON ua.address_id = og.address_id
 		WHERE og.order_id = #{orderId} AND og.user_no = #{userNo}
 	</select>
 	<select id="getMyOrderDetailItems">
-		SELECT ol.order_list_id, ol.order_id , ol.count, ol.order_price, ol.discount_price, ol.final_price AS paidUnitPrice,
-			ol.user_coupon_id, c.coupon_id, c.description, c.coupon_code, c.discount_type,
-			c.discount_value, c.max_discount, c.minimum_order_before_amount, c.is_stackable,
-			sh.hold_id, pd.product_option_id, pd.add_price, pd.size,
-			p.product_id, p.name AS productName, p.color_name, p.origin_price, p.final_price,
-			s.seller_name,
-			ms.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_top_id, mt.menu_name AS topMenuName,
-			tpi.product_image_id,
-			f.file_id, f.file_name, f.store_name, f.file_extension, f.file_path, f.copyright, f.copyright_url,
-			r.review_id, r.content, r.created_at AS reviewDate, r.rating
-		FROM nextjs_shop_order_item ol
-		LEFT JOIN nextjs_shop_user_coupon uc ON uc.user_coupon_id = ol.user_coupon_id AND uc.used = 1
-		LEFT JOIN nextjs_shop_coupon c ON c.coupon_id = uc.coupon_id
-		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = ol.hold_id AND sh.user_no = #{userNo}
-		JOIN nextjs_shop_product_option pd ON pd.product_option_id = sh.product_option_id
-		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
+		SELECT oi.order_item_id, oi.order_id , oi.hold_id, oi.product_name, oi.count, 
+			oi.size, oi.origin_price, oi.final_price, oi.add_price, oi.coupon_discounted_price,
+			oi.total_price, oi.status, oi.shipping_date, oi.delivered_date, oi.return_date,
+			r.review_id,
+			s.seller_no, s.seller_name, s.seller_name_en,
+			pi.product_image_id, 
+			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright,
+			f.copyright_url, f.file_extension
+		FROM nextjs_shop_order_item oi
+		LEFT JOIN nextjs_shop_review r ON r.order_item_id = oi.order_item_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id AND sh.user_no = #{userNo}
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
-		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
-		LEFT JOIN (
-	        SELECT 
-	            pi_inner.product_image_id,
-	            pi_inner.product_id,
-	            pi_inner.file_id
-	        FROM nextjs_shop_product_image pi_inner
-	        INNER JOIN (
-	            SELECT 
-	                product_id,
-	                MIN(sort_key) AS min_sort_key
-	            FROM nextjs_shop_product_image
-	            GROUP BY product_id
-	        ) first_img
-	        ON pi_inner.product_id = first_img.product_id
-	        AND pi_inner.sort_key = first_img.min_sort_key
-	    ) tpi ON tpi.product_id = p.product_id
-	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-		LEFT JOIN nextjs_shop_review r ON r.order_list_id = ol.order_list_id
-		WHERE ol.order_id = #{orderId}
+		LEFT JOIN nextjs_shop_product_image pi 
+			ON pi.product_image_id = (
+				SELECT pi2.product_image_id
+				FROM nextjs_shop_product_image pi2
+				WHERE pi2.product_id = p.product_id
+				ORDER BY pi2.sort_key ASC, pi2.product_image_id ASC
+				LIMIT 1
+			)
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
+		WHERE oi.order_id = #{orderId}
+	</select>
+	<select id="getOrderItemCouponsByOrderItemIds">
+		SELECT *
+		FROM nextjs_shop_order_item_coupon
+		WHERE order_item_id IN
+		<foreach collection="orderItemIds" item="orderItemId" open="(" separator="," close=")">
+			#{orderItemId}
+		</foreach>
 	</select>
 
 	<insert id="insertReview">
 		INSERT INTO nextjs_shop_review (
 			content,
 			rating,
-			order_list_id,
+			order_item_id,
 			user_no
 		)
 		SELECT
 			#{review.content},
 			#{review.rating},
-			oi.order_list_id,
+			oi.order_item_id,
 			#{userNo}
 		FROM nextjs_shop_order_item oi
 		JOIN nextjs_shop_order_group og ON og.order_id = oi.order_id AND og.user_no = #{userNo}
-		WHERE oi.order_list_id = #{review.orderItemId}
+		WHERE oi.order_item_id = #{review.orderItemId}
 	</insert>
 	
 	<update id="releaseHoldIfExists">
@@ -214,8 +202,8 @@
 			ca.coupon_allowed_id, ca.product_id,
 			uc.user_coupon_id
 		FROM nextjs_shop_coupon c
-		LEFT JOIN nextjs_shop_user_coupon uc 
-			ON uc.coupon_id = c.coupon_id AND uc.user_no = #{userNo} AND uc.used = 0
+		LEFT JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id 
+			AND uc.user_no = #{userNo} 
 		LEFT JOIN nextjs_shop_coupon_allowed ca 
 			ON ca.coupon_id = c.coupon_id
 		AND ca.product_id IN
@@ -232,6 +220,10 @@
 			AND (
 				c.issue_method = 'CLAIM'
 				OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
+			)
+			AND (
+				uc.user_coupon_id IS NULL  -- 아직 안받은 쿠폰 (CLAIM)
+				OR uc.used = 0             -- 받은 것 중 미사용
 			)
 			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
 	</select>
@@ -251,8 +243,8 @@
             ON c.seller_no = p.seller_no
         LEFT JOIN nextjs_shop_coupon_allowed ca 
             ON ca.coupon_id = c.coupon_id AND ca.product_id = p.product_id
-        LEFT JOIN nextjs_shop_user_coupon uc 
-            ON uc.coupon_id = c.coupon_id AND uc.user_no = #{userNo} AND uc.used = 0
+        LEFT JOIN nextjs_shop_user_coupon uc ON uc.coupon_id = c.coupon_id 
+			AND uc.user_no = #{userNo} 
         JOIN nextjs_shop_seller s 
             ON c.seller_no = s.seller_no
         WHERE p.product_id IN
@@ -268,6 +260,10 @@
                 c.issue_method = 'CLAIM'
                 OR (c.issue_method IN ('MANUAL','AUTO') AND uc.user_coupon_id IS NOT NULL)
             )
+			AND (
+				uc.user_coupon_id IS NULL  -- 아직 안받은 쿠폰 (CLAIM)
+				OR uc.used = 0             -- 받은 것 중 미사용
+			)
 			<!-- AND NOW() BETWEEN c.start_date AND c.end_date 포폴용 주석 -->
     </select>
 

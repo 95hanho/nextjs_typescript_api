@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BuyOrderGroup {
     private int userNo;
-    private BigDecimal eachCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
-    private BigDecimal commonCouponDiscountTotal; // 공용쿠폰 할인값 총합
+    private BigDecimal sellerCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
+    private BigDecimal cartCouponDiscountTotal; // 공용쿠폰 할인값 총합
     private BigDecimal shippingFee; // 배송비
     private int usedMileage; // 사용된 마일리지
     private int remainingMileage; // 남은 마일리지
