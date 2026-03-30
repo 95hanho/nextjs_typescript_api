@@ -9,14 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.OrderItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
 import me._hanho.nextjs_shop.mypage.dto.AvailableSellerCouponAtCartResponse;
 import me._hanho.nextjs_shop.mypage.dto.CartProductResponse;
 import me._hanho.nextjs_shop.mypage.dto.CartSummaryResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderItemResponse;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
@@ -35,21 +38,43 @@ public class MypageService {
 		return mypageMapper.getUserCoupons(userNo);
 	}
 	@Transactional
-	public List<MyOrderGroupResponse> getMyOrderListWithReview(Integer userNo) {
-		List<MyOrderGroupResponse> myOrderList = mypageMapper.getMyOrderListGroupList(userNo);
-		//
-		myOrderList.forEach(v ->
-			v.setItems(mypageMapper.getMyOrderListProductWithReview(v.getOrderId()))
-		);
-		
+	public List<MyOrderGroupResponse> getMyOrderList(Integer userNo, String keyword) {
+		List<MyOrderGroupResponse> myOrderList = mypageMapper.getMyOrderListGroupList(userNo, keyword);
+
+		List<Integer> orderIds = myOrderList.stream()
+				.map(MyOrderGroupResponse::getOrderId)
+				.toList();
+
+		if(!orderIds.isEmpty()) {
+			List<MyOrderItemResponse> allItems = mypageMapper.getMyOrderItemsByOrderIds(orderIds);
+			for(MyOrderGroupResponse order : myOrderList) {
+				List<MyOrderItemResponse> itemsForOrder = allItems.stream()
+						.filter(item -> item.getOrderId() == order.getOrderId())
+						.toList();
+				order.setItems(itemsForOrder);
+			}
+		}
 		return myOrderList;
 	}
-	@Transactional
+	//
 	public MyOrderDetailResponse getMyOrderDetail(String orderId, Integer userNo) {
-		MyOrderDetailResponse myOrderDetail = mypageMapper.getMyOrderDetail(orderId, userNo);
-		myOrderDetail.setItems(mypageMapper.getMyOrderDetailItems(orderId, userNo));
-		return myOrderDetail;
+		return mypageMapper.getMyOrderDetail(orderId, userNo);
 	}
+	public List<MyOrderDetailItem> getMyOrderDetailItems(String orderId, Integer userNo) {
+		List<MyOrderDetailItem> items = mypageMapper.getMyOrderDetailItems(orderId, userNo);
+		List<Integer> orderItemIds = items.stream()
+				.map(MyOrderDetailItem::getOrderItemId)
+				.toList();
+		List<OrderItemCoupon> coupons = mypageMapper.getOrderItemCouponsByOrderItemIds(orderItemIds);
+		for(MyOrderDetailItem item : items) {
+			List<OrderItemCoupon> couponsForItem = coupons.stream()
+					.filter(coupon -> coupon.getOrderItemId() == item.getOrderItemId())
+					.toList();
+			item.setCoupons(couponsForItem);
+		}
+		return items;
+	}
+
 	public void insertReview(AddReviewRequest review, Integer userNo) {
 		mypageMapper.insertReview(review, userNo);
 	}
@@ -141,12 +166,5 @@ public class MypageService {
 			mypageMapper.updateDefaultLatest(userNo);
 		}
 	}
-
-
-
-
-
-
-
 
 }

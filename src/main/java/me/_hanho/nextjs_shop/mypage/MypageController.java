@@ -28,6 +28,7 @@ import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
 import me._hanho.nextjs_shop.mypage.dto.AvailableSellerCouponAtCartResponse;
 import me._hanho.nextjs_shop.mypage.dto.CartSummaryResponse;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
@@ -67,12 +68,13 @@ public class MypageController {
 	// 주문배송정보 조회
 	@GetMapping("/my-order")
 	public ResponseEntity<Map<String, Object>> getMyOrderList(
-			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+			@RequestAttribute(value="userNo", required=false) Integer userNo,
+			@RequestParam(value="keyword", required=false) String keyword) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[getMyOrderList] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<MyOrderGroupResponse> myOrderList = mypageService.getMyOrderListWithReview(userNo);
+		List<MyOrderGroupResponse> myOrderList = mypageService.getMyOrderList(userNo, keyword);
 
 		result.put("myOrderList", myOrderList);
 		result.put("message", "MY_ORDER_LIST_FETCH_SUCCESS");
@@ -88,8 +90,14 @@ public class MypageController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		MyOrderDetailResponse myOrderDetail = mypageService.getMyOrderDetail(orderId, userNo);
+		List<MyOrderDetailItem> items = mypageService.getMyOrderDetailItems(orderId, userNo);
+		
+		if(myOrderDetail == null || items == null || items.isEmpty()) {
+			throw new BusinessException(ErrorCode.MY_ORDER_DETAIL_NOT_FOUND);
+		}
 
 		result.put("myOrderDetail", myOrderDetail);
+		result.put("myOrderDetailItems", items);
 		result.put("message", "MY_ORDER_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

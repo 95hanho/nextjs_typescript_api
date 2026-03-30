@@ -282,11 +282,11 @@
 	</insert>
 
 	<select id="getProductReviewList">
-		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_list_id, 
+		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_item_id, 
 			r.user_no, u.name AS userName
 		FROM nextjs_shop_review r
 		JOIN nextjs_shop_user u ON r.user_no = u.user_no
-		JOIN nextjs_shop_order_item oi ON r.order_list_id = oi.order_list_id
+		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
 		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
 		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
 		WHERE po.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
@@ -302,7 +302,7 @@
 		    AVG(rating) AS avg_rating,
 		    COUNT(*) AS review_count
 		FROM nextjs_shop_review r
-		JOIN nextjs_shop_order_item oi ON r.order_list_id = oi.order_list_id
+		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
 		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
 		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
 		WHERE po.product_id = #{productId}
