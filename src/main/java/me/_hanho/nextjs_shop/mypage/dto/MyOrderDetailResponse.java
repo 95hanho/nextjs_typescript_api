@@ -17,7 +17,7 @@ public class MyOrderDetailResponse {
 	private BigDecimal sellerCouponDiscountTotal; // 각 상품쿠폰 할인값 총합
 	private BigDecimal cartCouponDiscountTotal; // 공용쿠폰 할인액수
 	private int shippingFee;
-	private int usedMileague;
+	private int usedMileage;
 	private int remainingMileage;
 	private int totalPrice;
 	private String paymentMethod;

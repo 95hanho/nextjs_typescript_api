@@ -359,7 +359,7 @@ public class BuyService {
         // ----------- 결제 진행 -----------
 
         // 결제 금액 계산
-        PaymentPrepareResult paymentPrepareResult = preparePaymentData(stockHoldProductList, availableCoupons);
+        PaymentPrepareResult paymentPrepareResult = preparePaymentData(stockHoldProductList, availableCoupons, payRequest.getUsedMileage());
 
         // 주소 id number | null
         Integer addressId = resolveAddressId(payRequest, userNo);
@@ -443,7 +443,8 @@ public class BuyService {
     // [Service] : 쿠폰 적용, 배송비 계산, 주문 아이템 및 쿠폰 정보 생성
     private PaymentPrepareResult preparePaymentData(
         List<OrderStockResponse> stockHoldProductList,
-        List<PayAvailableCoupon> availableCoupons
+        List<PayAvailableCoupon> availableCoupons,
+        int usedMileage
     ) {
         // 결제 금액 계산
         BigDecimal sellerCouponDiscountTotal = BigDecimal.ZERO; // 판매자 쿠폰 할인 총액
@@ -554,6 +555,9 @@ public class BuyService {
                 shippingFee = shippingFee.add(BigDecimal.valueOf(info.getBaseShippingFee()));
             }
         }
+
+        // 마일리지 빼기 배송비 더 하기
+        totalPrice = totalPrice.subtract(BigDecimal.valueOf(usedMileage)).add(shippingFee);
 
         return PaymentPrepareResult.builder()
             .sellerCouponDiscountTotal(sellerCouponDiscountTotal)
