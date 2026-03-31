@@ -44,6 +44,8 @@ public class BuyService {
 	
 	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
 	// private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
+
+    private static final BigDecimal MILEAGE_RATE = BigDecimal.valueOf(0.01); // 마일리지 적립률
 	
 	private final BuyMapper buyMapper;
 	
@@ -359,7 +361,7 @@ public class BuyService {
         // ----------- 결제 진행 -----------
 
         // 결제 금액 계산
-        PaymentPrepareResult paymentPrepareResult = preparePaymentData(stockHoldProductList, availableCoupons);
+        PaymentPrepareResult paymentPrepareResult = preparePaymentData(stockHoldProductList, availableCoupons, payRequest.getUsedMileage());
 
         // 주소 id number | null
         Integer addressId = resolveAddressId(payRequest, userNo);
@@ -443,7 +445,8 @@ public class BuyService {
     // [Service] : 쿠폰 적용, 배송비 계산, 주문 아이템 및 쿠폰 정보 생성
     private PaymentPrepareResult preparePaymentData(
         List<OrderStockResponse> stockHoldProductList,
-        List<PayAvailableCoupon> availableCoupons
+        List<PayAvailableCoupon> availableCoupons,
+        int usedMileage
     ) {
         // 결제 금액 계산
         BigDecimal sellerCouponDiscountTotal = BigDecimal.ZERO; // 판매자 쿠폰 할인 총액
@@ -555,11 +558,18 @@ public class BuyService {
             }
         }
 
+        // 적립금 계산하기
+        int earnedMileage = totalPrice.multiply(MILEAGE_RATE).intValue(); // 총금액 * 적립률 and 소수점 버림
+
+        // 마일리지 빼기 배송비 더 하기
+        totalPrice = totalPrice.subtract(BigDecimal.valueOf(usedMileage)).add(shippingFee);
+
         return PaymentPrepareResult.builder()
             .sellerCouponDiscountTotal(sellerCouponDiscountTotal)
             .cartCouponDiscountTotal(cartCouponDiscountTotal)
             .shippingFee(shippingFee)
             .totalPrice(totalPrice)
+            .earnedMileage(earnedMileage)
             .orderItems(orderItems)
             .orderItemCoupons(orderItemCoupons)
             .build();
@@ -614,6 +624,7 @@ public class BuyService {
             .shippingFee(paymentPrepareResult.getShippingFee())
             .usedMileage(payRequest.getUsedMileage())
             .remainingMileage(hasMileage - payRequest.getUsedMileage())
+            .earnedMileage(paymentPrepareResult.getEarnedMileage())
             .totalPrice(paymentPrepareResult.getTotalPrice())
             .paymentMethod(payRequest.getPaymentMethod())
             .paymentCode(payCode)

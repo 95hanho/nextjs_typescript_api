@@ -66,7 +66,8 @@
 	<select id="getMyOrderDetail">
 		SELECT og.order_id, og.order_date, og.seller_coupon_discount_total, 
 		og.cart_coupon_discount_total, og.shipping_fee, og.used_mileage, 
-		og.remaining_mileage, og.total_price, og.payment_method,
+		og.remaining_mileage, og.earned_mileage,
+		og.total_price, og.payment_method,
 		og.address_id, ua.address_name, ua.recipient_name, ua.address_phone, ua.zonecode,
 		ua.address, ua.address_detail, ua.memo
 		FROM nextjs_shop_order_group og
