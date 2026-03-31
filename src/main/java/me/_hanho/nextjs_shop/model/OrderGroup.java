@@ -21,6 +21,7 @@ public class OrderGroup {
     private BigDecimal shippingFee; // 배송비
     private int usedMileage; // 사용된 마일리지
     private int remainingMileage; // 남은 마일리지
+    private int earnedMileage; // 적립 마일리지
     private BigDecimal totalPrice; // 총합 금액
     private String paymentMethod; // 결제 방식
     private String paymentCode; // 결제 코드

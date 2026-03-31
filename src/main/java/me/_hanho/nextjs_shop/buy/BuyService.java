@@ -44,6 +44,8 @@ public class BuyService {
 	
 	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
 	// private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
+
+    private static final BigDecimal MILEAGE_RATE = BigDecimal.valueOf(0.01); // 마일리지 적립률
 	
 	private final BuyMapper buyMapper;
 	
@@ -556,6 +558,9 @@ public class BuyService {
             }
         }
 
+        // 적립금 계산하기
+        int earnedMileage = totalPrice.multiply(MILEAGE_RATE).intValue(); // 총금액 * 적립률 and 소수점 버림
+
         // 마일리지 빼기 배송비 더 하기
         totalPrice = totalPrice.subtract(BigDecimal.valueOf(usedMileage)).add(shippingFee);
 
@@ -564,6 +569,7 @@ public class BuyService {
             .cartCouponDiscountTotal(cartCouponDiscountTotal)
             .shippingFee(shippingFee)
             .totalPrice(totalPrice)
+            .earnedMileage(earnedMileage)
             .orderItems(orderItems)
             .orderItemCoupons(orderItemCoupons)
             .build();
@@ -618,6 +624,7 @@ public class BuyService {
             .shippingFee(paymentPrepareResult.getShippingFee())
             .usedMileage(payRequest.getUsedMileage())
             .remainingMileage(hasMileage - payRequest.getUsedMileage())
+            .earnedMileage(paymentPrepareResult.getEarnedMileage())
             .totalPrice(paymentPrepareResult.getTotalPrice())
             .paymentMethod(payRequest.getPaymentMethod())
             .paymentCode(payCode)

@@ -19,6 +19,7 @@ public class MyOrderDetailResponse {
 	private int shippingFee;
 	private int usedMileage;
 	private int remainingMileage;
+    private int earnedMileage; // 적립 마일리지
 	private int totalPrice;
 	private String paymentMethod;
 

@@ -14,6 +14,7 @@ public class PaymentPrepareResult {
     private BigDecimal cartCouponDiscountTotal;
     private BigDecimal shippingFee;
     private BigDecimal totalPrice;
+    private int earnedMileage; // 적립 마일리지
     private List<OrderItem> orderItems;
     private List<OrderItemCouponWithHoldId> orderItemCoupons;
 }
