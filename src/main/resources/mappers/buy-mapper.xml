@@ -504,14 +504,16 @@
 		INSERT INTO nextjs_shop_order_group(
 			user_no, seller_coupon_discount_total, 
 			cart_coupon_discount_total,
-			shipping_fee, used_mileage, remaining_mileage, 
+			shipping_fee, used_mileage, 
+			remaining_mileage, earned_mileage,
 			total_price, payment_method, payment_code, 
 			address_id, address_name, recipient_name, 
 			address_phone, zonecode,
 			address, address_detail, memo)
 		VALUES(#{userNo}, #{sellerCouponDiscountTotal}, 
 			#{cartCouponDiscountTotal},
-			#{shippingFee}, #{usedMileage}, #{remainingMileage},
+			#{shippingFee}, #{usedMileage}, 
+			#{remainingMileage}, #{earnedMileage},
 			#{totalPrice}, #{paymentMethod}, #{paymentCode}, 
 			#{addressId}, #{addressName}, #{recipientName}, 
 			#{addressPhone}, #{zonecode}, 
