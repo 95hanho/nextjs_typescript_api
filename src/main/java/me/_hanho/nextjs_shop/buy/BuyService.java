@@ -525,7 +525,7 @@ public class BuyService {
                     .discountedPrice(BigDecimal.valueOf(discountAmount))
                     .couponId(c.getCouponId())
                     .description(c.getDescription())
-                    // .couponCode() // 만드는 서비스 메소드 만들어서 붙여주기
+                    .couponCode(c.getCouponCode()) // 만드는 서비스 메소드 만들어서 붙여주기
                     .discountType(c.getDiscountType())
                     .discountValue(c.getDiscountValue())
                     .maxDiscount(c.getMaxDiscount())
