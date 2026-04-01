@@ -7,7 +7,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import me._hanho.nextjs_shop.model.OrderItemCoupon;
 
 @Data
 @NoArgsConstructor
@@ -45,5 +44,5 @@ public class MyOrderDetailItem {
     private String copyrightUrl;
     private String fileExtension;
 
-    private List<OrderItemCoupon> coupons;
+    private List<MyOrderDetailItemCoupon> coupons;
 }

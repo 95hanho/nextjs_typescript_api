@@ -101,9 +101,13 @@
 		WHERE oi.order_id = #{orderId}
 	</select>
 	<select id="getOrderItemCouponsByOrderItemIds">
-		SELECT *
-		FROM nextjs_shop_order_item_coupon
-		WHERE order_item_id IN
+		SELECT oic.order_item_coupon_id, oic.order_item_id, oic.user_coupon_id, 
+			oic.discounted_price, oic.coupon_id, oic.description, oic.coupon_code, 
+			oic.discount_type, oic.discount_value, oic.max_discount, oic.minimum_order_before_amount,
+			c.seller_no
+		FROM nextjs_shop_order_item_coupon oic
+		JOIN nextjs_shop_coupon c ON c.coupon_id = oic.coupon_id
+		WHERE oic.order_item_id IN
 		<foreach collection="orderItemIds" item="orderItemId" open="(" separator="," close=")">
 			#{orderItemId}
 		</foreach>

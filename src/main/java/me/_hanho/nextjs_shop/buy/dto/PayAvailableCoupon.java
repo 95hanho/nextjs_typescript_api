@@ -18,6 +18,7 @@ public class PayAvailableCoupon {
 
     private int couponId;
     private String description;
+    private String couponCode;
     private String discountType;
     private BigDecimal discountValue;
     private BigDecimal maxDiscount;
