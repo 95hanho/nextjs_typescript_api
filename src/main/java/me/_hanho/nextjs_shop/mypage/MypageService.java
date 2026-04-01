@@ -17,6 +17,7 @@ import me._hanho.nextjs_shop.mypage.dto.AvailableSellerCouponAtCartResponse;
 import me._hanho.nextjs_shop.mypage.dto.CartProductResponse;
 import me._hanho.nextjs_shop.mypage.dto.CartSummaryResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
+import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderItemResponse;
@@ -65,9 +66,9 @@ public class MypageService {
 		List<Integer> orderItemIds = items.stream()
 				.map(MyOrderDetailItem::getOrderItemId)
 				.toList();
-		List<OrderItemCoupon> coupons = mypageMapper.getOrderItemCouponsByOrderItemIds(orderItemIds);
+		List<MyOrderDetailItemCoupon> coupons = mypageMapper.getOrderItemCouponsByOrderItemIds(orderItemIds);
 		for(MyOrderDetailItem item : items) {
-			List<OrderItemCoupon> couponsForItem = coupons.stream()
+			List<MyOrderDetailItemCoupon> couponsForItem = coupons.stream()
 					.filter(coupon -> coupon.getOrderItemId() == item.getOrderItemId())
 					.toList();
 			item.setCoupons(couponsForItem);
