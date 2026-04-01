@@ -78,6 +78,7 @@
 		SELECT oi.order_item_id, oi.order_id , oi.hold_id, oi.product_name, oi.count, 
 			oi.size, oi.origin_price, oi.final_price, oi.add_price, oi.coupon_discounted_price,
 			oi.total_price, oi.status, oi.shipping_date, oi.delivered_date, oi.return_date,
+			p.product_id,
 			r.review_id,
 			s.seller_no, s.seller_name, s.seller_name_en,
 			pi.product_image_id, 
