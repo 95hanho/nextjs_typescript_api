@@ -80,6 +80,7 @@
 			oi.total_price, oi.status, oi.shipping_date, oi.delivered_date, oi.return_date,
 			p.product_id,
 			r.review_id,
+			po.product_option_id,
 			s.seller_no, s.seller_name, s.seller_name_en,
 			pi.product_image_id, 
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright,

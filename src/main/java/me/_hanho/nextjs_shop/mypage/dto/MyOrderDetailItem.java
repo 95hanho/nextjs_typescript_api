@@ -33,6 +33,8 @@ public class MyOrderDetailItem {
 
     private int reviewId;
 
+    private int productOptionId;
+
     private int sellerNo;
     private String sellerName;
     private String sellerNameEn;
