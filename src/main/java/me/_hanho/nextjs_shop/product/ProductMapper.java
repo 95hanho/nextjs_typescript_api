@@ -37,6 +37,8 @@ public interface ProductMapper {
 
 	void deleteLike(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	
+	List<Integer> getProductWishList(Integer userNo);
+
 	boolean isWishExist(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	
 	void upProductWish(Integer productId);

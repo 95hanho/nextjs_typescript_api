@@ -76,6 +76,10 @@ public class ProductService {
 			productMapper.deleteLike(productId, userNo);
 		}
 	}
+
+	public List<Integer> getProductWishList(Integer userNo) {
+		return productMapper.getProductWishList(userNo);
+	}
 	
 	@Transactional
 	public void setWish(Integer productId, Integer userNo) {

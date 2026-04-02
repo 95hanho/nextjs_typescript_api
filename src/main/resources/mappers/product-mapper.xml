@@ -96,6 +96,12 @@
           AND user_no = #{userNo}
 	</delete>
 	<!--  -->
+	<select id="getProductWishList">
+		SELECT product_id
+		FROM nextjs_shop_wish
+		WHERE user_no = #{userNo}
+	</select>
+	<!--  -->
 	<select id="isWishExist" resultType="boolean">
 		SELECT EXISTS (
         SELECT 1
