@@ -29,7 +29,11 @@ public class MyOrderDetailItem {
     private Timestamp deliveredDate; // 배송완료일자
     private Timestamp returnDate; // 반송일자
 
+    private int productId;
+
     private int reviewId;
+
+    private int productOptionId;
 
     private int sellerNo;
     private String sellerName;
