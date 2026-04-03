@@ -309,34 +309,10 @@
 			p.like_count, 
 			p.view_count, 
 			p.wish_count,
-			tpi.product_image_id, 
-			f.file_id, 
-			f.file_name,  
-			f.store_name, 
-			f.file_path, 
-			f.copyright, 
-			f.copyright_url,
 			s.seller_name
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON w.product_id = p.product_id
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-		LEFT JOIN (
-	        SELECT 
-	            pi_inner.product_image_id,
-	            pi_inner.product_id,
-	            pi_inner.file_id
-	        FROM nextjs_shop_product_image pi_inner
-	        INNER JOIN (
-	            SELECT 
-	                product_id,
-	                MIN(sort_key) AS min_sort_key
-	            FROM nextjs_shop_product_image
-	            GROUP BY product_id
-	        ) first_img
-	        ON pi_inner.product_id = first_img.product_id
-	        AND pi_inner.sort_key = first_img.min_sort_key
-	    ) tpi ON tpi.product_id = p.product_id
-	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE w.user_no= #{userNo}
 	</select>
 	<select id="getUserAddressList">

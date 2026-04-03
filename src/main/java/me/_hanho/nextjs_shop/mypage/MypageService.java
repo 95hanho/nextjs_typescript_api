@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.mypage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
-import me._hanho.nextjs_shop.model.OrderItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
@@ -26,6 +26,9 @@ import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
 import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
 import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
+import me._hanho.nextjs_shop.product.ProductMapper;
+import me._hanho.nextjs_shop.product.dto.ProductImageFile;
+import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class MypageService {
 	private static final Logger logger = Logger.getLogger(MypageService.class.getName());
 
 	private final MypageMapper mypageMapper;
+	private final ProductMapper productMapper;
 
 	public List<UserCouponResponse> getUserCoupons(Integer userNo) {
 		return mypageMapper.getUserCoupons(userNo);
@@ -137,7 +141,28 @@ public class MypageService {
 	    }
 	}
 	public List<WishlistItemResponse> getWishlistItems(Integer userNo) {
-		return mypageMapper.getWishlistItems(userNo);
+		List<WishlistItemResponse> wishlistItems = mypageMapper.getWishlistItems(userNo);
+
+		if (wishlistItems.isEmpty()) return wishlistItems;
+
+		// ✅ 1) productId 목록 추출
+		List<Integer> productIds = wishlistItems.stream()
+	            .map(WishlistItemResponse::getProductId)
+	            .toList();
+
+		// ✅ 2) 이미지들을 "한 방"에 가져오기 (쿼리 1번)
+	    List<ProductImageFile> allImages = productMapper.getProductImageListByProductIds(productIds);
+
+		// ✅ 3) productId로 그룹핑
+	    Map<Integer, List<ProductImageFile>> imageMap = allImages.stream()
+	            .collect(java.util.stream.Collectors.groupingBy(ProductImageFile::getProductId));
+
+		// ✅ 4) DTO에 주입 (없으면 빈 리스트)
+	    for (WishlistItemResponse p : wishlistItems) {
+	        p.setProductImageList(imageMap.getOrDefault(p.getProductId(), java.util.Collections.emptyList()));
+	    }
+
+		return wishlistItems;
 	}
 
 	public List<UserAddressResponse> getUserAddressList(Integer userNo) {
