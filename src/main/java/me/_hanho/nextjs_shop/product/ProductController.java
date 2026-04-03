@@ -73,6 +73,19 @@ public class ProductController {
 		result.put("message", "LIKE_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 현재 회원 위시 productId 목록 조회
+	@GetMapping("/wish")
+	public ResponseEntity<Map<String, Object>> getProductWishList(
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		logger.info("[getProductWishList] userNo={}", userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		List<Integer> wishProductIds = productService.getProductWishList(userNo);
+		
+		result.put("wishProductIds", wishProductIds);
+		result.put("message", "PRODUCT_WISH_LIST_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 위시 등록/해제
 	@PostMapping("/wish")
 	public ResponseEntity<Map<String, Object>> setWish(
