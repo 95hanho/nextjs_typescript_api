@@ -23,7 +23,6 @@ import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
-import me._hanho.nextjs_shop.seller.dto.SellerProductCouponAllowedResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -151,15 +150,20 @@ public class SellerService {
 	public void deleteCoupon(Integer couponId, Integer sellerNo) {
 		sellerMapper.deleteCoupon(couponId, sellerNo);
 	}
-	public List<SellerProductCouponAllowedResponse> getSellerCouponAllow(String couponId, Integer sellerNo) {
-		return sellerMapper.getSellerCouponAllow(couponId, sellerNo);
+	public List<Integer> getProductIdsForCouponAllow(Integer couponId, Integer sellerNo) {
+		return sellerMapper.getProductIdsForCouponAllow(couponId, sellerNo);
 	}
-	public void setSellerCouponAllow(String couponId, List<Integer> productIds, Boolean allow, Integer sellerNo) {
-		if (Boolean.TRUE.equals(allow)) {
-	        sellerMapper.insertSellerCouponAllowList(couponId, productIds, sellerNo);
-	    } else {
-	        sellerMapper.deleteSellerCouponAllowList(couponId, productIds, sellerNo);
-	    }
+	public void insertSellerCouponAllow(Integer couponId, List<Integer> addProductIds, Integer sellerNo) {
+	    sellerMapper.insertSellerCouponAllowList(couponId, addProductIds, sellerNo);
+	}
+	public void deleteSellerCouponAllow(Integer couponId, List<Integer> removeProductIds,  Integer sellerNo) {
+	    sellerMapper.deleteSellerCouponAllowList(couponId, removeProductIds, sellerNo);
+	}
+	public void activateCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
+	    sellerMapper.activateCoupons(activeCouponIds, sellerNo);
+	}
+	public void suspendCoupons(List<Integer> suspendedCouponIds,  Integer sellerNo) {
+	    sellerMapper.suspendCoupons(suspendedCouponIds, sellerNo);
 	}
 	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
