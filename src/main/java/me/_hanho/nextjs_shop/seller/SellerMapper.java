@@ -15,7 +15,6 @@ import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
-import me._hanho.nextjs_shop.seller.dto.SellerProductCouponAllowedResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -64,11 +63,15 @@ public interface SellerMapper {
 	
 	void deleteCoupon(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
-	List<SellerProductCouponAllowedResponse> getSellerCouponAllow(@Param("couponId") String couponId, @Param("sellerNo") Integer sellerNo);
+	List<Integer> getProductIdsForCouponAllow(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
-	void insertSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
+	void insertSellerCouponAllowList(@Param("couponId") Integer couponId, @Param("productIds") List<Integer> addProductIds, @Param("sellerNo") Integer sellerNo);
 	
-	void deleteSellerCouponAllowList(@Param("couponId") String couponId, @Param("productIds") List<Integer> productIds, @Param("sellerNo") Integer sellerNo);
+	void deleteSellerCouponAllowList(@Param("couponId") Integer couponId, @Param("productIds") List<Integer> removeProductIds, @Param("sellerNo") Integer sellerNo);
+
+	void activateCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
+
+	void suspendCoupons(@Param("couponIds") List<Integer> suspendedCouponIds, @Param("sellerNo") Integer sellerNo);
 	
 	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
 	

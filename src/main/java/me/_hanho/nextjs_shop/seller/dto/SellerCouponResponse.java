@@ -22,6 +22,7 @@ public class SellerCouponResponse {
     private Boolean isStackable;
     private Boolean isProductRestricted;
     private int amount;
+    private int usedCount;
     private Timestamp startDate;
     private Timestamp endDate;
     private Timestamp createdAt;

@@ -35,7 +35,6 @@ import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
-import me._hanho.nextjs_shop.seller.dto.SellerProductCouponAllowedResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -361,37 +360,63 @@ public class SellerController {
 	}
 	// 쿠폰 허용제품 조회 (+판매자제품이 너무 많으면 허용X제품 조회를 분리하기)
 	@GetMapping("/coupon/allowed")
-	public ResponseEntity<Map<String, Object>> getSellerProductCouponAllowed(@RequestParam("couponId") String couponId,
+	public ResponseEntity<Map<String, Object>> getSellerProductCouponAllowed(@RequestParam("couponId") Integer couponId,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[getSellerProductCouponAllowed] couponId={}, sellerNo={}", couponId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<SellerProductCouponAllowedResponse> CouponAllowedProductList = sellerService.getSellerCouponAllow(couponId, sellerNo);
+		List<Integer> couponAllowedProductIds = sellerService.getProductIdsForCouponAllow(couponId, sellerNo);
 		
-		result.put("CouponAllowedProductList", CouponAllowedProductList);
+		result.put("couponAllowedProductIds", couponAllowedProductIds);
 		result.put("message", "SELLER_COUPON_ALLOWED_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 쿠폰 허용제품 변경
 	@PostMapping("/coupon/allowed")
 	public ResponseEntity<Map<String, Object>> setSellerCouponAllow(
-			@RequestParam("couponId") String couponId, 
-			@RequestParam("productIds") List<Integer> productIds,
-			@RequestParam("allow") Boolean allow, 
+			@RequestParam("couponId") Integer couponId, 
+			@RequestParam( value = "addProductIds", required = false) List<Integer> addProductIds,
+			@RequestParam( value = "removeProductIds", required = false) List<Integer> removeProductIds,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("[setSellerCouponAllow] couponId={}, productIds={}, allow={}, sellerNo={}", couponId, productIds, allow, sellerNo);
+		logger.info("[setSellerCouponAllow] couponId={}, addProductIds={}, removeProductIds={}, sellerNo={}", couponId, addProductIds, removeProductIds, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		sellerService.setSellerCouponAllow(couponId, productIds, allow, sellerNo);
+		if(addProductIds != null) {
+			sellerService.insertSellerCouponAllow(couponId, addProductIds, sellerNo);
+		}
+		if(removeProductIds != null) {
+			sellerService.deleteSellerCouponAllow(couponId, removeProductIds, sellerNo);
+		}
 		
 		result.put("message", "SELLER_COUPON_ALLOWED_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 쿠폰 상태변경
+	@PostMapping("/coupon/status")
+	public ResponseEntity<Map<String, Object>> setSellerCouponStatus(
+			@RequestParam("couponId") Integer couponId, 
+			@RequestParam( value = "activeCouponIds", required = false) List<Integer> activeCouponIds,
+			@RequestParam( value = "suspendedCouponIds", required = false) List<Integer> suspendedCouponIds,
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[setSellerCouponStatus] couponId={}, activeCouponIds={}, suspendedCouponIds={}, sellerNo={}", couponId, activeCouponIds, suspendedCouponIds, sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		if(activeCouponIds != null) {
+			sellerService.activateCoupons(activeCouponIds, sellerNo);
+		}
+		if(suspendedCouponIds != null) {
+			sellerService.suspendCoupons(suspendedCouponIds, sellerNo);
+		}
+		
+		result.put("message", "SELLER_COUPON_STATUS_SET_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 쿠폰을 유저에게 발행하기 - 특정 조건의 유저에게 발급하기!!! 아래 API와 연동하여서
 	@PostMapping("/coupon/user-coupon")
-	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(@RequestParam("couponId") String couponId, @RequestParam("userNoList") List<Integer> userNoList, @RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(@RequestParam("couponId") Integer couponId, @RequestParam("userNoList") List<Integer> userNoList, @RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[issueCouponsToUsers] couponId={}, userNoList={}, sellerNo={}", couponId, userNoList, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();

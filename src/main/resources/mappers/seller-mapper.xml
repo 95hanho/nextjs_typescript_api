@@ -120,7 +120,8 @@
 	<select id="getSellerCouponList">
 		SELECT coupon_id, description, coupon_code, 
 			discount_type, discount_value, max_discount, minimum_order_before_amount, 
-			status, is_stackable, is_product_restricted, amount, start_date, end_date, 
+			status, is_stackable, is_product_restricted, amount, used_count,
+			start_date, end_date, 
 			created_at, updated_at
 		FROM nextjs_shop_coupon
 		WHERE seller_no = #{sellerNo} AND is_deleted = 0
@@ -150,25 +151,12 @@
 		SET is_deleted = 1
 		WHERE coupon_id = #{couponId} AND seller_no = #{sellerNo}
 	</update>
-	<select id="getSellerCouponAllow">
-	    SELECT
-	        p.product_id,
-	        p.name AS productName,
-	        ca.coupon_allowed_id,
-	        ca.coupon_id
-	    FROM nextjs_shop_product p
-	    LEFT JOIN nextjs_shop_coupon_allowed ca
-	        ON p.product_id = ca.product_id
-	       AND ca.coupon_id = #{couponId}
-	    WHERE p.seller_no = #{sellerNo}
-	    ORDER BY
-	        CASE
-	            WHEN ca.coupon_id IS NOT NULL THEN 0
-	            ELSE 1
-	        END ASC,
-	        ca.coupon_allowed_id DESC,
-	        p.updated_at DESC,
-	        p.created_at DESC
+	<select id="getProductIdsForCouponAllow">
+	    SELECT ca.product_id
+	    FROM nextjs_shop_coupon_allowed ca
+	    JOIN nextjs_shop_coupon c ON c.coupon_id = ca.coupon_id
+	    WHERE c.seller_no = #{sellerNo} AND ca.coupon_id = #{couponId}
+	    ORDER BY ca.product_id DESC
 	</select>
 	<insert id="insertSellerCouponAllowList">
 	    INSERT IGNORE INTO nextjs_shop_coupon_allowed (coupon_id, product_id)
@@ -198,6 +186,24 @@
 	          #{pid}
 	      </foreach>
 	</delete>
+	<update id="activateCoupons">
+		UPDATE nextjs_shop_coupon
+		SET status = 'ACTIVE'
+		WHERE coupon_id IN
+		<foreach collection="couponIds" item="cid" open="(" close=")" separator=",">
+			#{cid}
+		</foreach>
+		AND seller_no = #{sellerNo}
+	</update>
+	<update id="suspendCoupons">
+		UPDATE nextjs_shop_coupon
+		SET status = 'SUSPENDED'
+		WHERE coupon_id IN
+		<foreach collection="couponIds" item="cid" open="(" close=")" separator=",">
+			#{cid}
+		</foreach>
+		AND seller_no = #{sellerNo}
+	</update>
 	<select id="getProductViewCountList">
 	    SELECT pv.user_id, u.name AS user_name, pv.product_id,
 			p.name AS productName,
