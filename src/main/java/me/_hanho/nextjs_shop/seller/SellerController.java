@@ -358,6 +358,26 @@ public class SellerController {
 		result.put("message", "SELLER_COUPON_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 쿠폰 이름 중복 검사
+	@GetMapping("/coupon/description/duplicate")
+	public ResponseEntity<Map<String, Object>> checkCouponDescriptionDuplicate(
+			@RequestParam("description") String description,
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[checkCouponDescriptionDuplicate] description={}, sellerNo={}", description, sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		boolean isDuplicate = sellerService.isCouponDescriptionDuplicate(description, sellerNo);
+		
+		if (isDuplicate) {
+			result.put("message", "SELLER_COUPON_DESCRIPTION_DUPLICATED");
+			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+		} else {
+			result.put("message", "SELLER_COUPON_DESCRIPTION_AVAILABLE");
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+	}
+
 	// 쿠폰 허용제품 조회 (+판매자제품이 너무 많으면 허용X제품 조회를 분리하기)
 	@GetMapping("/coupon/allowed")
 	public ResponseEntity<Map<String, Object>> getSellerProductCouponAllowed(@RequestParam("couponId") Integer couponId,
@@ -396,19 +416,18 @@ public class SellerController {
 	// 쿠폰 상태변경
 	@PostMapping("/coupon/status")
 	public ResponseEntity<Map<String, Object>> setSellerCouponStatus(
-			@RequestParam("couponId") Integer couponId, 
 			@RequestParam( value = "activeCouponIds", required = false) List<Integer> activeCouponIds,
 			@RequestParam( value = "suspendedCouponIds", required = false) List<Integer> suspendedCouponIds,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("[setSellerCouponStatus] couponId={}, activeCouponIds={}, suspendedCouponIds={}, sellerNo={}", couponId, activeCouponIds, suspendedCouponIds, sellerNo);
+		logger.info("[setSellerCouponStatus] activeCouponIds={}, suspendedCouponIds={}, sellerNo={}", activeCouponIds, suspendedCouponIds, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		if(activeCouponIds != null) {
-			sellerService.activateCoupons(activeCouponIds, sellerNo);
-		}
 		if(suspendedCouponIds != null) {
-			sellerService.suspendCoupons(suspendedCouponIds, sellerNo);
+			sellerService.activateCoupons(suspendedCouponIds, sellerNo);
+		}
+		if(activeCouponIds != null) {
+			sellerService.suspendCoupons(activeCouponIds, sellerNo);
 		}
 		
 		result.put("message", "SELLER_COUPON_STATUS_SET_SUCCESS");

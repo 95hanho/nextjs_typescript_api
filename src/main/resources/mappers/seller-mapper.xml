@@ -151,6 +151,11 @@
 		SET is_deleted = 1
 		WHERE coupon_id = #{couponId} AND seller_no = #{sellerNo}
 	</update>
+	<select id="getSellerCouponCountByDescription">
+	    SELECT COUNT(1)
+	    FROM nextjs_shop_coupon
+	    WHERE description = #{description} AND seller_no = #{sellerNo}
+	</select>
 	<select id="getProductIdsForCouponAllow">
 	    SELECT ca.product_id
 	    FROM nextjs_shop_coupon_allowed ca
