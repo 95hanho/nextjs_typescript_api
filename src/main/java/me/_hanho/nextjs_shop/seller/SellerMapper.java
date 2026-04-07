@@ -62,6 +62,8 @@ public interface SellerMapper {
 	void updateCoupon(@Param("c") UpdateCouponRequest coupon, @Param("sellerNo") Integer sellerNo);
 	
 	void deleteCoupon(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	Integer getSellerCouponCountByDescription(@Param("description") String description, @Param("sellerNo") Integer sellerNo);
 	
 	List<Integer> getProductIdsForCouponAllow(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
@@ -69,9 +71,9 @@ public interface SellerMapper {
 	
 	void deleteSellerCouponAllowList(@Param("couponId") Integer couponId, @Param("productIds") List<Integer> removeProductIds, @Param("sellerNo") Integer sellerNo);
 
-	void activateCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
+	void activateCoupons(@Param("couponIds") List<Integer> suspendedCouponIds, @Param("sellerNo") Integer sellerNo);
 
-	void suspendCoupons(@Param("couponIds") List<Integer> suspendedCouponIds, @Param("sellerNo") Integer sellerNo);
+	void suspendCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
 	
 	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
 	

@@ -150,6 +150,11 @@ public class SellerService {
 	public void deleteCoupon(Integer couponId, Integer sellerNo) {
 		sellerMapper.deleteCoupon(couponId, sellerNo);
 	}
+	public boolean isCouponDescriptionDuplicate(String description, Integer sellerNo) {
+		Integer couponCount = sellerMapper.getSellerCouponCountByDescription(description, sellerNo);
+		return couponCount != null && couponCount > 0;
+	}
+	
 	public List<Integer> getProductIdsForCouponAllow(Integer couponId, Integer sellerNo) {
 		return sellerMapper.getProductIdsForCouponAllow(couponId, sellerNo);
 	}
@@ -159,11 +164,11 @@ public class SellerService {
 	public void deleteSellerCouponAllow(Integer couponId, List<Integer> removeProductIds,  Integer sellerNo) {
 	    sellerMapper.deleteSellerCouponAllowList(couponId, removeProductIds, sellerNo);
 	}
-	public void activateCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
-	    sellerMapper.activateCoupons(activeCouponIds, sellerNo);
+	public void activateCoupons(List<Integer> suspendedCouponIds,  Integer sellerNo) {
+	    sellerMapper.activateCoupons(suspendedCouponIds, sellerNo);
 	}
-	public void suspendCoupons(List<Integer> suspendedCouponIds,  Integer sellerNo) {
-	    sellerMapper.suspendCoupons(suspendedCouponIds, sellerNo);
+	public void suspendCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
+	    sellerMapper.suspendCoupons(activeCouponIds, sellerNo);
 	}
 	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
