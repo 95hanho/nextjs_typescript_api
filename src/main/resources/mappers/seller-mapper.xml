@@ -134,16 +134,22 @@
 	</select>
 	<insert id="addCoupon">
     	INSERT INTO nextjs_shop_coupon(description, coupon_code, discount_type, discount_value, max_discount,
-        	minimum_order_before_amount, amount, start_date, end_date, seller_no)
+        	minimum_order_before_amount, status, is_stackable, is_product_restricted, amount, start_date, end_date, seller_no, issue_method)
     	VALUES(#{c.description}, #{c.couponCode}, #{c.discountType}, #{c.discountValue}, #{c.maxDiscount},
-	        #{c.minimumOrderBeforeAmount}, #{c.amount}, #{c.startDate}, #{c.endDate}, #{sellerNo})
+	        #{c.minimumOrderBeforeAmount}, 'SUSPENDED', #{c.isStackable}, #{c.isProductRestricted}, #{c.amount}, #{c.startDate}, #{c.endDate}, #{sellerNo}, 'CLAIM')
 	</insert>
 	<update id="updateCoupon">
 		UPDATE nextjs_shop_coupon
-		SET description = #{c.description}, discount_value = #{c.discountValue}, max_discount = #{c.maxDiscount}, 
-			minimum_order_before_amount = #{c.minimumOrderBeforeAmount}, status = #{c.status},
-			is_stackable = #{c.isStackable}, is_product_restricted = #{c.isProductRestricted}, amount = #{c.amount}, 
-			start_date = #{c.startDate}, end_date = #{c.endDate}
+		SET description = #{c.description}, 
+			discount_value = #{c.discountValue}, 
+			max_discount = #{c.maxDiscount}, 
+			minimum_order_before_amount = #{c.minimumOrderBeforeAmount}, 
+			status = #{c.status},
+			is_stackable = #{c.isStackable}, 
+			is_product_restricted = #{c.isProductRestricted}, 
+			amount = #{c.amount}, 
+			start_date = #{c.startDate}, 
+			end_date = #{c.endDate}
 		WHERE coupon_id = #{c.couponId} AND seller_no = #{sellerNo}
 	</update>
 	<update id="deleteCoupon">

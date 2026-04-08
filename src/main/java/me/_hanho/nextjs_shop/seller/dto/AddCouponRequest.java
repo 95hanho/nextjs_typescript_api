@@ -2,6 +2,7 @@ package me._hanho.nextjs_shop.seller.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -20,13 +21,15 @@ public class AddCouponRequest {
     private String couponCode;
     @NotBlank private String discountType; // 'percentage','fixed_amount'
     @NotNull private BigDecimal discountValue;
-    @NotNull private BigDecimal maxDiscount;
-    private BigDecimal minimumOrderBeforeAmount;
+    private BigDecimal maxDiscount;
+    @NotNull private BigDecimal minimumOrderBeforeAmount;
+    @NotNull private Boolean isStackable;
+    @NotNull private Boolean isProductRestricted;
     @NotNull
     @Positive
     private Integer amount;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime startDate;
+    private OffsetDateTime startDate;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime endDate;
+    private OffsetDateTime endDate;
 }
