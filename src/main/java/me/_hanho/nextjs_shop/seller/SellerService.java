@@ -18,11 +18,13 @@ import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
+import me._hanho.nextjs_shop.seller.dto.ProductImageResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -100,6 +102,17 @@ public class SellerService {
 	        throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 	    }
 	}
+	public SellerProductDetailResponse getProductDetail(Integer productId, Integer sellerNo) {
+		SellerProductDetailResponse productDetail = sellerMapper.getProductDetail(productId, sellerNo);
+		if (productDetail == null) {
+			throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
+		}
+		// 이미지 조회
+		List<ProductImageResponse> productImages = sellerMapper.getProductImages(productId);
+		productDetail.setProductImages(productImages);
+		return productDetail;
+	}
+
 	public void addProductOption(AddProductOptionRequest productOption, Integer sellerNo) {
 		try {
 		    int inserted = sellerMapper.addProductOption(productOption, sellerNo);

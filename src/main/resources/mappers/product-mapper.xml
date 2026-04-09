@@ -65,6 +65,7 @@
 	  <foreach collection="list" item="id" open="(" separator="," close=")">
 	    #{id}
 	  </foreach>
+	  AND pi.is_thumbnail = 1
 	  ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 
@@ -231,7 +232,8 @@
 		    f.copyright_url
 		FROM nextjs_shop_product_image pi
 		JOIN nextjs_shop_file f ON pi.file_id = f.file_id
-		WHERE product_id = #{productId}
+		WHERE product_id = #{productId} 
+			AND pi.is_thumbnail = 1
 		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 	<select id="getProductOptionList">

@@ -87,6 +87,30 @@
 		after_service_contact = #{p.afterServiceContact}, after_service_manager = #{p.afterServiceManager}, after_service_phone = #{p.afterServicePhone}
 		WHERE product_id = #{p.productId} AND seller_no = #{sellerNo}
 	</update>
+	<select id="getProductDetail">
+		SELECT p.product_id, p.name, p.color_name, p.origin_price, 
+			p.final_price, p.created_at, p.updated_at,
+			p.like_count, p.view_count, p.wish_count, p.sale_stop,
+			p.menu_sub_id, ms.menu_name AS subMenuName, 
+			mt.menu_name AS topMenuName,
+			mt.gender, p.material_info, p.manufacturer_name, 
+			p.country_of_origin, p.wash_care_info, p.manufactured_ym, 
+			p.quality_guarantee_info, p.after_service_contact, 
+			p.after_service_manager, p.after_service_phone
+		FROM nextjs_shop_product p
+		JOIN nextjs_shop_menu_sub ms ON p.menu_sub_id = ms.menu_sub_id
+		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
+		WHERE p.product_id = #{productId} AND p.seller_no = #{sellerNo}
+	</select>
+	<select id="getProductImages">
+		SELECT pi.product_image_id, pi.sort_key, 
+			pi.is_thumbnail,
+			pi.file_id, f.file_name, f.store_name,
+			f.file_path, f.copyright, f.copyright_url
+		FROM nextjs_shop_product_image pi
+		JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+		WHERE pi.product_id = #{productId} AND f.is_deleted = 0
+	</select>
 	<insert id="addProductOption">
 		INSERT INTO nextjs_shop_product_option (
 			product_id,

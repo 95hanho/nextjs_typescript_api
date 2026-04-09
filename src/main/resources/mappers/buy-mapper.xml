@@ -259,10 +259,12 @@
 					product_id, 
 					MIN(sort_key) AS min_sort_key
 				FROM nextjs_shop_product_image
+				WHERE is_thumbnail = 1
 				GROUP BY product_id
 			) min_pi 
 			ON pi.product_id = min_pi.product_id 
 			AND pi.sort_key = min_pi.min_sort_key
+			WHERE pi.is_thumbnail = 1
 		) tpi ON tpi.product_id = p.product_id
 		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE sh.user_no = #{userNo} 
@@ -406,10 +408,12 @@
 					product_id, 
 					MIN(sort_key) AS min_sort_key
 				FROM nextjs_shop_product_image
+				WHERE is_thumbnail = 1
 				GROUP BY product_id
 			) min_pi 
 			ON pi.product_id = min_pi.product_id 
 			AND pi.sort_key = min_pi.min_sort_key
+			WHERE pi.is_thumbnail = 1
 		) tpi ON tpi.product_id = p.product_id
 		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE sh.user_no = #{userNo} 
