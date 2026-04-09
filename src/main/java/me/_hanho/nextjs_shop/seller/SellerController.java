@@ -202,8 +202,9 @@ public class SellerController {
 	}
 	// 제품 수정
 	@PutMapping("/product")
-	public ResponseEntity<Map<String, Object>> updateProduct(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
-			@Valid @ModelAttribute UpdateProductRequest product) {
+	public ResponseEntity<Map<String, Object>> updateProduct(
+			@Valid @ModelAttribute UpdateProductRequest product,
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[updateProduct] product={}, sellerNo={}", product, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -298,7 +299,8 @@ public class SellerController {
 	}
 	// 쿠폰 등록
 	@PostMapping("/coupon")
-	public ResponseEntity<Map<String, Object>> addCoupon(@Valid @ModelAttribute AddCouponRequest coupon,
+	public ResponseEntity<Map<String, Object>> addCoupon(
+			@Valid @ModelAttribute AddCouponRequest coupon,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[addCoupon] coupon={}, sellerNo={}", coupon, sellerNo);

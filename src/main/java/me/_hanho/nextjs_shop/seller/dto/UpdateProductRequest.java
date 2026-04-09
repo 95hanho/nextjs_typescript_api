@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.seller.dto;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -25,8 +26,8 @@ public class UpdateProductRequest {
 	@NotBlank private String manufacturerName; // 제조자
 	@NotBlank private String countryOfOrigin; // 제조국
     private String washCareInfo; // 세탁방법 및 주의사항
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // @ModelAttribute일 때 특히 필요
-    private LocalDate manufacturedYm; // 제조연월
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private OffsetDateTime manufacturedYm; // 제조연월
     private String qualityGuaranteeInfo; // 품질보증기준s
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
