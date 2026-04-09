@@ -35,6 +35,7 @@ import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -214,7 +215,7 @@ public class SellerController {
 		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 제품 상세보기
+	// 제품 상세보기 조회
 	@GetMapping("/product/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
 			@PathVariable("productId") int productId) {
@@ -222,12 +223,15 @@ public class SellerController {
 		logger.info("[getProductDetail] productId={}, sellerNo={}", productId, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
+		SellerProductDetailResponse productDetail = sellerService.getProductDetail(productId, sellerNo);
+
 		// 실제리스트에 뜨는 예시도 보여주고
 		// 해당 리뷰 보여주고
 		// 해당 QnA 보여주고
 		// 판매자 제품에 적용 가능한 쿠폰조회 getProductAvailableCoupons
 
 		result.put("message", "SELLER_PRODUCT_DETAIL_FETCH_SUCCESS");
+		result.put("productDetail", productDetail);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상세 사진수정

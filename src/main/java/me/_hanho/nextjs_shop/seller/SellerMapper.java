@@ -10,11 +10,13 @@ import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
+import me._hanho.nextjs_shop.seller.dto.ProductImageResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
@@ -46,6 +48,10 @@ public interface SellerMapper {
 	void addProduct(@Param("p") AddProductRequest product, @Param("sellerNo") Integer sellerNo);
 	
 	int updateProduct(@Param("p") UpdateProductRequest product, @Param("sellerNo") Integer sellerNo);
+
+	SellerProductDetailResponse getProductDetail(@Param("productId") Integer productId, @Param("sellerNo") Integer sellerNo);
+
+	List<ProductImageResponse> getProductImages(Integer productId);
 
 	int addProductOption(@Param("po") AddProductOptionRequest productOption, @Param("sellerNo") Integer sellerNo);
 

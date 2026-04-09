@@ -53,9 +53,10 @@
 				SELECT pi2.product_image_id
 				FROM nextjs_shop_product_image pi2
 				WHERE pi2.product_id = p.product_id
+					AND pi2.is_thumbnail = 1
 				ORDER BY pi2.sort_key ASC, pi2.product_image_id ASC
 				LIMIT 1
-			)
+			) AND pi.is_thumbnail = 1
 		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
 		WHERE oi.order_id IN
 		<foreach collection="orderIds" item="orderId" open="(" separator="," close=")">
@@ -96,9 +97,10 @@
 				SELECT pi2.product_image_id
 				FROM nextjs_shop_product_image pi2
 				WHERE pi2.product_id = p.product_id
+					AND pi2.is_thumbnail = 1
 				ORDER BY pi2.sort_key ASC, pi2.product_image_id ASC
 				LIMIT 1
-			)
+			) AND pi.is_thumbnail = 1
 		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
 		WHERE oi.order_id = #{orderId}
 	</select>
@@ -189,10 +191,11 @@
 					product_id,
 					MIN(sort_key) AS min_sort_key
 				FROM nextjs_shop_product_image
+				WHERE is_thumbnail = 1
 				GROUP BY product_id
-			) first_img
-				ON pi_inner.product_id = first_img.product_id
-			AND pi_inner.sort_key   = first_img.min_sort_key
+			) first_img ON pi_inner.product_id = first_img.product_id
+			AND pi_inner.sort_key = first_img.min_sort_key
+			WHERE pi_inner.is_thumbnail = 1
 		) tpi ON tpi.product_id = p.product_id
 		LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
 		WHERE c.user_no = #{userNo} AND c.is_deleted = 0
