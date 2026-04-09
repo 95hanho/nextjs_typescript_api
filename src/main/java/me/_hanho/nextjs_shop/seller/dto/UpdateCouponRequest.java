@@ -20,8 +20,8 @@ public class UpdateCouponRequest {
     @NotBlank private String description;
     @NotBlank private String discountType; // 'percentage','fixed_amount' -> 변경은 불가하게
     @NotNull private BigDecimal discountValue;
-    @NotNull private BigDecimal maxDiscount;
-    private BigDecimal minimumOrderBeforeAmount;
+    private BigDecimal maxDiscount;
+    @NotNull private BigDecimal minimumOrderBeforeAmount;
     @NotBlank private String status; // 'ACTIVE','SUSPENDED','DELETED'
     @NotNull private Boolean isStackable;
     @NotNull private Boolean isProductRestricted;

@@ -321,7 +321,8 @@ public class SellerController {
 	}
 	// 쿠폰 수정
 	@PutMapping("/coupon")
-	public ResponseEntity<Map<String, Object>> updateCoupon(@Valid @ModelAttribute UpdateCouponRequest coupon,
+	public ResponseEntity<Map<String, Object>> updateCoupon(
+		@Valid @ModelAttribute UpdateCouponRequest coupon,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[updateCoupon] coupon={}, sellerNo={}", coupon, sellerNo);
