@@ -242,7 +242,8 @@ public class SellerController {
 //	}
 	// 제품 옵션 추가
 	@PostMapping("/product/option")
-	public ResponseEntity<Map<String, Object>> setSellerProductOption(@Valid @ModelAttribute AddProductOptionRequest productOption,
+	public ResponseEntity<Map<String, Object>> setSellerProductOption(
+			@Valid @ModelAttribute AddProductOptionRequest productOption,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[setSellerProductOption] productOption={}, sellerNo={}", productOption, sellerNo);
@@ -255,7 +256,8 @@ public class SellerController {
 	}
 	// 제품 옵션 수정
 	@PutMapping("/product/option")
-	public ResponseEntity<Map<String, Object>> updateSellerProductOption(@Valid @ModelAttribute UpdateProductOptionRequest productOption,
+	public ResponseEntity<Map<String, Object>> updateSellerProductOption(
+			@Valid @ModelAttribute UpdateProductOptionRequest productOption,
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[updateSellerProductOption] productOption={}, sellerNo={}", productOption, sellerNo);
@@ -268,7 +270,8 @@ public class SellerController {
 	}
 	// 제품 옵션 삭제
 	@DeleteMapping("/product/option/{productOptionId}")
-	public ResponseEntity<Map<String, Object>> deleteSellerProductOption(@PathVariable("productOptionId") Integer productOptionId, 
+	public ResponseEntity<Map<String, Object>> deleteSellerProductOption(
+			@PathVariable("productOptionId") Integer productOptionId, 
 			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[deleteSellerProductOption] productOptionId={}, sellerNo={}", productOptionId, sellerNo);

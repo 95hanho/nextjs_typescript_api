@@ -62,7 +62,7 @@
 		WHERE p.seller_no = #{sellerNo}
 	</select>
 	<select id="selectDetailsByProductIds">
-		SELECT product_option_id, product_id, add_price, stock, created_at, size, sales_count
+		SELECT product_option_id, product_id, add_price, stock, is_displayed, size, sales_count, created_at, updated_at
 		FROM nextjs_shop_product_option
 		WHERE product_id IN
 		<foreach collection="ids" item="id" open="(" close=")" separator=",">
@@ -134,9 +134,9 @@
 	</select>
 	<insert id="addCoupon">
     	INSERT INTO nextjs_shop_coupon(description, coupon_code, discount_type, discount_value, max_discount,
-        	minimum_order_before_amount, status, is_stackable, is_product_restricted, amount, start_date, end_date, seller_no, issue_method)
+        	minimum_order_before_amount, is_stackable, is_product_restricted, amount, start_date, end_date, seller_no, issue_method)
     	VALUES(#{c.description}, #{c.couponCode}, #{c.discountType}, #{c.discountValue}, #{c.maxDiscount},
-	        #{c.minimumOrderBeforeAmount}, 'SUSPENDED', #{c.isStackable}, #{c.isProductRestricted}, #{c.amount}, #{c.startDate}, #{c.endDate}, #{sellerNo}, 'CLAIM')
+	        #{c.minimumOrderBeforeAmount}, #{c.isStackable}, #{c.isProductRestricted}, #{c.amount}, #{c.startDate}, #{c.endDate}, #{sellerNo}, 'CLAIM')
 	</insert>
 	<update id="updateCoupon">
 		UPDATE nextjs_shop_coupon
