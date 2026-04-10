@@ -25,6 +25,7 @@ public class SellerProductDetailResponse {
 	private boolean saleStop; // 판매 중지여부
 	private int menuSubId;
     private String subMenuName;
+    private int menuTopId;
 	private String topMenuName;
     private String gender;
     private String materialInfo; // 제품 소재
