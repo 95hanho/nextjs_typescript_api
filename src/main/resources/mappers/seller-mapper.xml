@@ -92,6 +92,7 @@
 			p.final_price, p.created_at, p.updated_at,
 			p.like_count, p.view_count, p.wish_count, p.sale_stop,
 			p.menu_sub_id, ms.menu_name AS subMenuName, 
+			mt.menu_top_id,
 			mt.menu_name AS topMenuName,
 			mt.gender, p.material_info, p.manufacturer_name, 
 			p.country_of_origin, p.wash_care_info, p.manufactured_ym, 

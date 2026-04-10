@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class SellerProductDetailResponse {
     private int productId;
 	private String name;
-	private String colorName;
+	private String colorName; // 'BLACK','WHITE','GRAY','NAVY','BEIGE','RED','PINK','ORANGE','YELLOW','GREEN','KHAKI','MINT','BLUE','SKYBLUE','PURPLE','BROWN','IVORY','CHARCOAL','DENIM'
 	private int originPrice;
 	private int finalPrice;
 	private Timestamp createdAt;
@@ -25,6 +25,7 @@ public class SellerProductDetailResponse {
 	private boolean saleStop; // 판매 중지여부
 	private int menuSubId;
     private String subMenuName;
+    private int menuTopId;
 	private String topMenuName;
     private String gender;
     private String materialInfo; // 제품 소재

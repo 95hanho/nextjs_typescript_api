@@ -15,7 +15,7 @@ public class ProductOption {
     private int addPrice;
     private int stock;
     private boolean isDisplayed;
-    private String size;
+    private String size; // 'XS','S','M','L','XL','XXL'
     private int salesCount;
     private Timestamp createdAt;
     private Timestamp updatedAt;
