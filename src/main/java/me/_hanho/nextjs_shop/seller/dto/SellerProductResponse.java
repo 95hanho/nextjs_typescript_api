@@ -14,7 +14,7 @@ import me._hanho.nextjs_shop.model.ProductOption;
 public class SellerProductResponse {
 	private int productId;
 	private String name;
-	private String colorName;
+	private String colorName; // 'BLACK','WHITE','GRAY','NAVY','BEIGE','RED','PINK','ORANGE','YELLOW','GREEN','KHAKI','MINT','BLUE','SKYBLUE','PURPLE','BROWN','IVORY','CHARCOAL','DENIM'
 	private int originPrice;
 	private int finalPrice;
 	private Timestamp createdAt;

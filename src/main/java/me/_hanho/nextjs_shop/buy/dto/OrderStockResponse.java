@@ -19,7 +19,7 @@ public class OrderStockResponse {
 	private String productName;
 	private int originPrice;
 	private int finalPrice;
-	private String colorName;
+	private String colorName; // 'BLACK','WHITE','GRAY','NAVY','BEIGE','RED','PINK','ORANGE','YELLOW','GREEN','KHAKI','MINT','BLUE','SKYBLUE','PURPLE','BROWN','IVORY','CHARCOAL','DENIM'
 
 	private Integer wishId; // 찜 여부 확인용 (null이면 찜 안한 것)
 	

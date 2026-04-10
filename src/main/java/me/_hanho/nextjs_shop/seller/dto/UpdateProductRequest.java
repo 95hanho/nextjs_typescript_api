@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class UpdateProductRequest {
 	@NotNull private Integer productId;
 	@NotBlank private String name;
-	@NotBlank private String colorName;
+	@NotBlank private String colorName; // 'BLACK','WHITE','GRAY','NAVY','BEIGE','RED','PINK','ORANGE','YELLOW','GREEN','KHAKI','MINT','BLUE','SKYBLUE','PURPLE','BROWN','IVORY','CHARCOAL','DENIM'
 	@NotNull private Integer originPrice;
 	@NotNull private Integer finalPrice;
 	@NotNull private boolean saleStop; // 판매 중지여부

@@ -26,7 +26,7 @@ public class OrderItemWithReview {
     
     private int productId;
     private String productName;
-    private String colorName;
+    private String colorName; // 'BLACK','WHITE','GRAY','NAVY','BEIGE','RED','PINK','ORANGE','YELLOW','GREEN','KHAKI','MINT','BLUE','SKYBLUE','PURPLE','BROWN','IVORY','CHARCOAL','DENIM'
     private int originPrice;
     private int finalPrice;
     
