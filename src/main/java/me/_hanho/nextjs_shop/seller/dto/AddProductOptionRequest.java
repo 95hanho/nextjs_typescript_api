@@ -13,5 +13,5 @@ public class AddProductOptionRequest {
     @NotNull private Integer productId;
     @NotNull private Integer addPrice;
     @NotNull private Integer stock;
-    @NotBlank private String size;
+    @NotBlank private String size; // 'XS','S','M','L','XL','XXL'
 }

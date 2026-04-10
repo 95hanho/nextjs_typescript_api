@@ -18,7 +18,7 @@ public class MyOrderDetailItem {
     private int holdId;
     private String productName;
     private int count;
-    private String size;
+    private String size; // 'XS','S','M','L','XL','XXL'
     private int originPrice;
     private int finalPrice;
     private int addPrice;

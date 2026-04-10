@@ -17,7 +17,7 @@ public class CartProductResponse {
 	private int productOptionId;
 	private int addPrice;
     private int stock;
-    private String size;
+    private String size; // 'XS','S','M','L','XL','XXL'
     
     private int productId;
     private String productName;
