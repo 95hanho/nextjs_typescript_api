@@ -19,9 +19,9 @@ public class AddProductRequest {
     @NotNull private Integer originPrice;
     @NotNull private Integer finalPrice;
     @NotNull private Integer menuSubId;
-    @NotBlank private String materialInfo; // 제품 소재
-    @NotBlank private String manufacturerName; // 제조자
-    @NotBlank private String countryOfOrigin; // 제조국
+    private String materialInfo; // 제품 소재
+    private String manufacturerName; // 제조자
+    private String countryOfOrigin; // 제조국
     private String washCareInfo; // 세탁방법 및 주의사항
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate manufacturedYm; // 제조연월
