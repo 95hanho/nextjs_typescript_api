@@ -70,7 +70,10 @@
 		</foreach>
 		ORDER BY product_id, size
 	</select>
-	<insert id="addProduct">
+	<insert id="addProduct" parameterType="AddProductRequest"
+        useGeneratedKeys="true"
+        keyProperty="p.productId"
+        keyColumn="product_id">
 		INSERT INTO nextjs_shop_product(name, color_name, 
 			origin_price, final_price, seller_no, menu_sub_id, 
 			material_info, manufacturer_name, 
