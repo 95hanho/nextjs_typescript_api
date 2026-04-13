@@ -93,8 +93,9 @@ public class SellerService {
         
 		return sellerProductList;
 	}
-	public void addProduct(AddProductRequest product, Integer sellerNo) {
+	public Integer addProduct(AddProductRequest product, Integer sellerNo) {
 		sellerMapper.addProduct(product, sellerNo);
+		return product.getProductId();
 	}
 	public void updateProduct(UpdateProductRequest product, Integer sellerNo) {
 	    int updated = sellerMapper.updateProduct(product, sellerNo);

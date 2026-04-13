@@ -197,9 +197,10 @@ public class SellerController {
 		logger.info("[addProduct] product={}, sellerNo={}", product, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		sellerService.addProduct(product, sellerNo);
+		Integer productId = sellerService.addProduct(product, sellerNo);
 
 		result.put("message", "SELLER_PRODUCT_SAVE_SUCCESS");
+		result.put("productId", productId);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 수정

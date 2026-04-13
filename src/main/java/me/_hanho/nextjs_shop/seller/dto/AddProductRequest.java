@@ -29,4 +29,6 @@ public class AddProductRequest {
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
     private String afterServicePhone; // (선택) A/S 전화번호
+
+    private Integer productId; // 상품 등록 후 반환될 상품 ID
 }
