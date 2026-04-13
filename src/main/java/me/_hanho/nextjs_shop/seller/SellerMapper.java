@@ -51,6 +51,8 @@ public interface SellerMapper {
 
 	SellerProductDetailResponse getProductDetail(@Param("productId") Integer productId, @Param("sellerNo") Integer sellerNo);
 
+	Integer isProductNameDuplicate(String productName);
+
 	List<ProductImageResponse> getProductImages(Integer productId);
 
 	int addProductOption(@Param("po") AddProductOptionRequest productOption, @Param("sellerNo") Integer sellerNo);

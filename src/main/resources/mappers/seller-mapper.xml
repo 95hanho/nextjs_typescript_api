@@ -103,6 +103,11 @@
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE p.product_id = #{productId} AND p.seller_no = #{sellerNo}
 	</select>
+	<select id="isProductNameDuplicate">
+		SELECT COUNT(1)
+		FROM nextjs_shop_product
+		WHERE name = #{productName}
+	</select>
 	<select id="getProductImages">
 		SELECT pi.product_image_id, pi.sort_key, 
 			pi.is_thumbnail,
