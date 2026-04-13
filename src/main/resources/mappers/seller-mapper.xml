@@ -71,10 +71,13 @@
 		ORDER BY product_id, size
 	</select>
 	<insert id="addProduct">
-		INSERT INTO nextjs_shop_product(name, color_name, origin_price, final_price, seller_no, menu_sub_id, material_info, manufacturer_name, 
-		country_of_origin, wash_care_info, manufactured_ym, quality_guarantee_info, 
-		after_service_contact, after_service_manager, after_service_phone)
-		VALUES(#{p.name}, #{p.colorName}, #{p.originPrice}, #{p.finalPrice}, #{sellerNo}, #{p.menuSubId}, 
+		INSERT INTO nextjs_shop_product(name, color_name, 
+			origin_price, final_price, seller_no, menu_sub_id, 
+			material_info, manufacturer_name, 
+			country_of_origin, wash_care_info, manufactured_ym, quality_guarantee_info, 
+			after_service_contact, after_service_manager, after_service_phone)
+		VALUES(#{p.name}, #{p.colorName}, 
+			#{p.originPrice}, #{p.finalPrice}, #{sellerNo}, #{p.menuSubId}, 
 			#{p.materialInfo}, #{p.manufacturerName}, #{p.countryOfOrigin}, #{p.washCareInfo}, #{p.manufacturedYm}, #{p.qualityGuaranteeInfo}, 
 			#{p.afterServiceContact}, #{p.afterServiceManager}, #{p.afterServicePhone})
 	</insert>
@@ -102,6 +105,11 @@
 		JOIN nextjs_shop_menu_sub ms ON p.menu_sub_id = ms.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE p.product_id = #{productId} AND p.seller_no = #{sellerNo}
+	</select>
+	<select id="isProductNameDuplicate">
+		SELECT COUNT(1)
+		FROM nextjs_shop_product
+		WHERE name = #{productName}
 	</select>
 	<select id="getProductImages">
 		SELECT pi.product_image_id, pi.sort_key, 

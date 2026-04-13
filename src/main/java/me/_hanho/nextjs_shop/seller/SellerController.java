@@ -148,7 +148,8 @@ public class SellerController {
 	}
 	// 판매자id 중복확인
 	@PostMapping("/id")
-	public ResponseEntity<Map<String, Object>> sellerIdDuplCheck(@RequestParam("sellerId") String sellerId) {
+	public ResponseEntity<Map<String, Object>> sellerIdDuplCheck(
+		@RequestParam("sellerId") String sellerId) {
 		logger.info("[sellerIdDuplCheck] sellerId={}", sellerId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -234,6 +235,28 @@ public class SellerController {
 		result.put("productDetail", productDetail);
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 제품 제품명 중복확인
+	@GetMapping("/product/name/duplicate")
+	public ResponseEntity<Map<String, Object>> checkProductNameDuplicate(
+			@RequestParam("productName") String productName,
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[checkProductNameDuplicate] productName={}, sellerNo={}", productName, sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		boolean isDuplicate = sellerService.isProductNameDuplicate(productName);
+		
+		if (isDuplicate) {
+			result.put("message", "SELLER_PRODUCT_NAME_DUPLICATED");
+			return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+		} else {
+			result.put("message", "SELLER_PRODUCT_NAME_AVAILABLE");
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+		
+	}
+
+
 	// 제품 상세 사진수정
 //	@GetMapping("/product/detail")
 //	public ResponseEntity<Map<String, Object>> setProductDetailImages(@RequestParam("productId") String productId) {

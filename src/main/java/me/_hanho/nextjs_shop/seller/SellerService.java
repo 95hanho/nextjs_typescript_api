@@ -112,6 +112,10 @@ public class SellerService {
 		productDetail.setProductImages(productImages);
 		return productDetail;
 	}
+	public boolean isProductNameDuplicate(String productName) {
+		Integer count = sellerMapper.isProductNameDuplicate(productName);
+		return count != null && count > 0;
+	}
 
 	public void addProductOption(AddProductOptionRequest productOption, Integer sellerNo) {
 		try {
