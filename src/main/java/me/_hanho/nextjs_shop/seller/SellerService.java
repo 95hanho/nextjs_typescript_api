@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.seller;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,13 +10,17 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.file.FileService;
+import me._hanho.nextjs_shop.file.dto.FileUploadRequest;
 import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
+import me._hanho.nextjs_shop.seller.dto.AddFileMeta;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
 import me._hanho.nextjs_shop.seller.dto.ProductImageResponse;
@@ -28,6 +33,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
+import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
@@ -40,6 +46,7 @@ import me._hanho.nextjs_shop.util.CouponCodeGenerator;
 public class SellerService {
 	
 	private final SellerMapper sellerMapper;
+	private final FileService fileService;
 	
 	private final PasswordEncoder passwordEncoder;
 	
@@ -102,6 +109,50 @@ public class SellerService {
 	    if (updated == 0) {
 	        throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 	    }
+	}
+	@Transactional
+	public void setProductImages(SetProductImageRequest productImageRequest, List<MultipartFile> files, Integer sellerNo) {
+		// 1. 상품 소유자 검증
+		// 2. 요청 유효성 검증
+		// 3. 삭제 처리(nextjs_shop_file is_deleted = true)
+		if(productImageRequest.getDeleteImageIds().size() > 0) {
+			sellerMapper.deleteProductImages(productImageRequest.getDeleteImageIds(), sellerNo);
+		}
+		// 4. 수정 처리
+		if(productImageRequest.getUpdateFiles().size() > 0) {
+			sellerMapper.updateProductImages(productImageRequest.getUpdateFiles(), sellerNo);
+		}
+		// 5. 추가 처리
+		Integer productId = productImageRequest.getProductId();
+		List<AddFileMeta> addFiles = productImageRequest.getAddFiles();
+		List<String> storeNames = new ArrayList<>(); // 업로드된 파일명 저장 (추가 처리 중 오류 발생 시, 업로드된 파일 삭제 위해)
+		try {
+			if (addFiles != null && !addFiles.isEmpty()) {
+				if (files == null || addFiles.size() != files.size()) {
+					throw new BusinessException(ErrorCode.BAD_REQUEST);
+				}
+				for (int i = 0; i < addFiles.size(); i++) {
+					AddFileMeta meta = addFiles.get(i);
+					MultipartFile file = files.get(i);
+					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file);
+					storeNames.add(fileUploadRequest.getStoreName());
+					meta.setFileId(fileUploadRequest.getFileId());
+					sellerMapper.insertProductImage(meta, productId, sellerNo);
+				}
+			}
+
+		} catch (Exception e) {
+			// 5-1. 추가 처리 중 오류 발생 시, 업로드된 파일들 삭제
+			for (String storeName : storeNames) {
+				try {
+					fileService.deleteFile(storeName);
+				} catch (Exception deleteEx) {
+					// 로그만 남기기
+				}
+			}
+			throw e;
+		}
+		// 6. 썸네일/정렬 최종 보정
 	}
 	public SellerProductDetailResponse getProductDetail(Integer productId, Integer sellerNo) {
 		SellerProductDetailResponse productDetail = sellerMapper.getProductDetail(productId, sellerNo);

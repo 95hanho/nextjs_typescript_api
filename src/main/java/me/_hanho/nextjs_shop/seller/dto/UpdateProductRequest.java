@@ -1,6 +1,5 @@
 package me._hanho.nextjs_shop.seller.dto;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,4 +31,6 @@ public class UpdateProductRequest {
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
     private String afterServicePhone; // (선택) A/S 전화번호
+
+	@NotNull private Boolean imageUpdate; // 상품 이미지 업데이트 여부 (true: 업데이트, false: 업데이트 안함)
 }

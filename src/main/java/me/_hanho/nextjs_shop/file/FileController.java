@@ -41,7 +41,7 @@ public class FileController {
 //			fileService.deleteExistingFile(beforeFileIdList);
 		}
 		
-		files.forEach(f -> fileService.fileUpload(f, "product"));
+		// files.forEach(f -> fileService.fileUpload(f, "product"));
 		
 //		fileService.fileUpload(files, "");
 		
@@ -56,7 +56,7 @@ public class FileController {
 		logger.info("fileUpload");
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		fileService.fileUpload(file, id);
+		// fileService.fileUpload(file, id);
 		
 		result.put("message", "success");
 		return new ResponseEntity<>(result, HttpStatus.OK);

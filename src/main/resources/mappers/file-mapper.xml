@@ -6,4 +6,10 @@
 		FROM nextjs_shop_file
 		WHERE file_id = #{fileId}
 	</select>
+
+	<insert id="insertFile" parameterType="FileUploadRequest"
+		useGeneratedKeys="true" keyProperty="fileId" keyColumn="file_id">
+		INSERT INTO nextjs_shop_file (file_name, store_name, file_extension, file_path)
+		VALUES (#{fileName}, #{storeName}, #{fileExtension}, #{filePath})
+	</insert>
 </mapper>
