@@ -2,6 +2,7 @@ package me._hanho.nextjs_shop.file;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import me._hanho.nextjs_shop.file.dto.FileUploadRequest;
 import me._hanho.nextjs_shop.model.FileInfo;
 
 @Mapper
@@ -9,5 +10,6 @@ public interface FileMapper {
 
 	FileInfo getFile(String fileId);
 	
+	void insertFile(FileUploadRequest fileInfo);
 
 }

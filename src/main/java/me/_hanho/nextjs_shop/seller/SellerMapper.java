@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.model.ProductOption;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
+import me._hanho.nextjs_shop.seller.dto.AddFileMeta;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
 import me._hanho.nextjs_shop.seller.dto.ProductImageResponse;
@@ -21,6 +22,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
+import me._hanho.nextjs_shop.seller.dto.UpdateFile;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
 import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
@@ -48,6 +50,12 @@ public interface SellerMapper {
 	void addProduct(@Param("p") AddProductRequest product, @Param("sellerNo") Integer sellerNo);
 	
 	int updateProduct(@Param("p") UpdateProductRequest product, @Param("sellerNo") Integer sellerNo);
+
+	void deleteProductImages(@Param("imageIds") List<Integer> imageIds, @Param("sellerNo") Integer sellerNo);
+
+	void updateProductImages(@Param("updateFiles") List<UpdateFile> updateFiles, @Param("sellerNo") Integer sellerNo);
+
+	void insertProductImage(@Param("meta") AddFileMeta meta, @Param("productId") Integer productId, @Param("sellerNo") Integer sellerNo);
 
 	SellerProductDetailResponse getProductDetail(@Param("productId") Integer productId, @Param("sellerNo") Integer sellerNo);
 

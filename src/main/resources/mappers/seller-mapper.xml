@@ -86,16 +86,51 @@
 	</insert>
 	<update id="updateProduct">
 		UPDATE nextjs_shop_product
-		SET name = #{p.name}, color_name = #{p.colorName}, origin_price = #{p.originPrice}, final_price = #{p.finalPrice}, 
-		sale_stop = #{p.saleStop}, menu_sub_id = #{p.menuSubId},
-		material_info = #{p.materialInfo}, manufacturer_name = #{p.manufacturerName}, country_of_origin = #{p.countryOfOrigin}, 
-		wash_care_info = #{p.washCareInfo}, manufactured_ym = #{p.manufacturedYm}, quality_guarantee_info = #{p.qualityGuaranteeInfo},
-		after_service_contact = #{p.afterServiceContact}, after_service_manager = #{p.afterServiceManager}, after_service_phone = #{p.afterServicePhone}
+		SET name = #{p.name}, color_name = #{p.colorName}, 
+			origin_price = #{p.originPrice}, final_price = #{p.finalPrice}, 
+			product_image_updated_at = IF(#{p.imageUpdate}, CURRENT_TIMESTAMP, product_image_updated_at),
+			sale_stop = #{p.saleStop}, menu_sub_id = #{p.menuSubId},
+			material_info = #{p.materialInfo}, manufacturer_name = #{p.manufacturerName}, country_of_origin = #{p.countryOfOrigin}, 
+			wash_care_info = #{p.washCareInfo}, manufactured_ym = #{p.manufacturedYm}, quality_guarantee_info = #{p.qualityGuaranteeInfo},
+			after_service_contact = #{p.afterServiceContact}, after_service_manager = #{p.afterServiceManager}, after_service_phone = #{p.afterServicePhone}
 		WHERE product_id = #{p.productId} AND seller_no = #{sellerNo}
 	</update>
+	<update id="deleteProductImages">
+		UPDATE nextjs_shop_file f
+		JOIN nextjs_shop_product_image pi ON f.file_id = pi.file_id
+		JOIN nextjs_shop_product p ON pi.product_id = p.product_id
+		SET f.is_deleted = 1, f.deleted_at = CURRENT_TIMESTAMP
+		WHERE f.file_id IN
+		<foreach collection="imageIds" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+		  AND p.seller_no = #{sellerNo}
+	</update>
+	<update id="updateProductImages">
+		UPDATE nextjs_shop_product_image f
+		JOIN nextjs_shop_product p ON f.product_id = p.product_id
+		SET 
+			f.sort_key = CASE
+				<foreach collection="updateFiles" item="item">
+					WHEN f.product_image_id = #{item.productImageId} THEN #{item.sortKey}
+				</foreach>
+			END
+		WHERE 
+			f.product_image_id IN
+			<foreach collection="updateFiles" item="item" open="(" separator="," close=")">
+				#{item.productImageId}
+			</foreach>
+			AND p.seller_no = #{sellerNo}
+	</update>
+	<insert id="insertProductImage">
+		INSERT INTO nextjs_shop_product_image(product_id, file_id, sort_key, is_thumbnail)
+		SELECT #{productId}, #{meta.fileId}, #{meta.sortKey}, #{meta.isThumbnail}
+		FROM nextjs_shop_product p
+		WHERE p.product_id = #{productId} AND p.seller_no = #{sellerNo}
+	</insert>
 	<select id="getProductDetail">
 		SELECT p.product_id, p.name, p.color_name, p.origin_price, 
-			p.final_price, p.created_at, p.updated_at,
+			p.final_price, p.created_at, p.updated_at, p.product_image_updated_at,
 			p.like_count, p.view_count, p.wish_count, p.sale_stop,
 			p.menu_sub_id, ms.menu_name AS subMenuName, 
 			mt.menu_top_id,
@@ -115,7 +150,7 @@
 		WHERE name = #{productName}
 	</select>
 	<select id="getProductImages">
-		SELECT pi.product_image_id, pi.sort_key, 
+		SELECT pi.product_image_id, pi.product_id, pi.sort_key, 
 			pi.is_thumbnail,
 			pi.file_id, f.file_name, f.store_name,
 			f.file_path, f.copyright, f.copyright_url

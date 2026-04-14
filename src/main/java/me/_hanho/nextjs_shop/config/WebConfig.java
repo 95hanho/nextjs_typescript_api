@@ -1,8 +1,10 @@
 package me._hanho.nextjs_shop.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,20 @@ import lombok.RequiredArgsConstructor;
 public class WebConfig implements WebMvcConfigurer {
 	
 	private final JwtInterceptor jwtInterceptor;
+
+	@Value("${spring.servlet.multipart.location}")
+	private String uploadDir;
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		String resourcePath = uploadDir.replace("\\", "/");
+		if (!resourcePath.endsWith("/")) {
+			resourcePath += "/";
+		}
+
+		registry.addResourceHandler("/uploads/**")
+				.addResourceLocations("file:///" + resourcePath);
+	}
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {

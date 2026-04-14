@@ -18,6 +18,7 @@ public class SellerProductDetailResponse {
 	private int finalPrice;
 	private Timestamp createdAt;
     private Timestamp updatedAt;
+    private Timestamp productImageUpdatedAt; // 상품 이미지 업데이트 시점
 	private int likeCount;
 	private int viewCount;
 	private int wishCount;

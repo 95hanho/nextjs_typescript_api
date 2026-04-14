@@ -40,7 +40,6 @@ public enum ErrorCode {
 	CURRENT_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "CURRENT_PASSWORD_MISMATCH", "현재 비밀번호가 일치하지않습니다."),
 	CURRENT_PASSWORD_EQUAL(HttpStatus.BAD_REQUEST, "CURRENT_PASSWORD_EQUAL", "현재 비밀번호와 새 비밀번호가 일치합니다."),
 	
-
 	/* 구매 */
 	STOCK_HOLD_FAILED(HttpStatus.CONFLICT, "STOCK_HOLD_FAILED", "상품 확인 및 점유에 실패하였습니다."),
 	COUPON_DOWNLOAD_FAILED(HttpStatus.CONFLICT, "COUPON_DOWNLOAD_FAILED", "쿠폰 다운로드에 실패하였습니다."),
@@ -65,6 +64,9 @@ public enum ErrorCode {
 	STOCK_HOLD_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "STOCK_HOLD_UPDATE_FAILED", "점유 상태 변경 과정 중 오류가 발생했습니다."),
 
 	/* 파일 */
+	INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "INVALID_FILE_TYPE", "유효하지 않은 파일 형식입니다"),
+	FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "FILE_SIZE_EXCEEDED", "파일 크기가 허용된 최대값을 초과했습니다"),
+	FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE_UPLOAD_FAILED", "파일 업로드에 실패했습니다"),
 
 	/* 메인 */
 

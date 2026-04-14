@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,11 +41,14 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
+import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
 import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
 import me._hanho.nextjs_shop.seller.dto.UserInCartCountResponse;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -217,6 +222,23 @@ public class SellerController {
 		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 제품 이미지 수정
+	@PostMapping("/product/image")
+	public ResponseEntity<Map<String, Object>> setProductImage(
+		@RequestPart("request") SetProductImageRequest productImageRequest,
+		@RequestPart(value = "files", required = false) List<MultipartFile> files,
+		@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[setProductImage] request={}, sellerNo={}", productImageRequest, sellerNo);
+		logger.info("[setProductImage] files size={}", files != null ? files.size() : 0);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		sellerService.setProductImages(productImageRequest, files, sellerNo);
+		
+		result.put("message", "SELLER_PRODUCT_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 제품 상세보기 조회
 	@GetMapping("/product/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo, 
@@ -256,19 +278,6 @@ public class SellerController {
 		}
 		
 	}
-
-
-	// 제품 상세 사진수정
-//	@GetMapping("/product/detail")
-//	public ResponseEntity<Map<String, Object>> setProductDetailImages(@RequestParam("productId") String productId) {
-//		logger.info("getSellerProductList");
-//		Map<String, Object> result = new HashMap<String, Object>();
-//		
-//
-////		result.put("sellerProductList", sellerProductList);
-//		result.put("message", "SELLER_PRODUCT_DETAIL_FETCH_SUCCESS");
-//		return new ResponseEntity<>(result, HttpStatus.OK);
-//	}
 	// 제품 옵션 추가
 	@PostMapping("/product/option")
 	public ResponseEntity<Map<String, Object>> setSellerProductOption(
