@@ -185,6 +185,10 @@ public class ProductService {
 	public List<AvailableProductCouponResponse> getAvailableProductCoupon(int productId, Integer userNo) {
 		return productMapper.getAvailableProductCoupon(productId, userNo);
 	}
+
+	public List<ProductImageFile> getProductDetailImage(int productId) {
+		return productMapper.getProductDetailImage(productId);
+	}
 	
 	public int couponDownload(UserCoupon userCoupon) {
 		int result = productMapper.couponDownload(userCoupon);

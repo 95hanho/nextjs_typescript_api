@@ -285,7 +285,21 @@
 				OR uc.used = 0             -- 받은 것 중 미사용
 			)
 	</select>
-	
+	<select id="getProductDetailImage">
+		SELECT
+		    pi.product_id,
+		    f.file_id,
+		    f.file_name,
+		    f.store_name,
+		    f.file_path,
+		    f.copyright,
+		    f.copyright_url
+		FROM nextjs_shop_product_image pi
+		JOIN nextjs_shop_file f ON pi.file_id = f.file_id
+		WHERE product_id = #{productId} 
+			AND pi.is_thumbnail = 0
+		ORDER BY pi.product_id ASC, pi.sort_key ASC
+	</select>
 	<insert id="couponDownload"
         useGeneratedKeys="true"
         keyProperty="userCouponId"

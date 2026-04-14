@@ -67,6 +67,8 @@ public interface ProductMapper {
 
 	List<AvailableProductCouponResponse> getAvailableProductCoupon(@Param("productId") int productId, @Param("userNo") Integer userNo);
 	
+	List<ProductImageFile> getProductDetailImage(int productId);
+
 	int couponDownload(UserCoupon userCoupon);
 
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);

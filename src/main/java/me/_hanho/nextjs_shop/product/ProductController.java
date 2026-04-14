@@ -26,6 +26,7 @@ import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
+import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
@@ -151,13 +152,15 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId);
+		// 제품 옵션 정보
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
+		// 리뷰 요약 정보 (평점, 리뷰 수 등)
 		ProductReviewSummary productReviewSummary = productService.getProductReviewSummary(productId);
 		
 		result.put("productDetail", productDetail);
 		result.put("productOptionList", productOptionList);
 		result.put("productReviewSummary", productReviewSummary);
-		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
+		result.put("message", "PRODUCT_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 제품 상세보기 이용가능 쿠폰 조회
@@ -172,7 +175,21 @@ public class ProductController {
 		List<AvailableProductCouponResponse> availableProductCoupon = productService.getAvailableProductCoupon(productId, userNo);
 		
 		result.put("availableProductCoupon", availableProductCoupon);
-		result.put("message", "PRODUCT_Detail_FETCH_SUCCESS");
+		result.put("message", "PRODUCT_DETAIL_AVAILABLE_COUPON_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상세보기 상세이미지(상품소개) 조회
+	@GetMapping("/detail/{productId}/image")
+	public ResponseEntity<Map<String, Object>> getProductDetailImage(
+			@PathVariable("productId") int productId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		logger.info("[getProductDetailImage] productId={}, userNo={}", productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<ProductImageFile> productDetailImageList = productService.getProductDetailImage(productId);
+		
+		result.put("productDetailImageList", productDetailImageList);
+		result.put("message", "PRODUCT_DETAIL_IMAGE_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 쿠폰 다운로드
