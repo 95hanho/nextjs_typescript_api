@@ -32,6 +32,7 @@ import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.SellerOtherProduct;
 
 @RestController
 @RequiredArgsConstructor
@@ -192,31 +193,41 @@ public class ProductController {
 		result.put("message", "PRODUCT_DETAIL_IMAGE_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 쿠폰 다운로드
-	@PostMapping("/coupon/download")
-	public ResponseEntity<Map<String, Object>> couponDownload(
-			@RequestParam("couponId") Integer couponId,
+	// 판매자 좋아요 여부 및 판매자 다른 제품 조회
+	@GetMapping("/detail/{productId}/seller/like-other-product")
+	public ResponseEntity<Map<String, Object>> getSellerLikeAndOtherProducts(
+			@PathVariable("productId") int productId,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("[couponDownload] couponId={}, userNo={}", couponId, userNo);
+		logger.info("[getSellerLikeAndOtherProducts] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-
-		UserCoupon userCoupon = UserCoupon.builder()
-				.couponId(couponId)
-				.userNo(userNo)
-				.build();
-		int userCouponId = productService.couponDownload(userCoupon);
-		
-		if(userCouponId == 0) {
-			result.put("message", "COUPON_DOWNLOAD_FAILED");
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		boolean isSellerLiked = false;
+		if(userNo != null) {
+			isSellerLiked = productService.isSellerLiked(productId, userNo);
 		}
-
-		result.put("userCouponId", userCouponId);
-		result.put("message", "COUPON_DOWNLOAD_SUCCESS");
+		List<SellerOtherProduct> sellerOtherProducts = productService.getSellerOtherProducts(productId);
+		
+		result.put("isSellerLiked", isSellerLiked);
+		result.put("sellerOtherProducts", sellerOtherProducts);
+		result.put("message", "PRODUCT_SELLER_LIKE_OTHER_PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 판매자 좋아요/취소
+	@PostMapping("/detail/{productId}/seller/like")
+	public ResponseEntity<Map<String, Object>> toggleSellerLike(
+			@RequestParam("like") Boolean like,
+			@PathVariable("productId") int productId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[toggleSellerLike] productId={}, userNo={}", productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.setSellerLike(productId, userNo, like);
+		
+		result.put("message", "PRODUCT_SELLER_LIKE_TOGGLE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 제품 리뷰 조회
 	@GetMapping("/detail/{productId}/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
@@ -247,6 +258,28 @@ public class ProductController {
 		result.put("message", "PRODUCT_QNA_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
-	
+	// 쿠폰 다운로드
+	@PostMapping("/coupon/download")
+	public ResponseEntity<Map<String, Object>> couponDownload(
+			@RequestParam("couponId") Integer couponId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[couponDownload] couponId={}, userNo={}", couponId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		UserCoupon userCoupon = UserCoupon.builder()
+				.couponId(couponId)
+				.userNo(userNo)
+				.build();
+		int userCouponId = productService.couponDownload(userCoupon);
+		
+		if(userCouponId == 0) {
+			result.put("message", "COUPON_DOWNLOAD_FAILED");
+			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		result.put("userCouponId", userCouponId);
+		result.put("message", "COUPON_DOWNLOAD_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 }

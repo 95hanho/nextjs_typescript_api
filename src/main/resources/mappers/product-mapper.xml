@@ -209,7 +209,10 @@
 	<select id="getProductDetail">
 		SELECT  p.product_id, p.name, p.color_name, p.origin_price, p.final_price, p.created_at, 
 		p.like_count, p.view_count, p.wish_count, 
-		s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
+		s.seller_name, s.seller_name_en, s.business_registration_number,
+		s.telecom_sales_number, s.representative_name, s.business_zipcode,
+		s.business_address, s.business_address_detail, s.like_count AS sellerLikeCount,
+		s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
 		p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
 		p.material_info, p.manufacturer_name, p.country_of_origin, 
 		p.wash_care_info, p.manufactured_ym, p.quality_guarantee_info, 
@@ -300,13 +303,79 @@
 			AND pi.is_thumbnail = 0
 		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
-	<insert id="couponDownload"
-        useGeneratedKeys="true"
-        keyProperty="userCouponId"
-        keyColumn="user_coupon_id">
-		INSERT INTO nextjs_shop_user_coupon(user_no, coupon_id)
-		VALUES(#{userNo}, #{couponId})
+	<select id="isSellerLikeExist">
+		SELECT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_seller_like sl
+			JOIN nextjs_shop_product p ON p.seller_no = sl.seller_no
+			WHERE p.product_id = #{productId}
+			AND sl.user_no = #{userNo}
+	    )
+	</select>
+	<select id="getSellerOtherProducts">
+		SELECT
+			p.product_id,
+			p.name,
+			p.color_name,
+			p.origin_price,
+			p.final_price,
+			p.created_at,
+			p.view_count,
+			p.wish_count,
+			s.seller_name,
+			f.file_id,
+			f.file_name,
+			f.store_name,
+			f.file_path,
+			f.copyright,
+			f.copyright_url
+		FROM nextjs_shop_product p
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN nextjs_shop_product_image pi 
+			ON pi.product_id = p.product_id
+			AND pi.is_thumbnail = 1
+			AND pi.sort_key = (
+				SELECT MIN(pi2.sort_key)
+				FROM nextjs_shop_product_image pi2
+				WHERE pi2.product_id = p.product_id
+					AND pi2.is_thumbnail = 1
+			)
+		LEFT JOIN nextjs_shop_file f 
+			ON f.file_id = pi.file_id
+		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND s.seller_no = (
+			SELECT s2.seller_no
+			FROM nextjs_shop_product p2
+			JOIN nextjs_shop_seller s2 ON s2.seller_no = p2.seller_no
+			WHERE p2.product_id = #{productId}
+		)
+		ORDER BY (p.view_count + p.wish_count) DESC,
+			p.created_at DESC,
+			p.product_id DESC
+	  	LIMIT 30
+	</select>
+	<update id="upSellerLike">
+		UPDATE nextjs_shop_seller s
+		JOIN nextjs_shop_product p ON s.seller_no = p.seller_no
+		SET s.like_count = s.like_count + 1
+		WHERE p.product_id = #{productId} 
+	</update>
+	<insert id="insertSellerLike">
+		INSERT INTO nextjs_shop_seller_like(seller_no, user_no)
+		VALUES((SELECT seller_no FROM nextjs_shop_product WHERE product_id = #{productId}), #{userNo})
 	</insert>
+	<update id="downSellerLike">
+		UPDATE nextjs_shop_seller s
+		JOIN nextjs_shop_product p ON s.seller_no = p.seller_no
+		SET s.like_count = s.like_count - 1
+		WHERE p.product_id = #{productId} 
+	</update>
+	<delete id="deleteSellerLike">
+		DELETE sl
+		FROM nextjs_shop_seller_like sl
+		JOIN nextjs_shop_product p ON sl.seller_no = p.seller_no
+		WHERE p.product_id = #{productId} 
+		  AND sl.user_no = #{userNo}
+	</delete>
 
 	<select id="getProductReviewList">
 		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_item_id, 
@@ -358,5 +427,13 @@
 		pq.created_at DESC,
 		pq.product_qna_id DESC
 	</select>
-	
+
+	<insert id="couponDownload"
+        useGeneratedKeys="true"
+        keyProperty="userCouponId"
+        keyColumn="user_coupon_id">
+		INSERT INTO nextjs_shop_user_coupon(user_no, coupon_id)
+		VALUES(#{userNo}, #{couponId})
+	</insert>
+
 </mapper>

@@ -25,6 +25,7 @@ import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.SellerOtherProduct;
 
 @Service
 @RequiredArgsConstructor
@@ -189,12 +190,25 @@ public class ProductService {
 	public List<ProductImageFile> getProductDetailImage(int productId) {
 		return productMapper.getProductDetailImage(productId);
 	}
-	
-	public int couponDownload(UserCoupon userCoupon) {
-		int result = productMapper.couponDownload(userCoupon);
-		if(result == 0) return 0;
 
-		return userCoupon.getUserCouponId();
+	public boolean isSellerLiked(int productId, Integer userNo) {
+		return productMapper.isSellerLikeExist(productId, userNo) > 0;
+	}
+
+	public List<SellerOtherProduct> getSellerOtherProducts(int productId) {
+		return productMapper.getSellerOtherProducts(productId);
+	}
+
+	@Transactional
+	public void setSellerLike(Integer productId, Integer userNo, Boolean like) {
+		boolean hasLike = productMapper.isSellerLikeExist(productId, userNo) > 0;
+		if (like && !hasLike) {
+			productMapper.upSellerLike(productId);
+			productMapper.insertSellerLike(productId, userNo);
+		} else if (!like && hasLike) {
+			productMapper.downSellerLike(productId);
+			productMapper.deleteSellerLike(productId, userNo);
+		}
 	}
 	
 	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {
@@ -248,6 +262,11 @@ public class ProductService {
 	    return list;
 	}
 
+	public int couponDownload(UserCoupon userCoupon) {
+		int result = productMapper.couponDownload(userCoupon);
+		if(result == 0) return 0;
 
+		return userCoupon.getUserCouponId();
+	}
 
 }
