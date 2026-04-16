@@ -18,6 +18,7 @@ import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.SellerOtherProduct;
 
 @Mapper
 public interface ProductMapper {
@@ -69,13 +70,25 @@ public interface ProductMapper {
 	
 	List<ProductImageFile> getProductDetailImage(int productId);
 
-	int couponDownload(UserCoupon userCoupon);
+	Integer isSellerLikeExist(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+
+	List<SellerOtherProduct> getSellerOtherProducts(int productId);
+
+	void upSellerLike(int productId);
+
+	void insertSellerLike(@Param("productId") int productId, @Param("userNo") Integer userNo);
+
+	void downSellerLike(int productId);
+	
+	void deleteSellerLike(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	
 	ProductReviewSummary getProductReviewSummary(Integer productId);
 	
 	List<ProductQnaResponse> getProductQnaList(@Param("productId") int productId, @Param("userNo") Integer userNo);
+
+	int couponDownload(UserCoupon userCoupon);
 
 	
 }

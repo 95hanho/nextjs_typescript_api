@@ -21,7 +21,21 @@ public class ProductDetailResponse {
     private int likeCount;
     private int viewCount;
     private int wishCount;
+    
     private String sellerName;
+    private String sellerNameEn; // 영문 이름
+    private String businessRegistrationNumber;  // 사업자 등록 번호
+    private String telecomSalesNumber; // 통신판매업 신고 번호
+    private String representativeName; // 대표자 이름
+    private String businessZipcode; // 사업장 우편번호
+    private String businessAddress; // 사업장 주소
+    private String businessAddressDetail; // 사업장 주소 상세
+    private int sellerLikeCount; // 좋아요 수
+
+    private int baseShippingFee; // 기본 배송비
+    private int freeShippingMinAmount; // 무료배송 최소 주문금액
+    private int extraShippingFee; // 제주/도서산간 추가 배송비
+
     private int menuSubId;
     private String subMenuName;
     private String topMenuName;
@@ -35,9 +49,6 @@ public class ProductDetailResponse {
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
     private String afterServicePhone; // (선택) A/S 전화번호
-    private int baseShippingFee; // 기본 배송비
-    private int freeShippingMinAmount; // 무료배송 최소 주문금액
-    private int extraShippingFee; // 제주/도서산간 추가 배송비
     private String shippingType; // 출고 방식('IMMEDIATE','RESERVED')
     private LocalDate shippingDueDate; // 출고 예정일
     private String shippingNote; // 출고 관련 추가 안내 문구
