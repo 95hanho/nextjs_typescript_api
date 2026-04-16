@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
+import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
 import me._hanho.nextjs_shop.product.dto.AddCartItem;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
@@ -23,9 +24,11 @@ import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
+import me._hanho.nextjs_shop.product.dto.ProductQnaRequest;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -260,6 +263,22 @@ public class ProductService {
 	    }
 
 	    return list;
+	}
+	
+	public List<ProductQnaType> getProductQnaTypeList() {
+		return productMapper.getProductQnaTypeList();
+	}
+
+	public void createProductQna(ProductQnaRequest productQnaRequest, Integer productId, Integer userNo) {
+		productMapper.insertProductQna(productQnaRequest, productId, userNo);
+	}
+
+	public void updateProductQna(UpdateProductQnaRequest productQnaRequest, Integer userNo) {
+		productMapper.updateProductQna(productQnaRequest, userNo);
+	}
+
+	public void deleteProductQna(int productQnaId, Integer userNo) {
+		productMapper.updateProductQnaDelete(productQnaId, userNo);
 	}
 
 	public List<OtherProduct> getCategoryBestProductList(int productId, Integer userNo) {

@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProductQnaType {
     private int productQnaTypeId;
+    private String code; // 'ALL', 'PRODUCT','RESTOCK','SIZE','SHIPPING','ETC'
     private String name;
 }

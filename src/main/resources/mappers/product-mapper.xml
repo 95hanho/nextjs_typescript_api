@@ -418,7 +418,8 @@
 			pq.res_created_at,
 			pq.secret,
 			pq.product_qna_type_id,
-			pqt.name AS productQnaTypeName,
+			pqt.code AS qnaTypeCode,
+			pqt.name AS qnaTypeName,
 			pq.product_id,
 			pq.user_no,
 			u.name AS userName
@@ -433,7 +434,25 @@
 		pq.created_at DESC,
 		pq.product_qna_id DESC
 	</select>
-
+	<select id="getProductQnaTypeList">
+		SELECT product_qna_type_id, code, name
+		FROM nextjs_shop_product_qna_type
+	</select>
+	<insert id="insertProductQna">
+		INSERT INTO nextjs_shop_product_qna(question, product_qna_type_id, product_id, secret, user_no)
+		VALUES(#{qna.question}, #{qna.productQnaTypeId}, #{productId}, #{qna.secret}, #{userNo})
+	</insert>
+	<update id="updateProductQna">
+		UPDATE nextjs_shop_product_qna
+		SET question = #{qna.question},
+			secret = #{qna.secret},
+		WHERE product_qna_id = #{qna.productQnaId} AND user_no = #{userNo}
+	</update>
+	<update id="updateProductQnaDelete">
+		UPDATE nextjs_shop_product_qna
+		SET is_deleted = 1
+		WHERE product_qna_id = #{productQnaId} AND user_no = #{userNo}
+	</update>
 	<select id="getCategoryBestProductList">
 		SELECT
 			p.product_id,

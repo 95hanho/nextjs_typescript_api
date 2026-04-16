@@ -17,7 +17,8 @@ public class ProductQnaResponse {
     private Timestamp resCreatedAt;
     private boolean secret;
     private int productQnaTypeId;
-    private String productQnaTypeName;
+    private String qnaTypeCode;
+    private String qnaTypeName;
     private int productId;
     private Integer userNo;
     private String userName;

@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
 import me._hanho.nextjs_shop.product.dto.AddCartItem;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
@@ -16,9 +17,11 @@ import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
+import me._hanho.nextjs_shop.product.dto.ProductQnaRequest;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 
 @Mapper
 public interface ProductMapper {
@@ -87,6 +90,14 @@ public interface ProductMapper {
 	ProductReviewSummary getProductReviewSummary(Integer productId);
 	
 	List<ProductQnaResponse> getProductQnaList(@Param("productId") int productId, @Param("userNo") Integer userNo);
+
+	List<ProductQnaType> getProductQnaTypeList();
+
+	void insertProductQna(@Param("qna") ProductQnaRequest productQnaRequest, @Param("productId") Integer productId, @Param("userNo") Integer userNo);
+
+	void updateProductQna(@Param("qna") UpdateProductQnaRequest productQnaRequest, @Param("userNo") Integer userNo);
+
+	void updateProductQnaDelete(@Param("productQnaId") int productQnaId, @Param("userNo") Integer userNo);
 
 	List<OtherProduct> getCategoryBestProductList(@Param("productId") int productId, @Param("userNo") Integer userNo);
 

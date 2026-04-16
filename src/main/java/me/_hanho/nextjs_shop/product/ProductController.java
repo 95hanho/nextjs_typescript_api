@@ -9,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
@@ -30,9 +34,11 @@ import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
+import me._hanho.nextjs_shop.product.dto.ProductQnaRequest;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
+import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -252,10 +258,57 @@ public class ProductController {
 		logger.info("[getProductQnaList] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductQnaResponse> ProductQnaList = productService.getProductQnaList(productId, userNo);
-		
-		result.put("ProductQnaList", ProductQnaList);
+		List<ProductQnaResponse> productQnaList = productService.getProductQnaList(productId, userNo);
+		List<ProductQnaType> productQnaTypeList = productService.getProductQnaTypeList();
+
+		result.put("productQnaList", productQnaList);
+		result.put("productQnaTypeList", productQnaTypeList);
 		result.put("message", "PRODUCT_QNA_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상품 Q&A 작성
+	@PostMapping("/detail/{productId}/qna")
+	public ResponseEntity<Map<String, Object>> createProductQna(
+			@PathVariable("productId") int productId,
+			@ModelAttribute ProductQnaRequest productQnaRequest,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[createProductQna] productQnaRequest={}, productId={}, userNo={}", productQnaRequest, productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.createProductQna(productQnaRequest, productId, userNo);
+		
+		result.put("message", "PRODUCT_QNA_CREATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상품 Q&A 수정
+	@PutMapping("/detail/{productId}/qna")
+	public ResponseEntity<Map<String, Object>> updateProductQna(
+			@PathVariable("productId") int productId,
+			@ModelAttribute UpdateProductQnaRequest productQnaRequest,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[updateProductQna] productQnaRequest={}, productId={}, userNo={}", productQnaRequest, productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.updateProductQna(productQnaRequest, userNo);
+		
+		result.put("message", "PRODUCT_QNA_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상품 Q&A 삭제
+	@DeleteMapping("/detail/{productId}/qna/{productQnaId}")
+	public ResponseEntity<Map<String, Object>> deleteProductQna(
+			@PathVariable("productId") int productId,
+			@PathVariable("productQnaId") int productQnaId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[deleteProductQna] productQnaId={}, productId={}, userNo={}", productQnaId, productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.deleteProductQna(productQnaId, userNo);
+		
+		result.put("message", "PRODUCT_QNA_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 같은 카테고리 BEST 제품 조회
