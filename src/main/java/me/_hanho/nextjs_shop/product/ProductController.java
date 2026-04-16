@@ -25,6 +25,7 @@ import me._hanho.nextjs_shop.model.UserCoupon;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
+import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
@@ -32,7 +33,6 @@ import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
-import me._hanho.nextjs_shop.product.dto.SellerOtherProduct;
 
 @RestController
 @RequiredArgsConstructor
@@ -205,7 +205,7 @@ public class ProductController {
 		if(userNo != null) {
 			isSellerLiked = productService.isSellerLiked(productId, userNo);
 		}
-		List<SellerOtherProduct> sellerOtherProducts = productService.getSellerOtherProducts(productId);
+		List<OtherProduct> sellerOtherProducts = productService.getSellerOtherProducts(productId, userNo);
 		
 		result.put("isSellerLiked", isSellerLiked);
 		result.put("sellerOtherProducts", sellerOtherProducts);
@@ -258,6 +258,21 @@ public class ProductController {
 		result.put("message", "PRODUCT_QNA_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 같은 카테고리 BEST 제품 조회
+	@GetMapping("/detail/{productId}/category-best")
+	public ResponseEntity<Map<String, Object>> getCategoryBestProductList(
+			@PathVariable("productId") int productId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		logger.info("[getCategoryBestProductList] productId={}, userNo={}", productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<OtherProduct> categoryBestProductList = productService.getCategoryBestProductList(productId, userNo);
+		
+		result.put("categoryBestProductList", categoryBestProductList);
+		result.put("message", "CATEGORY_BEST_PRODUCT_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 쿠폰 다운로드
 	@PostMapping("/coupon/download")
 	public ResponseEntity<Map<String, Object>> couponDownload(

@@ -18,6 +18,7 @@ import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
 import me._hanho.nextjs_shop.product.dto.CartAppliedRow;
 import me._hanho.nextjs_shop.product.dto.CartQtyRow;
+import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
@@ -25,7 +26,6 @@ import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewResponse;
 import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
-import me._hanho.nextjs_shop.product.dto.SellerOtherProduct;
 
 @Service
 @RequiredArgsConstructor
@@ -195,8 +195,8 @@ public class ProductService {
 		return productMapper.isSellerLikeExist(productId, userNo) > 0;
 	}
 
-	public List<SellerOtherProduct> getSellerOtherProducts(int productId) {
-		return productMapper.getSellerOtherProducts(productId);
+	public List<OtherProduct> getSellerOtherProducts(int productId, Integer userNo) {
+		return productMapper.getSellerOtherProducts(productId, userNo);
 	}
 
 	@Transactional
@@ -260,6 +260,10 @@ public class ProductService {
 	    }
 
 	    return list;
+	}
+
+	public List<OtherProduct> getCategoryBestProductList(int productId, Integer userNo) {
+		return productMapper.getCategoryBestProductList(productId, userNo);
 	}
 
 	public int couponDownload(UserCoupon userCoupon) {
