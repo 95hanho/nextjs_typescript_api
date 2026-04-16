@@ -427,6 +427,7 @@
 		JOIN nextjs_shop_user u ON pq.user_no = u.user_no
 		JOIN nextjs_shop_product_qna_type pqt ON pq.product_qna_type_id = pqt.product_qna_type_id
 		WHERE pq.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
+			AND pq.is_deleted = 0
 		ORDER BY
 		<if test="userNo != null">
 			CASE WHEN pq.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
@@ -445,7 +446,7 @@
 	<update id="updateProductQna">
 		UPDATE nextjs_shop_product_qna
 		SET question = #{qna.question},
-			secret = #{qna.secret},
+			secret = #{qna.secret}
 		WHERE product_qna_id = #{qna.productQnaId} AND user_no = #{userNo}
 	</update>
 	<update id="updateProductQnaDelete">
