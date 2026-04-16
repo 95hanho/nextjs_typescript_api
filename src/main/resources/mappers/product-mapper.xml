@@ -328,7 +328,13 @@
 			f.store_name,
 			f.file_path,
 			f.copyright,
-			f.copyright_url
+			f.copyright_url,
+			CASE WHEN EXISTS (
+				SELECT 1
+				FROM nextjs_shop_wish w
+				WHERE w.product_id = p.product_id
+				AND w.user_no = #{userNo}
+			) THEN 1 ELSE 0 END AS isWished
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		LEFT JOIN nextjs_shop_product_image pi 
@@ -412,7 +418,8 @@
 			pq.res_created_at,
 			pq.secret,
 			pq.product_qna_type_id,
-			pqt.name AS productQnaTypeName,
+			pqt.code AS qnaTypeCode,
+			pqt.name AS qnaTypeName,
 			pq.product_id,
 			pq.user_no,
 			u.name AS userName
@@ -426,6 +433,71 @@
 		</if>
 		pq.created_at DESC,
 		pq.product_qna_id DESC
+	</select>
+	<select id="getProductQnaTypeList">
+		SELECT product_qna_type_id, code, name
+		FROM nextjs_shop_product_qna_type
+	</select>
+	<insert id="insertProductQna">
+		INSERT INTO nextjs_shop_product_qna(question, product_qna_type_id, product_id, secret, user_no)
+		VALUES(#{qna.question}, #{qna.productQnaTypeId}, #{productId}, #{qna.secret}, #{userNo})
+	</insert>
+	<update id="updateProductQna">
+		UPDATE nextjs_shop_product_qna
+		SET question = #{qna.question},
+			secret = #{qna.secret},
+		WHERE product_qna_id = #{qna.productQnaId} AND user_no = #{userNo}
+	</update>
+	<update id="updateProductQnaDelete">
+		UPDATE nextjs_shop_product_qna
+		SET is_deleted = 1
+		WHERE product_qna_id = #{productQnaId} AND user_no = #{userNo}
+	</update>
+	<select id="getCategoryBestProductList">
+		SELECT
+			p.product_id,
+			p.name,
+			p.color_name,
+			p.origin_price,
+			p.final_price,
+			p.created_at,
+			p.view_count,
+			p.wish_count,
+			s.seller_name,
+			f.file_id,
+			f.file_name,
+			f.store_name,
+			f.file_path,
+			f.copyright,
+			f.copyright_url,
+			CASE WHEN EXISTS (
+				SELECT 1
+				FROM nextjs_shop_wish w
+				WHERE w.product_id = p.product_id
+				AND w.user_no = #{userNo}
+			) THEN 1 ELSE 0 END AS isWished
+		FROM nextjs_shop_product p
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN nextjs_shop_product_image pi 
+			ON pi.product_id = p.product_id
+			AND pi.is_thumbnail = 1
+			AND pi.sort_key = (
+				SELECT MIN(pi2.sort_key)
+				FROM nextjs_shop_product_image pi2
+				WHERE pi2.product_id = p.product_id
+					AND pi2.is_thumbnail = 1
+			)
+		LEFT JOIN nextjs_shop_file f 
+			ON f.file_id = pi.file_id
+		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND p.menu_sub_id = (
+			SELECT menu_sub_id
+			FROM nextjs_shop_product
+			WHERE product_id = #{productId}
+		)
+		ORDER BY (p.view_count + p.wish_count) DESC,
+			p.created_at DESC,
+			p.product_id DESC
+	  	LIMIT 30
 	</select>
 
 	<insert id="couponDownload"
