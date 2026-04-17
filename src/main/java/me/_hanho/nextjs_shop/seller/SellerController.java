@@ -39,6 +39,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
@@ -486,6 +487,31 @@ public class SellerController {
 		result.put("message", "SELLER_COUPON_ISSUE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 유저쿠폰사용내역 조회
+	@GetMapping("/coupon/user-coupon")
+	public ResponseEntity<Map<String, Object>> getSellerUsercouponUsed(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[getSellerUsercouponUsed] sellerNo={}", sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 QnA 조회
+	@GetMapping("/qna")
+	public ResponseEntity<Map<String, Object>> getSellerQnaList(
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[getSellerQnaList] sellerNo={}", sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		List<SellerQnaResponse> sellerQnaList = sellerService.getSellerQnaList(sellerNo);
+
+		result.put("sellerQnaList", sellerQnaList);
+		result.put("message", "SELLER_QNA_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 판매자와 관련된 회원 조회(내 상품을 보거나 위시하거나 장바구니에 넣거나 즐겨찾기한) 
 	@GetMapping("/user/interesting")
 	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
@@ -510,16 +536,7 @@ public class SellerController {
 		result.put("message", "SELLER_INTERESTING_USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 유저쿠폰사용내역 조회
-	@GetMapping("/coupon/user-coupon")
-	public ResponseEntity<Map<String, Object>> getSellerUsercouponUsed(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
-		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("[getSellerUsercouponUsed] sellerNo={}", sellerNo);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
+
 	// 유저쿠폰사용내역 상세조회 - 어느주문에 사용했는지
 	
 		

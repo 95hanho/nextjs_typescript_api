@@ -31,6 +31,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
@@ -239,6 +240,10 @@ public class SellerService {
 	public void suspendCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
 	    sellerMapper.suspendCoupons(activeCouponIds, sellerNo);
 	}
+	public List<SellerQnaResponse> getSellerQnaList(Integer sellerNo) {
+		return sellerMapper.getSellerQnaList(sellerNo);
+	}
+	/* --- */
 	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
 	}

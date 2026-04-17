@@ -19,6 +19,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
@@ -91,6 +92,8 @@ public interface SellerMapper {
 
 	void suspendCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
 	
+	List<SellerQnaResponse> getSellerQnaList(Integer sellerNo);
+
 	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
 	
 	List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo);
