@@ -286,6 +286,27 @@
 		</foreach>
 		AND seller_no = #{sellerNo}
 	</update>
+	<select id="getSellerQnaList">
+		SELECT pq.product_qna_id, pq.question, pq.created_at, pq.answer,
+			pq.answer_read, pq.secret, 
+			pq.product_qna_type_id, pqt.code AS productQnaTypeCode, pqt.name AS productQnaTypeName, 
+			pq.product_id, p.name AS productName, u.name AS userName
+		FROM nextjs_shop_product_qna pq
+		JOIN nextjs_shop_product_qna_type pqt 
+			ON pq.product_qna_type_id = pqt.product_qna_type_id
+		JOIN nextjs_shop_product p ON p.product_id = pq.product_id
+		JOIN nextjs_shop_user u ON u.user_no = pq.user_no
+		WHERE p.seller_no = #{sellerNo}
+		ORDER BY pq.answer IS NULL DESC, pq.created_at DESC
+	</select>
+	<update id="updateQnaAnswer">
+		UPDATE nextjs_shop_product_qna pq
+		JOIN nextjs_shop_product p ON p.product_id = pq.product_id
+		SET pq.answer = #{answer}, pq.res_created_at = CURRENT_TIMESTAMP
+		WHERE pq.product_qna_id = #{productQnaId} AND p.seller_no = #{sellerNo}
+			AND pq.answer_read = 0
+	</update>
+	<!--  -->
 	<select id="getProductViewCountList">
 	    SELECT pv.user_id, u.name AS user_name, pv.product_id,
 			p.name AS productName,

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,8 @@ import me._hanho.nextjs_shop.auth.TokenService;
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.ProductQnaType;
+import me._hanho.nextjs_shop.product.ProductService;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
@@ -48,7 +51,6 @@ import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
 import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
 import me._hanho.nextjs_shop.seller.dto.UserInCartCountResponse;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -61,6 +63,7 @@ public class SellerController {
 	private final SellerService sellerService;
 	private final AuthService authService;
 	private final TokenService tokenService;
+	private final ProductService productService;
 	
 	// 로그인
 	@PostMapping
@@ -506,9 +509,26 @@ public class SellerController {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		List<SellerQnaResponse> sellerQnaList = sellerService.getSellerQnaList(sellerNo);
+		List<ProductQnaType> qnaTypeList = productService.getProductQnaTypeList();
 
 		result.put("sellerQnaList", sellerQnaList);
+		result.put("qnaTypeList", qnaTypeList);
 		result.put("message", "SELLER_QNA_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 QnA 답변 등록/수정
+	@PostMapping("/qna")
+	public ResponseEntity<Map<String, Object>> updateQnaAnswer(
+			@RequestAttribute(value="sellerNo", required=false) Integer sellerNo,
+			@RequestParam("productQnaId") Integer productQnaId,
+			@RequestParam("answer") String answer) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[updateQnaAnswer] sellerNo={}, productQnaId={}, answer={}", sellerNo, productQnaId, answer);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		sellerService.updateQnaAnswer(productQnaId, answer, sellerNo);
+
+		result.put("message", "SELLER_QNA_ANSWER_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 

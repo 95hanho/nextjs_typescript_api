@@ -94,6 +94,8 @@ public interface SellerMapper {
 	
 	List<SellerQnaResponse> getSellerQnaList(Integer sellerNo);
 
+	int updateQnaAnswer(@Param("productQnaId") Integer productQnaId, @Param("answer") String answer, @Param("sellerNo") Integer sellerNo);
+
 	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
 	
 	List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo);
@@ -101,12 +103,6 @@ public interface SellerMapper {
 	List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo);
 
 	List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo);
-
-
-	
-
-	
-
 	
 
 }

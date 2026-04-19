@@ -243,6 +243,13 @@ public class SellerService {
 	public List<SellerQnaResponse> getSellerQnaList(Integer sellerNo) {
 		return sellerMapper.getSellerQnaList(sellerNo);
 	}
+	public void updateQnaAnswer(Integer productQnaId, String answer, Integer sellerNo) {
+		int result = sellerMapper.updateQnaAnswer(productQnaId, answer, sellerNo);
+		// answerRead가 true인 경우 result는 0
+		if(result == 0) {
+			throw new BusinessException(ErrorCode.QNA_ANSWER_ALREADY_READ, "QnA answer already read: " + productQnaId);
+		}
+	}
 	/* --- */
 	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
 		return sellerMapper.getProductViewCountList(sellerNo);
