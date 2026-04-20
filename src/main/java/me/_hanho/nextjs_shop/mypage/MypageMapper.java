@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import me._hanho.nextjs_shop.mypage.dto.AddReviewFileMeta;
 import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
@@ -15,7 +16,12 @@ import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderItemResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewImageResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewOrderInfoResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewResponse;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
+import me._hanho.nextjs_shop.mypage.dto.UpdateReviewFile;
+import me._hanho.nextjs_shop.mypage.dto.UpdateReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
 import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
@@ -35,8 +41,22 @@ public interface MypageMapper {
 	List<MyOrderDetailItem> getMyOrderDetailItems(@Param("orderId") String orderId, @Param("userNo") Integer userNo);
 
 	List<MyOrderDetailItemCoupon> getOrderItemCouponsByOrderItemIds(@Param("orderItemIds") List<Integer> orderItemIds);
+
+	ReviewOrderInfoResponse getReviewOrderInfo(@Param("orderItemId") Integer orderItemId, @Param("userNo") Integer userNo);
+
+	ReviewResponse getReviewByOrderItemId(@Param("orderItemId") Integer orderItemId, @Param("userNo") Integer userNo);
+
+	List<ReviewImageResponse> getReviewImagesByReviewId(Integer reviewId);
 	
 	void insertReview(@Param("review") AddReviewRequest review, @Param("userNo") Integer userNo);
+
+	void updateReview(@Param("review") UpdateReviewRequest review, @Param("userNo") Integer userNo);
+
+	void deleteReviewImages(@Param("imageIds") List<Integer> imageIds, @Param("userNo") Integer userNo);
+
+	void updateReviewImages(@Param("updateFiles") List<UpdateReviewFile> updateFiles, @Param("userNo") Integer userNo);
+
+	void insertReviewImage(@Param("meta") AddReviewFileMeta meta, @Param("reviewId") Integer reviewId, @Param("userNo") Integer userNo);
 	
 	void releaseHoldIfExists(Integer userNo);
 

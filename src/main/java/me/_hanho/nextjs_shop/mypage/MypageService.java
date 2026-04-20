@@ -1,15 +1,20 @@
 package me._hanho.nextjs_shop.mypage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.file.FileService;
+import me._hanho.nextjs_shop.file.dto.FileUploadRequest;
+import me._hanho.nextjs_shop.mypage.dto.AddReviewFileMeta;
 import me._hanho.nextjs_shop.mypage.dto.AddReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.AddUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.AvailableCartCouponAtCartResponse;
@@ -21,14 +26,18 @@ import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItemCoupon;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderItemResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewImageResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewOrderInfoResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewResponse;
+import me._hanho.nextjs_shop.mypage.dto.SetReviewImageRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
+import me._hanho.nextjs_shop.mypage.dto.UpdateReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
 import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
 import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
 import me._hanho.nextjs_shop.product.ProductMapper;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
-import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +47,7 @@ public class MypageService {
 
 	private final MypageMapper mypageMapper;
 	private final ProductMapper productMapper;
+	private final FileService fileService;
 
 	public List<UserCouponResponse> getUserCoupons(Integer userNo) {
 		return mypageMapper.getUserCoupons(userNo);
@@ -80,8 +90,79 @@ public class MypageService {
 		return items;
 	}
 
-	public void insertReview(AddReviewRequest review, Integer userNo) {
+	public ReviewOrderInfoResponse getReviewOrderInfo(Integer orderItemId, Integer userNo) {
+		ReviewOrderInfoResponse reviewOrderInfo = mypageMapper.getReviewOrderInfo(orderItemId, userNo);
+		if(reviewOrderInfo == null) {
+			throw new BusinessException(ErrorCode.REVIEW_ITEM_NOT_FOUND, "Order item not found for review: " + orderItemId);
+		}
+		return reviewOrderInfo;
+	}
+	public ReviewResponse getReviewByOrderItemId(Integer orderItemId, Integer userNo) {
+		ReviewResponse review = mypageMapper.getReviewByOrderItemId(orderItemId, userNo);
+
+		// 이미지 불러오기
+		if(review != null) {
+			List<ReviewImageResponse> reviewImages = mypageMapper.getReviewImagesByReviewId(review.getReviewId());
+			review.setReviewImages(reviewImages);
+		} else {
+			logger.info("No review found for orderItemId: " + orderItemId + ", userNo: " + userNo);
+		}
+
+		return review;
+	}
+
+	public int insertReview(AddReviewRequest review, Integer userNo) {
 		mypageMapper.insertReview(review, userNo);
+		return review.getReviewId();
+	}
+	public void updateReview(UpdateReviewRequest review, Integer userNo) {
+		mypageMapper.updateReview(review, userNo);
+	}
+	@Transactional
+	public void setReviewImages(SetReviewImageRequest request, List<MultipartFile> files, Integer userNo) {
+		// 1. 상품 소유자 검증
+		// 2. 요청 유효성 검증
+		// 3. 삭제 처리(nextjs_shop_file is_deleted = true)
+		if(request.getDeleteImageIds().size() > 0) {
+			mypageMapper.deleteReviewImages(request.getDeleteImageIds(), userNo);
+		}
+		// 4. 수정 처리
+		if(request.getUpdateFiles().size() > 0) {
+			mypageMapper.updateReviewImages(request.getUpdateFiles(), userNo);
+		}
+		// 5. 추가 처리
+		Integer reviewId = request.getReviewId();
+		List<AddReviewFileMeta> addFiles = request.getAddFiles();
+		List<String> storeNames = new ArrayList<>(); // 업로드된 파일명 저장 (추가 처리 중 오류 발생 시, 업로드된 파일 삭제 위해)
+		try {
+			if (addFiles != null && !addFiles.isEmpty()) {
+				if (files == null || addFiles.size() != files.size()) {
+					throw new BusinessException(ErrorCode.BAD_REQUEST);
+				}
+				for (int i = 0; i < addFiles.size(); i++) {
+					AddReviewFileMeta meta = addFiles.get(i);
+					MultipartFile file = files.get(i);
+					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file);
+					storeNames.add(fileUploadRequest.getStoreName());
+					meta.setFileId(fileUploadRequest.getFileId());
+					mypageMapper.insertReviewImage(meta, reviewId, userNo);
+				}
+			}
+
+		} catch (Exception e) {
+			// 5-1. 추가 처리 중 오류 발생 시, 업로드된 파일들 삭제
+			for (String storeName : storeNames) {
+				try {
+					fileService.deleteFile(storeName);
+				} catch (Exception deleteEx) {
+					// 로그만 남기기
+				}
+			}
+			throw e;
+		}
+		// 6. 썸네일/정렬 최종 보정
+
+
 	}
 	@Transactional
 	public CartSummaryResponse getCartSummary(Integer userNo) {

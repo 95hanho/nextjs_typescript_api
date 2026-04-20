@@ -16,8 +16,6 @@ public class Review {
     private Timestamp updatedAt;
     private int rating;
     private int orderItemId;
-    private int productId;
-    private int productOptionId;
     private int userNo;
     private boolean isdeleted;
 }
