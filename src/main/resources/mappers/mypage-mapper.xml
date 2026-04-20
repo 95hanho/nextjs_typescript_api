@@ -36,7 +36,8 @@
 	<select id="getMyOrderItemsByOrderIds">
 		SELECT 
 			oi.order_item_id, oi.order_id, oi.hold_id, 
-			oi.product_name, oi.count, oi.size, oi.origin_price, oi.final_price,
+			p.product_id, oi.product_name, 
+			oi.count, oi.size, oi.origin_price, oi.final_price,
 			oi.add_price, oi.status,
 			r.review_id,
 			s.seller_no, s.seller_name, s.seller_name_en,
@@ -116,8 +117,50 @@
 			#{orderItemId}
 		</foreach>
 	</select>
-
-	<insert id="insertReview">
+	<select id="getReviewOrderInfo">
+		SELECT
+			oi.order_item_id, oi.order_id, oi.product_name, oi.count, oi.size, 
+			oi.origin_price, oi.final_price, oi.add_price, oi.coupon_discounted_price, oi.total_price,
+			oi.status, 
+			oi.hold_id, po.product_option_id, p.product_id,
+			s.seller_no, s.seller_name, s.seller_name_en,
+			pi.product_image_id,
+			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright,
+			f.copyright_url, f.file_extension
+		FROM nextjs_shop_order_item oi
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id AND sh.user_no = #{userNo}
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN nextjs_shop_product_image pi 
+			ON pi.product_image_id = (
+				SELECT pi2.product_image_id
+				FROM nextjs_shop_product_image pi2
+				WHERE pi2.product_id = p.product_id
+					AND pi2.is_thumbnail = 1
+				ORDER BY pi2.sort_key ASC, pi2.product_image_id ASC
+				LIMIT 1
+			) AND pi.is_thumbnail = 1
+		LEFT JOIN nextjs_shop_file f ON f.file_id = pi.file_id
+		WHERE oi.order_item_id = #{orderItemId} AND sh.user_no = #{userNo}
+	</select>
+	<select id="getReviewByOrderItemId">
+		SELECT review_id, content, rating
+		FROM nextjs_shop_review
+		WHERE order_item_id = #{orderItemId} AND user_no = #{userNo} AND is_deleted = 0
+	</select>
+	<select id="getReviewImagesByReviewId">
+		SELECT ri.review_image_id, ri.review_id, ri.file_id,
+			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+		FROM nextjs_shop_review_image ri
+		JOIN nextjs_shop_file f ON f.file_id = ri.file_id
+		WHERE ri.review_id = #{reviewId} AND f.is_deleted = 0
+	</select>
+	<insert id="insertReview"
+		useGeneratedKeys="true"
+        keyProperty="reviewId"
+        keyColumn="review_id"
+	>
 		INSERT INTO nextjs_shop_review (
 			content,
 			rating,
@@ -133,7 +176,45 @@
 		JOIN nextjs_shop_order_group og ON og.order_id = oi.order_id AND og.user_no = #{userNo}
 		WHERE oi.order_item_id = #{review.orderItemId}
 	</insert>
-	
+	<update id="updateReview">
+		UPDATE nextjs_shop_review
+		SET content = #{review.content},
+			rating = #{review.rating},
+		WHERE review_id = #{review.reviewId} AND user_no = #{userNo} AND is_deleted = 0
+	</update>
+	<update id="deleteReviewImages">
+		UPDATE nextjs_shop_file f
+		JOIN nextjs_shop_review_image ri ON f.file_id = ri.file_id
+		JOIN nextjs_shop_review r ON ri.review_id = r.review_id
+		SET f.is_deleted = 1, f.deleted_at = CURRENT_TIMESTAMP
+		WHERE f.file_id IN
+		<foreach collection="imageIds" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+		  AND r.user_no = #{userNo}
+	</update>
+	<update id="updateReviewImages">
+		UPDATE nextjs_shop_review_image f
+		JOIN nextjs_shop_review r ON f.review_id = r.review_id
+		SET 
+			f.sort_key = CASE
+				<foreach collection="updateFiles" item="item">
+					WHEN f.review_image_id = #{item.reviewImageId} THEN #{item.sortKey}
+				</foreach>
+			END
+		WHERE 
+			f.review_image_id IN
+			<foreach collection="updateFiles" item="item" open="(" separator="," close=")">
+				#{item.reviewImageId}
+			</foreach>
+			AND r.user_no = #{userNo}
+	</update>
+	<insert id="insertReviewImage">
+		INSERT INTO nextjs_shop_review_image(review_id, file_id, sort_key)
+		SELECT #{reviewId}, #{meta.fileId}, #{meta.sortKey}
+		FROM nextjs_shop_review r
+		WHERE r.review_id = #{reviewId} AND r.user_no = #{userNo}
+	</insert>
 	<update id="releaseHoldIfExists">
 		UPDATE nextjs_shop_stock_hold
 	    SET status = 'RELEASED',

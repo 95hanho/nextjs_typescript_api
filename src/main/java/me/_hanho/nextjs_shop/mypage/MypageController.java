@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +33,18 @@ import me._hanho.nextjs_shop.mypage.dto.CartSummaryResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailItem;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderDetailResponse;
 import me._hanho.nextjs_shop.mypage.dto.MyOrderGroupResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewOrderInfoResponse;
+import me._hanho.nextjs_shop.mypage.dto.ReviewResponse;
+import me._hanho.nextjs_shop.mypage.dto.SetReviewImageRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateCartRequest;
+import me._hanho.nextjs_shop.mypage.dto.UpdateReviewRequest;
 import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
 import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
 import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
 import me._hanho.nextjs_shop.product.ProductService;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
+import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -101,6 +108,23 @@ public class MypageController {
 		result.put("message", "MY_ORDER_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 리뷰 및 주문정보 조회
+	@GetMapping("/review")
+	public ResponseEntity<Map<String, Object>> getReviewOrderInfo(
+			@RequestParam("orderItemId") Integer orderItemId,
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[getReviewOrderInfo] orderItemId={}, userNo={}", orderItemId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		ReviewOrderInfoResponse reviewOrderItem = mypageService.getReviewOrderInfo(orderItemId, userNo);
+		ReviewResponse review = mypageService.getReviewByOrderItemId(orderItemId, userNo);
+		
+		result.put("reviewOrderItem", reviewOrderItem);
+		result.put("review", review);
+		result.put("message", "REVIEW_ORDER_INFO_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 리뷰 작성
 	@PostMapping("/review")
 	public ResponseEntity<Map<String, Object>> addReview(
@@ -110,9 +134,41 @@ public class MypageController {
 		logger.info("[addReview] review={}, userNo={}", review, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		mypageService.insertReview(review, userNo);
+		int reviewId = mypageService.insertReview(review, userNo);
 		
+		result.put("reviewId", reviewId);
 		result.put("message", "REVIEW_INSERT_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 리뷰 수정
+	@PutMapping("/review")
+	public ResponseEntity<Map<String, Object>> updateReview(
+			@Valid @ModelAttribute UpdateReviewRequest review, 
+			@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[updateReview] review={}, userNo={}", review, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		mypageService.updateReview(review, userNo);
+		
+		result.put("message", "REVIEW_UPDATE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	// 리뷰 이미지 수정
+	@PostMapping("/review/image")
+	public ResponseEntity<Map<String, Object>> setReviewImage(
+		@RequestPart("request") SetReviewImageRequest reviewImageRequest,
+		@RequestPart(value = "files", required = false) List<MultipartFile> files,
+		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[setReviewImage] request={}, userNo={}", reviewImageRequest, userNo);
+		logger.info("[setReviewImage] files size={}", files != null ? files.size() : 0);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		mypageService.setReviewImages(reviewImageRequest, files, userNo);
+		
+		result.put("message", "REVIEW_IMAGE_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
