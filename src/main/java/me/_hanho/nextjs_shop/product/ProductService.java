@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
+import me._hanho.nextjs_shop.mypage.dto.ReviewImageResponse;
 import me._hanho.nextjs_shop.product.dto.AddCartItem;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
@@ -217,17 +218,25 @@ public class ProductService {
 	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {
 		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userNo);
 		
+		// 제품 리뷰 이미지 조회
+		List<ReviewImageResponse> allReviewImages = productMapper.getProductReviewImageListByProductId(productId);
+
 		if (list == null || list.isEmpty()) return list;
 		
 		for (ProductReviewResponse review : list) {
-	        Integer writerNo = review.getUserNo();
-	        review.setUserNo(null);
-	        boolean isOwner = userNo != null && writerNo != null && writerNo == userNo;
+	        String writerName = review.getUserName();
+	        review.setUserName(null);
+	        boolean isOwner = userNo != null && writerName != null && writerName.equals(userNo);
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	        	review.setUserName(MaskingUtil.maskUserIdName(review.getUserName(), 5));
+	        	review.setUserName(MaskingUtil.maskUserIdName(writerName, 5));
 	        }
+			// 2) 리뷰 이미지 주입
+	        List<ReviewImageResponse> reviewImages = allReviewImages.stream()
+	                .filter(image -> image.getReviewId() == review.getReviewId())
+	                .toList();
+	        review.setReviewImages(reviewImages);
 	    }
 
 	    return list;
