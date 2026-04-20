@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
+import me._hanho.nextjs_shop.mypage.dto.ReviewImageResponse;
 import me._hanho.nextjs_shop.product.dto.AddCartItem;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAppliedRow;
@@ -86,6 +87,8 @@ public interface ProductMapper {
 	void deleteSellerLike(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+
+	List<ReviewImageResponse> getProductReviewImageListByProductId(Integer productId);
 	
 	ProductReviewSummary getProductReviewSummary(Integer productId);
 	
