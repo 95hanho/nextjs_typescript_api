@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductReviewSummary {
+    private int productId;
+
 	private Double avgRating;   // 소수점 필요
     private Integer reviewCount;
 }

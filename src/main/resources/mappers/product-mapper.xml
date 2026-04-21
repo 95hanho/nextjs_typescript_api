@@ -385,13 +385,14 @@
 
 	<select id="getProductReviewList">
 		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_item_id, 
-			u.name AS userName
+			r.user_no, u.name AS userName
 		FROM nextjs_shop_review r
 		JOIN nextjs_shop_user u ON r.user_no = u.user_no
 		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
 		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
 		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
 		WHERE po.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
+			AND r.is_deleted = 0
 		ORDER BY
 		<if test="userNo != null">
 			CASE WHEN r.user_no = #{userNo} THEN 0 ELSE 1 END ASC,
@@ -399,6 +400,11 @@
 		r.created_at DESC,
 		r.review_id DESC
 	</select>
+	<update id ="deleteProductReview">
+		UPDATE nextjs_shop_review
+		SET is_deleted = 1
+		WHERE review_id = #{reviewId} AND user_no = #{userNo}
+	</update>
 	<select id="getProductReviewImageListByProductId">
 		SELECT ri.review_image_id, ri.review_id, ri.file_id,
 			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
@@ -414,13 +420,13 @@
 	</select>
 	<select id="getProductReviewSummary">
 		SELECT
-		    AVG(rating) AS avg_rating,
-		    COUNT(*) AS review_count
+		    AVG(rating) AS avgRating,
+		    COUNT(*) AS reviewCount
 		FROM nextjs_shop_review r
 		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
 		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
 		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
-		WHERE po.product_id = #{productId}
+		WHERE po.product_id = #{productId} AND r.is_deleted = 0
 	</select>
 	<select id="getProductQnaList">
 		SELECT
@@ -429,6 +435,7 @@
 			pq.created_at,
 			pq.answer,
 			pq.res_created_at,
+			pq.answer_read,
 			pq.secret,
 			pq.product_qna_type_id,
 			pqt.code AS qnaTypeCode,
@@ -467,6 +474,11 @@
 		SET is_deleted = 1
 		WHERE product_qna_id = #{productQnaId} AND user_no = #{userNo}
 	</update>
+	<update id="updateProductQnaRead">
+		UPDATE nextjs_shop_product_qna
+		SET answer_read = 1
+		WHERE product_qna_id = #{productQnaId} AND user_no = #{userNo}
+	</update>
 	<select id="getCategoryBestProductList">
 		SELECT
 			p.product_id,
@@ -502,7 +514,7 @@
 					AND pi2.is_thumbnail = 1
 			)
 		LEFT JOIN nextjs_shop_file f 
-			ON f.file_id = pi.file_id
+			ON f.file_id = pi.file_id AND f.is_deleted = 0
 		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND p.menu_sub_id = (
 			SELECT menu_sub_id
 			FROM nextjs_shop_product

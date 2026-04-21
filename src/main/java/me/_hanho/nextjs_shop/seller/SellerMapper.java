@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.model.ProductOption;
+import me._hanho.nextjs_shop.product.dto.ProductReviewSummary;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.AddFileMeta;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
@@ -21,6 +22,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerReviewResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateFile;
@@ -47,6 +49,8 @@ public interface SellerMapper {
 	List<SellerProductResponse> getSellerProductList(Integer sellerNo);
 	
 	List<ProductOption> selectDetailsByProductIds(@Param("ids") List<Integer> ids);
+
+	List<ProductReviewSummary> selectReviewSummaryByProductIds(@Param("ids") List<Integer> ids);
 	
 	void addProduct(@Param("p") AddProductRequest product, @Param("sellerNo") Integer sellerNo);
 	
@@ -91,18 +95,32 @@ public interface SellerMapper {
 	void activateCoupons(@Param("couponIds") List<Integer> suspendedCouponIds, @Param("sellerNo") Integer sellerNo);
 
 	void suspendCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
-	
+	/* ---- */	
+	List<Integer> getViewedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getWishedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getBookmarkedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getCartUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getOrderedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	void insertUserCoupons(@Param("couponId") Integer couponId, @Param("userNos") List<Integer> userNos);
+	/* ---- */
+	List<SellerReviewResponse> getSellerReviewList(Integer sellerNo);
+
 	List<SellerQnaResponse> getSellerQnaList(Integer sellerNo);
 
 	int updateQnaAnswer(@Param("productQnaId") Integer productQnaId, @Param("answer") String answer, @Param("sellerNo") Integer sellerNo);
 
-	List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo);
-	
-	List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo);
-	
-	List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo);
+	int getViewedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 
-	List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo);
+	int getWishedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
+	int getBookmarkedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 
+	int getCartUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	int getOrderedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 }

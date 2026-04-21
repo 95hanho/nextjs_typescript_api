@@ -39,11 +39,13 @@ import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerReviewResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
@@ -480,12 +482,18 @@ public class SellerController {
 		result.put("message", "SELLER_COUPON_STATUS_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 쿠폰을 유저에게 발행하기 - 특정 조건의 유저에게 발급하기!!! 아래 API와 연동하여서
+	// 쿠폰을 유저에게 발행하기
 	@PostMapping("/coupon/user-coupon")
-	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(@RequestParam("couponId") Integer couponId, @RequestParam("userNoList") List<Integer> userNoList, @RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+	public ResponseEntity<Map<String, Object>> issueCouponsToUsers(
+		@RequestParam("couponId") Integer couponId, 
+		@RequestParam("type") String type, 
+		@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
-		logger.info("[issueCouponsToUsers] couponId={}, userNoList={}, sellerNo={}", couponId, userNoList, sellerNo);
+		logger.info("[issueCouponToUsers] couponId={}, type={}, sellerNo={}", couponId, type, sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
+
+		// type : VIEW, WISH, BOOKMARK, CART, ORDER
+		sellerService.issueCouponsToUsers(couponId, type, sellerNo);
 		
 		result.put("message", "SELLER_COUPON_ISSUE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -498,6 +506,19 @@ public class SellerController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 리뷰 조회
+	@GetMapping("/review")
+	public ResponseEntity<Map<String, Object>> getSellerReviewList(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[getSellerReviewList] sellerNo={}", sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<SellerReviewResponse> sellerReviewList = sellerService.getSellerReviewList(sellerNo);
+
+		result.put("sellerReviewList", sellerReviewList);
+		result.put("message", "SELLER_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자 QnA 조회
@@ -534,25 +555,19 @@ public class SellerController {
 
 	// 판매자와 관련된 회원 조회(내 상품을 보거나 위시하거나 장바구니에 넣거나 즐겨찾기한) 
 	@GetMapping("/user/interesting")
-	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(
+		@RequestParam("couponId") Integer couponId,
+		@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[getSellerInterestingUser] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductViewCountResponse> productViewCountList = sellerService.getProductViewCountList(sellerNo);
+		// 포폴용 : 모두 적용하기.
+		// 실제 : 한 달동안의 데이터로.
+
+		SellerInterestingUserSummaryResponse summary = sellerService.getSellerInterestingUserSummary(couponId, sellerNo);
 		
-		List<ProductWishCountResponse> productWishCountList = sellerService.getProductWishCountList(sellerNo);
-		
-		List<UserInBookmarkResponse> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
-		
-		List<UserInCartCountResponse> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
-		
-		// 주문액수, 주문 갯수 가져오기
-		
-		result.put("productViewCountList", productViewCountList);
-		result.put("productWishCountList", productWishCountList);
-		result.put("brandBookmarkList", brandBookmarkList);
-		result.put("userInCartCountList", userInCartCountList);
+		result.put("summary", summary);
 		result.put("message", "SELLER_INTERESTING_USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

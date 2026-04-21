@@ -17,6 +17,7 @@ public class ProductReviewResponse {
     private Timestamp reviewDate;
     private int rating;
     private int orderItemId;
+    private Integer userNo;
     private String userName;
 
     private List<ReviewImageResponse> reviewImages;
