@@ -243,13 +243,27 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
-//		ProductReviewSummary productReviewSummary = productService.getProductReviewSummary(productId);
 		
-//		result.put("productReviewSummary", productReviewSummary);
 		result.put("productReviewList", productReviewList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 제품 리뷰 삭제
+	@DeleteMapping("/detail/{productId}/review/{reviewId}")
+	public ResponseEntity<Map<String, Object>> deleteProductReview(
+			@PathVariable("productId") int productId,
+			@PathVariable("reviewId") int reviewId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[deleteProductReview] productId={}, reviewId={}, userNo={}", productId, reviewId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		productService.deleteProductReview(reviewId, userNo);
+		
+		result.put("message", "PRODUCT_REVIEW_DELETE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 제품 상품 Q&A 조회
 	@GetMapping("/detail/{productId}/qna")
 	public ResponseEntity<Map<String, Object>> getProductQnaList(
@@ -309,6 +323,21 @@ public class ProductController {
 		productService.deleteProductQna(productQnaId, userNo);
 		
 		result.put("message", "PRODUCT_QNA_DELETE_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 제품 상품 Q&A 답변 읽음 처리
+	@PutMapping("/detail/{productId}/qna/read")
+	public ResponseEntity<Map<String, Object>> updateProductQnaRead(
+			@PathVariable("productId") int productId,
+			@RequestParam("productQnaId") Integer productQnaId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[updateProductQnaRead] productQnaId={}, productId={}, userNo={}", productQnaId, productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.updateProductQnaRead(productQnaId, userNo);
+		
+		result.put("message", "PRODUCT_QNA_UPDATE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 같은 카테고리 BEST 제품 조회

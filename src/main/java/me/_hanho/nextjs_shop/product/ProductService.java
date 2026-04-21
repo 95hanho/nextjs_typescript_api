@@ -224,13 +224,13 @@ public class ProductService {
 		if (list == null || list.isEmpty()) return list;
 		
 		for (ProductReviewResponse review : list) {
-	        String writerName = review.getUserName();
-	        review.setUserName(null);
-	        boolean isOwner = userNo != null && writerName != null && writerName.equals(userNo);
+	        Integer writerNo = review.getUserNo();
+	        review.setUserNo(null);
+	        boolean isOwner = userNo != null && writerNo != null && writerNo.equals(userNo);
 
 	        // 1) 작성자가 아니면 userId 마스킹(앞 2글자 + *****)
 	        if (!isOwner) {
-	        	review.setUserName(MaskingUtil.maskUserIdName(writerName, 5));
+	        	review.setUserName(MaskingUtil.maskUserIdName(review.getUserName(), 5));
 	        }
 			// 2) 리뷰 이미지 주입
 	        List<ReviewImageResponse> reviewImages = allReviewImages.stream()
@@ -240,6 +240,10 @@ public class ProductService {
 	    }
 
 	    return list;
+	}
+
+	public void deleteProductReview(int reviewId, Integer userNo) {
+		productMapper.deleteProductReview(reviewId, userNo);
 	}
 	
 	public ProductReviewSummary getProductReviewSummary(Integer productId) {
@@ -288,6 +292,10 @@ public class ProductService {
 
 	public void deleteProductQna(int productQnaId, Integer userNo) {
 		productMapper.updateProductQnaDelete(productQnaId, userNo);
+	}
+
+	public void updateProductQnaRead(int productQnaId, Integer userNo) {
+		productMapper.updateProductQnaRead(productQnaId, userNo);
 	}
 
 	public List<OtherProduct> getCategoryBestProductList(int productId, Integer userNo) {

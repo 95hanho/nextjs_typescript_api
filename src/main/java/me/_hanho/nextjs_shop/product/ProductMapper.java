@@ -88,6 +88,8 @@ public interface ProductMapper {
 
 	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 
+	void deleteProductReview(@Param("reviewId") int reviewId, @Param("userNo") Integer userNo);
+
 	List<ReviewImageResponse> getProductReviewImageListByProductId(Integer productId);
 	
 	ProductReviewSummary getProductReviewSummary(Integer productId);
@@ -101,6 +103,8 @@ public interface ProductMapper {
 	void updateProductQna(@Param("qna") UpdateProductQnaRequest productQnaRequest, @Param("userNo") Integer userNo);
 
 	void updateProductQnaDelete(@Param("productQnaId") int productQnaId, @Param("userNo") Integer userNo);
+
+	void updateProductQnaRead(@Param("productQnaId") int productQnaId, @Param("userNo") Integer userNo);
 
 	List<OtherProduct> getCategoryBestProductList(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
