@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class MenuSubDTO {
     private int menuSubId;
     private String menuName;
+    private int productCount;
 
 }

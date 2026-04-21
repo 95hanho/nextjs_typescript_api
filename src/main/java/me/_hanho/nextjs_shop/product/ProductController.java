@@ -158,7 +158,7 @@ public class ProductController {
 		logger.info("[getProductDetail] productId={}, userNo={}", productId, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		ProductDetailResponse productDetail = productService.getProductDetail(productId);
+		ProductDetailResponse productDetail = productService.getProductDetail(productId, userNo);
 		// 제품 옵션 정보
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
 		// 리뷰 요약 정보 (평점, 리뷰 수 등)

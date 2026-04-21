@@ -173,12 +173,19 @@ public class ProductService {
 		return res;
 	}
 	
-	public ProductDetailResponse getProductDetail(int productId) {
+	public ProductDetailResponse getProductDetail(int productId, Integer userNo) {
 		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
 		
 		productDetail.setProductImageList(
 	        productMapper.getProductImageList(productId)
 	    );
+
+		// 조회수 업
+		productMapper.upProductHit(productId);
+		// nextjs_shop_product_view insert
+		if (userNo != null) {
+			productMapper.insertProductView(productId, userNo);
+		}
 		
 		return productDetail;
 	}
