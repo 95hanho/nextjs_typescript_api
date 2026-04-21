@@ -7,9 +7,16 @@
 	    FROM nextjs_shop_menu_top
 	</select>
 	<select id="getMenuSubList">
-		SELECT menu_sub_id, menu_name
-		FROM nextjs_shop_menu_sub
-		WHERE menu_top_id = #{menuTopId}
+		SELECT ms.menu_sub_id,
+			ms.menu_name,
+			COUNT(p.product_id) AS productCount
+		FROM nextjs_shop_menu_sub ms
+		LEFT JOIN nextjs_shop_product p
+			ON p.menu_sub_id = ms.menu_sub_id
+			AND p.sale_stop = 0
+		WHERE ms.menu_top_id = #{menuTopId}
+		GROUP BY ms.menu_sub_id, ms.menu_name
+		ORDER BY ms.menu_sub_id
 	</select>
 	<select id="getMainImages">
 		select *
