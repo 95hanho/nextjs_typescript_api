@@ -28,6 +28,7 @@ import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
 import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
+import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
@@ -241,6 +242,35 @@ public class SellerService {
 	public void suspendCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
 	    sellerMapper.suspendCoupons(activeCouponIds, sellerNo);
 	}
+	public void issueCouponsToUsers(Integer couponId, String type, Integer sellerNo) {
+		List<Integer> userNos;
+
+		switch (type) {
+			case "VIEW":
+				userNos = sellerMapper.getViewedUserNos(couponId, sellerNo);
+				break;
+			case "WISH":
+				userNos = sellerMapper.getWishedUserNos(couponId, sellerNo);
+				break;
+			case "BOOKMARK":
+				userNos = sellerMapper.getBookmarkedUserNos(couponId, sellerNo);
+				break;
+			case "CART":
+				userNos = sellerMapper.getCartUserNos(couponId, sellerNo);
+				break;
+			case "ORDER":
+				userNos = sellerMapper.getOrderedUserNos(couponId, sellerNo);
+				break;
+			default:
+				throw new BusinessException(ErrorCode.BAD_REQUEST, "Invalid type for issuing coupons: " + type);
+		}
+
+		if (userNos == null || userNos.isEmpty()) {
+			return;
+		}
+
+		sellerMapper.insertUserCoupons(couponId, userNos);
+	}
 	public List<SellerReviewResponse> getSellerReviewList(Integer sellerNo) {
 		return sellerMapper.getSellerReviewList(sellerNo);
 	} 
@@ -255,33 +285,19 @@ public class SellerService {
 		}
 	}
 	/* --- */
-	public List<ProductViewCountResponse> getViewedUserList(Integer sellerNo) {
-		return sellerMapper.getViewedUserList(sellerNo);
+	public SellerInterestingUserSummaryResponse getSellerInterestingUserSummary(Integer couponId, Integer sellerNo) {
+		int viewedUserCount = sellerMapper.getViewedUserCount(couponId, sellerNo);
+		int wishedUserCount = sellerMapper.getWishedUserCount(couponId, sellerNo);
+		int bookmarkedUserCount = sellerMapper.getBookmarkedUserCount(couponId, sellerNo);
+		int cartUserCount = sellerMapper.getCartUserCount(couponId, sellerNo);
+		int orderedUserCount = sellerMapper.getOrderedUserCount(couponId, sellerNo);
+
+		return SellerInterestingUserSummaryResponse.builder()
+				.viewedUserCount(viewedUserCount)
+				.wishedUserCount(wishedUserCount)
+				.bookmarkedUserCount(bookmarkedUserCount)
+				.cartUserCount(cartUserCount)
+				.orderedUserCount(orderedUserCount)
+				.build();
 	}
-	public List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo) {
-		return sellerMapper.getProductWishCountList(sellerNo);
-	}
-	public List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo) {
-		return sellerMapper.getBrandBookmarkList(sellerNo);
-	}
-	public List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo) {
-		return sellerMapper.getUserInCartCountList(sellerNo);
-	}
-
-
-
-
-
-	//
-
-
-
-
-
-
-
-
-
-	
-
 }

@@ -300,6 +300,78 @@
 		</foreach>
 		AND seller_no = #{sellerNo}
 	</update>
+	<!-- 쿠폰을 유저에게 발행하기 -->
+	<select id="getViewedUserNos" resultType="int">
+		SELECT DISTINCT pv.user_no
+		FROM nextjs_shop_product_view pv
+		JOIN nextjs_shop_product p ON p.product_id = pv.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = pv.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+	<select id="getWishedUserNos" resultType="int">
+		SELECT DISTINCT w.user_no
+		FROM nextjs_shop_wish w
+		JOIN nextjs_shop_product p ON p.product_id = w.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = w.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+	<select id="getBookmarkedUserNos" resultType="int">
+		SELECT DISTINCT bb.user_no
+		FROM nextjs_shop_brand_bookmark bb
+		WHERE bb.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = bb.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+	<select id="getCartUserNos" resultType="int">
+		SELECT DISTINCT c.user_no
+		FROM nextjs_shop_cart c
+		JOIN nextjs_shop_product_option po ON po.product_option_id = c.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND c.is_deleted = 0
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = c.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+	<select id="getOrderedUserNos" resultType="int">
+		SELECT DISTINCT og.user_no
+		FROM nextjs_shop_order_group og
+		JOIN nextjs_shop_order_item oi ON oi.order_id = og.order_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = og.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+	<insert id="insertUserCoupons">
+		INSERT IGNORE INTO nextjs_shop_user_coupon(user_no, coupon_id)
+		<foreach collection="userNos" item="userNo" separator="UNION ALL">
+			SELECT #{userNo}, #{couponId}
+		</foreach>
+	</insert>
+	<!--  -->
 	<select id="getSellerReviewList">
 		SELECT r.review_id, r.content, r.rating, r.created_at,
 			u.name AS userName, 
@@ -342,47 +414,79 @@
 		WHERE pq.product_qna_id = #{productQnaId} AND p.seller_no = #{sellerNo}
 			AND pq.answer_read = 0
 	</update>
-	<!-- 판매자와 관련된 회원 조회 -->
-	<select id="getViewedUserList">
-	    SELECT pv.user_id, u.name AS user_name, pv.product_id,
-			p.name AS productName,
-			COUNT(*) AS viewCount,
-			MAX(pv.view_date) AS latestDate
-	    FROM nextjs_shop_product_view pv
-    	JOIN nextjs_shop_product p ON p.product_id = pv.product_id
-	    JOIN nextjs_shop_user u ON u.user_id = pv.user_id
-	    WHERE p.seller_no = #{sellerNo}
-	    GROUP BY pv.user_id, pv.product_id, u.name, p.name
-	    ORDER BY pv.view_date DESC, view_count DESC
+	<!--  -->
+	<!-- 내 상품을 본 회원 수 -->
+	<select id="getViewedUserCount" resultType="int">
+		SELECT COUNT(DISTINCT pv.user_no)
+		FROM nextjs_shop_product_view pv
+		JOIN nextjs_shop_product p ON p.product_id = pv.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = pv.user_no
+			AND uc.coupon_id = #{couponId}
+		)
 	</select>
-	<select id="getProductWishCountList">
-		SELECT MAX(w.created_at) AS latestDate, w.user_id, u.name AS userName,
-			GROUP_CONCAT(p.name ORDER BY w.created_at DESC SEPARATOR ',') AS productNames
+
+	<!-- 내 상품을 위시한 회원 수 -->
+	<select id="getWishedUserCount" resultType="int">
+		SELECT COUNT(DISTINCT w.user_no)
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON p.product_id = w.product_id
-		JOIN nextjs_shop_user u    ON u.user_id = w.user_id
 		WHERE p.seller_no = #{sellerNo}
-		GROUP BY w.user_id, u.name
-		ORDER BY w.created_at DESC
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = w.user_no
+			AND uc.coupon_id = #{couponId}
+		)
 	</select>
-	<select id="getBrandBookmarkList">
-		SELECT bb.created_at, bb.user_id, u.name AS userName
+
+	<!-- 내 브랜드를 즐겨찾기한 회원 수 -->
+	<select id="getBookmarkedUserCount" resultType="int">
+		SELECT COUNT(DISTINCT bb.user_no)
 		FROM nextjs_shop_brand_bookmark bb
-		JOIN nextjs_shop_user u ON u.user_id = bb.user_id
-		WHERE seller_no = #{sellerNo}
-		ORDER BY bb.created_at DESC
+		WHERE bb.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = bb.user_no
+			AND uc.coupon_id = #{couponId}
+		)
 	</select>
-	<select id="getUserInCartCountList">
-		SELECT
-			MAX(c.created_at) AS latestDate, COUNT(*) AS inCartCount, c.user_id, u.name AS userName,
-			GROUP_CONCAT(DISTINCT p.name ORDER BY c.created_at DESC SEPARATOR ',') AS productNames
-	    FROM nextjs_shop_cart c
-	    JOIN nextjs_shop_product_option d ON d.product_option_id = c.product_option_id
-	    JOIN nextjs_shop_product p        ON p.product_id = d.product_id
-	    JOIN nextjs_shop_user u           ON u.user_id = c.user_id
-	    WHERE p.seller_no = #{sellerNo} AND c.is_deleted = 0
-	    GROUP BY c.user_id, u.name
-	    ORDER BY c.created_at DESC
+
+	<!-- 내 상품을 장바구니에 담은 회원 수 -->
+	<select id="getCartUserCount" resultType="int">
+		SELECT COUNT(DISTINCT c.user_no)
+		FROM nextjs_shop_cart c
+		JOIN nextjs_shop_product_option po ON po.product_option_id = c.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND c.is_deleted = 0
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = c.user_no
+			AND uc.coupon_id = #{couponId}
+		)
+	</select>
+
+	<!-- 내 상품을 구매한 회원 수 -->
+	<select id="getOrderedUserCount" resultType="int">
+		SELECT COUNT(DISTINCT og.user_no)
+		FROM nextjs_shop_order_group og
+		JOIN nextjs_shop_order_item oi ON oi.order_id = og.order_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id
+		JOIN nextjs_shop_product_option po ON po.product_option_id = sh.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = po.product_id
+		WHERE p.seller_no = #{sellerNo}
+		AND NOT EXISTS (
+			SELECT 1
+			FROM nextjs_shop_user_coupon uc
+			WHERE uc.user_no = og.user_no
+			AND uc.coupon_id = #{couponId}
+		)
 	</select>
 	
 </mapper>

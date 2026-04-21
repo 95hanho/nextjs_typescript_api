@@ -95,20 +95,32 @@ public interface SellerMapper {
 	void activateCoupons(@Param("couponIds") List<Integer> suspendedCouponIds, @Param("sellerNo") Integer sellerNo);
 
 	void suspendCoupons(@Param("couponIds") List<Integer> activeCouponIds, @Param("sellerNo") Integer sellerNo);
-	
+	/* ---- */	
+	List<Integer> getViewedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getWishedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getBookmarkedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getCartUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	List<Integer> getOrderedUserNos(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	void insertUserCoupons(@Param("couponId") Integer couponId, @Param("userNos") List<Integer> userNos);
+	/* ---- */
 	List<SellerReviewResponse> getSellerReviewList(Integer sellerNo);
 
 	List<SellerQnaResponse> getSellerQnaList(Integer sellerNo);
 
 	int updateQnaAnswer(@Param("productQnaId") Integer productQnaId, @Param("answer") String answer, @Param("sellerNo") Integer sellerNo);
 
-	List<ProductViewCountResponse> getViewedUserList(Integer sellerNo);
-	
-	List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo);
-	
-	List<UserInBookmarkResponse> getBrandBookmarkList(Integer sellerNo);
+	int getViewedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 
-	List<UserInCartCountResponse> getUserInCartCountList(Integer sellerNo);
+	int getWishedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 	
+	int getBookmarkedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 
+	int getCartUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
+
+	int getOrderedUserCount(@Param("couponId") Integer couponId, @Param("sellerNo") Integer sellerNo);
 }
