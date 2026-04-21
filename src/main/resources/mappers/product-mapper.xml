@@ -420,8 +420,8 @@
 	</select>
 	<select id="getProductReviewSummary">
 		SELECT
-		    AVG(rating) AS avg_rating,
-		    COUNT(*) AS review_count
+		    AVG(rating) AS avgRating,
+		    COUNT(*) AS reviewCount
 		FROM nextjs_shop_review r
 		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
 		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
@@ -514,7 +514,7 @@
 					AND pi2.is_thumbnail = 1
 			)
 		LEFT JOIN nextjs_shop_file f 
-			ON f.file_id = pi.file_id
+			ON f.file_id = pi.file_id AND f.is_deleted = 0
 		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND p.menu_sub_id = (
 			SELECT menu_sub_id
 			FROM nextjs_shop_product

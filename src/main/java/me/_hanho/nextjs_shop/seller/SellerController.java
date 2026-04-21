@@ -44,6 +44,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerReviewResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
@@ -500,6 +501,19 @@ public class SellerController {
 		result.put("message", "SELLER_USER_COUPON_USED_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 판매자 리뷰 조회
+	@GetMapping("/review")
+	public ResponseEntity<Map<String, Object>> getSellerReviewList(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[getSellerReviewList] sellerNo={}", sellerNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<SellerReviewResponse> sellerReviewList = sellerService.getSellerReviewList(sellerNo);
+
+		result.put("sellerReviewList", sellerReviewList);
+		result.put("message", "SELLER_REVIEW_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 	// 판매자 QnA 조회
 	@GetMapping("/qna")
 	public ResponseEntity<Map<String, Object>> getSellerQnaList(
@@ -534,25 +548,33 @@ public class SellerController {
 
 	// 판매자와 관련된 회원 조회(내 상품을 보거나 위시하거나 장바구니에 넣거나 즐겨찾기한) 
 	@GetMapping("/user/interesting")
-	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
+	public ResponseEntity<Map<String, Object>> getSellerInterestingUser(
+		@RequestAttribute(value="sellerNo", required=false) Integer sellerNo) {
 		if (sellerNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[getSellerInterestingUser] sellerNo={}", sellerNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductViewCountResponse> productViewCountList = sellerService.getProductViewCountList(sellerNo);
+		// 포폴용 : 모두 적용하기.
+		// 실제 : 한 달동안의 데이터로.
+
+		// 내 상품을 본 회원  리스트 가져오기
+		// List<ProductViewCountResponse> productViewCountList = sellerService.getViewedUserList(sellerNo);
+		// 위시한 회원 리스트 가져오기
+		// List<ProductWishCountResponse> productWishCountList = sellerService.getProductWishCountList(sellerNo);
+		// 즐겨찾기한 회원 리스트 가져오기
+		// List<UserInBookmarkResponse> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
+		// 장바구니에 넣은 회원 리스트 가져오기
+		// List<UserInCartCountResponse> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
+		// 상품을 구매한 회원리스트 가져오기
+		// List<UserInOrderCountResponse> userInOrderCountList = sellerService.getUserInOrderCountList(sellerNo);
+
 		
-		List<ProductWishCountResponse> productWishCountList = sellerService.getProductWishCountList(sellerNo);
-		
-		List<UserInBookmarkResponse> brandBookmarkList = sellerService.getBrandBookmarkList(sellerNo);
-		
-		List<UserInCartCountResponse> userInCartCountList = sellerService.getUserInCartCountList(sellerNo);
 		
 		// 주문액수, 주문 갯수 가져오기
-		
-		result.put("productViewCountList", productViewCountList);
-		result.put("productWishCountList", productWishCountList);
-		result.put("brandBookmarkList", brandBookmarkList);
-		result.put("userInCartCountList", userInCartCountList);
+		// result.put("productViewCountList", productViewCountList);
+		// result.put("productWishCountList", productWishCountList);
+		// result.put("brandBookmarkList", brandBookmarkList);
+		// result.put("userInCartCountList", userInCartCountList);
 		result.put("message", "SELLER_INTERESTING_USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

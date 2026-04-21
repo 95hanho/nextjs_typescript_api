@@ -33,6 +33,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.seller.dto.SellerReviewResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerToken;
 import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
@@ -240,6 +241,9 @@ public class SellerService {
 	public void suspendCoupons(List<Integer> activeCouponIds,  Integer sellerNo) {
 	    sellerMapper.suspendCoupons(activeCouponIds, sellerNo);
 	}
+	public List<SellerReviewResponse> getSellerReviewList(Integer sellerNo) {
+		return sellerMapper.getSellerReviewList(sellerNo);
+	} 
 	public List<SellerQnaResponse> getSellerQnaList(Integer sellerNo) {
 		return sellerMapper.getSellerQnaList(sellerNo);
 	}
@@ -251,8 +255,8 @@ public class SellerService {
 		}
 	}
 	/* --- */
-	public List<ProductViewCountResponse> getProductViewCountList(Integer sellerNo) {
-		return sellerMapper.getProductViewCountList(sellerNo);
+	public List<ProductViewCountResponse> getViewedUserList(Integer sellerNo) {
+		return sellerMapper.getViewedUserList(sellerNo);
 	}
 	public List<ProductWishCountResponse> getProductWishCountList(Integer sellerNo) {
 		return sellerMapper.getProductWishCountList(sellerNo);

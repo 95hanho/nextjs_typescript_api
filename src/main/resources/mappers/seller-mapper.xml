@@ -55,10 +55,24 @@
 			p.like_count, p.view_count, p.wish_count, p.sale_stop,
 			p.menu_sub_id, ms.menu_name AS subMenuName, mt.menu_name AS topMenuName, mt.gender,
 			p.material_info, p.manufacturer_name, p.country_of_origin, p.wash_care_info, p.manufactured_ym, 
-			p.quality_guarantee_info, p.after_service_contact, p.after_service_manager, p.after_service_phone
+			p.quality_guarantee_info, p.after_service_contact, p.after_service_manager, p.after_service_phone,
+			COALESCE(rs.avgRating, 0) AS avgRating,
+			COALESCE(rs.reviewCount, 0) AS reviewCount
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_menu_sub ms ON p.menu_sub_id = ms.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
+		LEFT JOIN (
+			SELECT
+				po.product_id,
+				ROUND(AVG(r.rating), 1) AS avgRating,
+				COUNT(*) AS reviewCount
+			FROM nextjs_shop_review r
+			JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
+			JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
+			JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+			WHERE r.is_deleted = 0
+			GROUP BY po.product_id
+		) rs ON rs.product_id = p.product_id
 		WHERE p.seller_no = #{sellerNo}
 	</select>
 	<select id="selectDetailsByProductIds">
@@ -286,6 +300,28 @@
 		</foreach>
 		AND seller_no = #{sellerNo}
 	</update>
+	<select id="getSellerReviewList">
+		SELECT r.review_id, r.content, r.rating, r.created_at,
+			u.name AS userName, 
+			po.product_id, p.name AS productName,
+			ri.review_image_id, f.file_id, f.file_name, f.store_name, f.file_path,
+			f.copyright, f.copyright_url
+		FROM nextjs_shop_review r
+		JOIN nextjs_shop_user u ON u.user_no = r.user_no
+		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
+		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
+		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+		JOIN nextjs_shop_product p ON po.product_id = p.product_id
+		LEFT JOIN nextjs_shop_review_image ri ON r.review_id = ri.review_id
+			AND ri.sort_key = (
+				SELECT MIN(ri2.sort_key)
+				FROM nextjs_shop_review_image ri2
+				WHERE ri2.review_id = r.review_id
+			)
+		LEFT JOIN nextjs_shop_file f ON ri.file_id = f.file_id AND f.is_deleted = 0
+		WHERE p.seller_no = #{sellerNo} AND r.is_deleted = 0
+		ORDER BY r.created_at DESC
+	</select>
 	<select id="getSellerQnaList">
 		SELECT pq.product_qna_id, pq.question, pq.created_at, pq.answer,
 			pq.answer_read, pq.secret, 
@@ -306,8 +342,8 @@
 		WHERE pq.product_qna_id = #{productQnaId} AND p.seller_no = #{sellerNo}
 			AND pq.answer_read = 0
 	</update>
-	<!--  -->
-	<select id="getProductViewCountList">
+	<!-- 판매자와 관련된 회원 조회 -->
+	<select id="getViewedUserList">
 	    SELECT pv.user_id, u.name AS user_name, pv.product_id,
 			p.name AS productName,
 			COUNT(*) AS viewCount,

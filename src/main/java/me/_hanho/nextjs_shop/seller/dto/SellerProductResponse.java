@@ -1,5 +1,6 @@
 package me._hanho.nextjs_shop.seller.dto;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -37,6 +38,9 @@ public class SellerProductResponse {
     private String afterServiceContact; // A/S 책임자와 전화번호
     private String afterServiceManager; // (선택) A/S 책임자
     private String afterServicePhone; // (선택) A/S 전화번호
+
+	private BigDecimal avgRating;
+	private int reviewCount;
 	
 	private List<ProductOption> optionList;
 	
