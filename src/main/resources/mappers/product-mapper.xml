@@ -224,6 +224,15 @@
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		WHERE sale_stop = 0 AND product_id = #{productId}
 	</select>
+	<update id="upProductHit">
+		UPDATE nextjs_shop_product
+		SET view_count = view_count + 1
+		WHERE product_id = #{productId}
+	</update>
+	<insert id="insertProductView">
+		INSERT INTO nextjs_shop_product_view (user_no, product_id)
+		VALUES (#{userNo}, #{productId})
+	</insert>
 	<select id="getProductImageList">
 		SELECT
 		    pi.product_id,
