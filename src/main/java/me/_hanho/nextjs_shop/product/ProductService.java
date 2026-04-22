@@ -41,13 +41,14 @@ public class ProductService {
 	
 	public List<ProductListResponse> getProductList(
 	        String sort,
+	        String popularPeriod,
 	        Integer menuSubId,
 	        Timestamp lastCreatedAt,
 	        Integer lastProductId,
 	        Integer lastPopularity
 	) {
-	    List<ProductListResponse> productList =
-	            productMapper.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+	    List<ProductListResponse> productList =	
+	            productMapper.getProductList("latest", menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 	    if (productList.isEmpty()) return productList;
 

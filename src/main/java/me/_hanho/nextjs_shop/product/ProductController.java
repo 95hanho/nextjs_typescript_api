@@ -52,16 +52,17 @@ public class ProductController {
 	// 제품 리스트 조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProductList(
-			@RequestParam("sort") String sort,
+			@RequestParam("sort") String sort, // "POPULAR" | "LATEST" | "PRICE_LOW" | "PRICE_HIGH"
+			@RequestParam("popularPeriod") String popularPeriod, // "DAYS_7" | "DAYS_30" | "YEAR_1" | "ALL";
 			@RequestParam("menuSubId") int menuSubId, 
 			@RequestParam(name = "lastCreatedAt", required = false) Timestamp lastCreatedAt,
 			@RequestParam(name = "lastProductId", required = false) Integer lastProductId, 
 			@RequestParam(name = "lastPopularity", required = false) Integer lastPopularity) {
-		logger.info("[getProductList] sort={}, menuSubId={}, lastCreatedAt={}, lastProductId={}, lastPopularity={}", 
-		sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+		logger.info("[getProductList] sort={}, popularPeriod={}, menuSubId={}, lastCreatedAt={}, lastProductId={}, lastPopularity={}", 
+		sort, popularPeriod, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 		Map<String, Object> result = new HashMap<String, Object>();
 		// 
-		List<ProductListResponse> productList = productService.getProductList(sort, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+		List<ProductListResponse> productList = productService.getProductList(sort, popularPeriod, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
 
 		result.put("productList", productList);
 		result.put("message", "PRODUCT_FETCH_SUCCESS");
