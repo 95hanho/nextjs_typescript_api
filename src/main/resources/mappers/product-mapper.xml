@@ -2,52 +2,86 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="me._hanho.nextjs_shop.product.ProductMapper">
 	<select id="getProductList">
-	  SELECT
-	    p.product_id,
-	    p.name,
-	    p.color_name,
-	    p.origin_price,
-	    p.final_price,
-	    p.created_at,
-	    p.view_count,
-	    p.wish_count,
-	    s.seller_name
-	  FROM nextjs_shop_product p
-	  JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-	  WHERE p.sale_stop = 0
-	    AND p.menu_sub_id = #{menuSubId}
-	  <choose>
-	    <!-- 최신순 -->
-	    <when test="sort == 'latest'">
-	      <if test="lastCreatedAt != null and lastProductId != null">
-	        AND (p.created_at, p.product_id) &lt; (#{lastCreatedAt}, #{lastProductId})
-	      </if>
-	      ORDER BY p.created_at DESC, p.product_id DESC
-	    </when>
-	
-	    <!-- 인기순 (view+wish) -->
-	    <when test="sort == 'popular'">
-	      <if test="lastPopularity != null and lastCreatedAt != null and lastProductId != null">
-	        AND (
-	          (p.view_count + p.wish_count) &lt; #{lastPopularity}
-	          OR (
-	            (p.view_count + p.wish_count) = #{lastPopularity}
-	            AND (p.created_at, p.product_id) &lt; (#{lastCreatedAt}, #{lastProductId})
-	          )
-	        )
-	      </if>
-	      ORDER BY (p.view_count + p.wish_count) DESC,
-	               p.created_at DESC,
-	               p.product_id DESC
-	    </when>
-	
-	    <!-- 기본(안전망) -->
-	    <otherwise>
-	      ORDER BY p.product_id DESC
-	    </otherwise>
-	  </choose>
-	
-	  LIMIT 30
+		SELECT
+			p.product_id,
+			p.name,
+			p.color_name,
+			p.origin_price,
+			p.final_price,
+			p.created_at,
+			p.view_count,
+			p.wish_count,
+			s.seller_name
+		FROM nextjs_shop_product p
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		WHERE p.sale_stop = 0
+			AND p.menu_sub_id = #{request.menuSubId}
+
+		<choose>
+			<!-- 최신순 -->
+			<when test="request.sort == 'LATEST'">
+				<if test="request.lastCreatedAt != null and request.lastProductId != null">
+					AND (
+						p.created_at &lt; #{request.lastCreatedAt}
+						OR (p.created_at = #{request.lastCreatedAt} AND p.product_id &lt; #{request.lastProductId})
+					)
+				</if>
+				ORDER BY p.created_at DESC, p.product_id DESC
+			</when>
+
+			<!-- 인기순 -->
+			<when test="request.sort == 'POPULAR'">
+				<if test="request.popularPeriod == 'DAYS_7'">
+					AND p.created_at &gt;= DATE_SUB(NOW(), INTERVAL 7 DAY)
+				</if>
+				<if test="request.popularPeriod == 'DAYS_30'">
+					AND p.created_at &gt;= DATE_SUB(NOW(), INTERVAL 30 DAY)
+				</if>
+				<if test="request.popularPeriod == 'YEAR_1'">
+					AND p.created_at &gt;= DATE_SUB(NOW(), INTERVAL 1 YEAR)
+				</if>
+
+				<if test="request.lastPopularity != null and request.lastProductId != null">
+					AND (
+						(p.view_count + p.wish_count) &lt; #{request.lastPopularity}
+						OR (
+							(p.view_count + p.wish_count) = #{request.lastPopularity}
+							AND p.product_id &lt; #{request.lastProductId}
+						)
+					)
+				</if>
+				ORDER BY (p.view_count + p.wish_count) DESC, p.product_id DESC
+			</when>
+
+			<!-- 낮은 가격순 -->
+			<when test="request.sort == 'PRICE_LOW'">
+				<if test="request.lastPrice != null and request.lastProductId != null">
+					AND (
+						p.final_price &gt; #{request.lastPrice}
+						OR (p.final_price = #{request.lastPrice} AND p.product_id &gt; #{request.lastProductId})
+					)
+				</if>
+				ORDER BY p.final_price ASC, p.product_id ASC
+			</when>
+
+			<!-- 높은 가격순 -->
+			<when test="request.sort == 'PRICE_HIGH'">
+				<if test="request.lastPrice != null and request.lastProductId != null">
+					AND (
+						p.final_price &lt; #{request.lastPrice}
+						OR (p.final_price = #{request.lastPrice} AND p.product_id &lt; #{request.lastProductId})
+					)
+				</if>
+				ORDER BY p.final_price DESC, p.product_id DESC
+			</when>
+
+			<!-- 기본(안전망) -->
+			<otherwise>
+				ORDER BY p.product_id DESC
+			</otherwise>
+		</choose>
+
+		LIMIT #{fetchSize}
 	</select>
 	
 	<select id="getProductImageListByProductIds" parameterType="list">
