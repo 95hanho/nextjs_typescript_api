@@ -37,7 +37,7 @@ public class FileService {
 		}
 		String storeFileName = createStoreFileName(fileName);
 		String fileExtension = extractExt(fileName).toLowerCase();
-		String fileNameWithoutExt = removeExt(originalFileName);
+		String fileNameWithoutExt = removeExt(fileName);
 		String filePath = uploadDir + "/" + storeFileName;
 
 		// 이미지 파일인지 검증(파일 확장자 검증)
@@ -71,6 +71,14 @@ public class FileService {
 
 	/* ------------------------------------------------------------------------------- */
 
+	// 확장자 제거 함수
+	private String removeExt(String originalFileName) {
+	int pos = originalFileName.lastIndexOf(".");
+	if (pos == -1) {
+		return originalFileName;
+	}
+	return originalFileName.substring(0, pos);
+}
 	// 확장자 추출 함수
 	private String extractExt(String originalFileName) {
 		int pos = originalFileName.lastIndexOf(".");
