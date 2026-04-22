@@ -13,6 +13,7 @@ import me._hanho.nextjs_shop.product.dto.AddCartItem;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAppliedRow;
 import me._hanho.nextjs_shop.product.dto.CartQtyRow;
+import me._hanho.nextjs_shop.product.dto.GetProductListRequest;
 import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
@@ -27,8 +28,10 @@ import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 @Mapper
 public interface ProductMapper {
 
-	List<ProductListResponse> getProductList(@Param("sort") String sort, @Param("menuSubId") int menuSubId, @Param("lastCreatedAt") Timestamp lastCreatedAt, 
-			@Param("lastProductId") Integer lastProductId, @Param("lastPopularity") Integer lastPopularity);
+	List<ProductListResponse> getProductList(
+		@Param("request") GetProductListRequest request,
+		@Param("fetchSize") int fetchSize
+	);
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
 	

@@ -1,6 +1,5 @@
 package me._hanho.nextjs_shop.product;
 
-import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
@@ -29,6 +29,8 @@ import me._hanho.nextjs_shop.model.UserCoupon;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
+import me._hanho.nextjs_shop.product.dto.GetProductListRequest;
+import me._hanho.nextjs_shop.product.dto.GetProductListResponse;
 import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
@@ -52,19 +54,15 @@ public class ProductController {
 	// 제품 리스트 조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProductList(
-			@RequestParam("sort") String sort, // "POPULAR" | "LATEST" | "PRICE_LOW" | "PRICE_HIGH"
-			@RequestParam("popularPeriod") String popularPeriod, // "DAYS_7" | "DAYS_30" | "YEAR_1" | "ALL";
-			@RequestParam("menuSubId") int menuSubId, 
-			@RequestParam(name = "lastCreatedAt", required = false) Timestamp lastCreatedAt,
-			@RequestParam(name = "lastProductId", required = false) Integer lastProductId, 
-			@RequestParam(name = "lastPopularity", required = false) Integer lastPopularity) {
-		logger.info("[getProductList] sort={}, popularPeriod={}, menuSubId={}, lastCreatedAt={}, lastProductId={}, lastPopularity={}", 
-		sort, popularPeriod, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+		@Valid @ModelAttribute GetProductListRequest request) {
+		logger.info("[getProductList] request={}", request);
 		Map<String, Object> result = new HashMap<String, Object>();
 		// 
-		List<ProductListResponse> productList = productService.getProductList(sort, popularPeriod, menuSubId, lastCreatedAt, lastProductId, lastPopularity);
-
-		result.put("productList", productList);
+		GetProductListResponse response = productService.getProductList(request);
+				
+		result.put("productList", response.getProductList());
+		result.put("hasNext", response.isHasNext());
+		result.put("nextCursor", response.getNextCursor());
 		result.put("message", "PRODUCT_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -285,7 +283,7 @@ public class ProductController {
 	@PostMapping("/detail/{productId}/qna")
 	public ResponseEntity<Map<String, Object>> createProductQna(
 			@PathVariable("productId") int productId,
-			@ModelAttribute ProductQnaRequest productQnaRequest,
+			@Valid @ModelAttribute ProductQnaRequest productQnaRequest,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[createProductQna] productQnaRequest={}, productId={}, userNo={}", productQnaRequest, productId, userNo);
@@ -300,7 +298,7 @@ public class ProductController {
 	@PutMapping("/detail/{productId}/qna")
 	public ResponseEntity<Map<String, Object>> updateProductQna(
 			@PathVariable("productId") int productId,
-			@ModelAttribute UpdateProductQnaRequest productQnaRequest,
+			@Valid @ModelAttribute UpdateProductQnaRequest productQnaRequest,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
 		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
 		logger.info("[updateProductQna] productQnaRequest={}, productId={}, userNo={}", productQnaRequest, productId, userNo);

@@ -20,9 +20,12 @@ import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
 import me._hanho.nextjs_shop.product.dto.CartAppliedRow;
 import me._hanho.nextjs_shop.product.dto.CartQtyRow;
+import me._hanho.nextjs_shop.product.dto.GetProductListRequest;
+import me._hanho.nextjs_shop.product.dto.GetProductListResponse;
 import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
+import me._hanho.nextjs_shop.product.dto.ProductListCursorResponse;
 import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaRequest;
@@ -36,40 +39,69 @@ import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 public class ProductService {
 	
 //	private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
+	private static final int PRODUCT_LIST_PAGE_SIZE = 12;
 
 	private final ProductMapper productMapper;
 	
-	public List<ProductListResponse> getProductList(
-	        String sort,
-	        String popularPeriod,
-	        Integer menuSubId,
-	        Timestamp lastCreatedAt,
-	        Integer lastProductId,
-	        Integer lastPopularity
-	) {
-	    List<ProductListResponse> productList =	
-	            productMapper.getProductList("latest", menuSubId, lastCreatedAt, lastProductId, lastPopularity);
+	public GetProductListResponse getProductList(GetProductListRequest request) {
+		List<ProductListResponse> productList = productMapper.getProductList(request, PRODUCT_LIST_PAGE_SIZE + 1);
 
-	    if (productList.isEmpty()) return productList;
+		if (productList.isEmpty()) {
+			return new GetProductListResponse(
+					java.util.Collections.emptyList(),
+					false,
+					null
+			);
+		}
 
-	    // ✅ 1) productId 목록 추출
-	    List<Integer> productIds = productList.stream()
-	            .map(ProductListResponse::getProductId)
-	            .toList();
+		// ✅ 1) 다음 페이지 존재 여부 확인용으로 size+1 조회했다는 가정
+		boolean hasNext = productList.size() > PRODUCT_LIST_PAGE_SIZE;
 
-	    // ✅ 2) 이미지들을 "한 방"에 가져오기 (쿼리 1번)
-	    List<ProductImageFile> allImages = productMapper.getProductImageListByProductIds(productIds);
+		// ✅ 2) 응답용 리스트는 실제 노출 개수만 자르기
+		List<ProductListResponse> visibleList = hasNext
+				? productList.subList(0, PRODUCT_LIST_PAGE_SIZE)
+				: productList;
 
-	    // ✅ 3) productId로 그룹핑
-	    Map<Integer, List<ProductImageFile>> imageMap = allImages.stream()
-	            .collect(java.util.stream.Collectors.groupingBy(ProductImageFile::getProductId));
+		// ✅ 3) productId 목록 추출
+		List<Integer> productIds = visibleList.stream()
+				.map(ProductListResponse::getProductId)
+				.toList();
 
-	    // ✅ 4) DTO에 주입 (없으면 빈 리스트)
-	    for (ProductListResponse p : productList) {
-	        p.setProductImageList(imageMap.getOrDefault(p.getProductId(), java.util.Collections.emptyList()));
-	    }
+		// ✅ 4) 이미지들을 "한 방"에 가져오기 (쿼리 1번)
+		List<ProductImageFile> allImages = productMapper.getProductImageListByProductIds(productIds);
 
-	    return productList;
+		// ✅ 5) productId로 그룹핑
+		Map<Integer, List<ProductImageFile>> imageMap = allImages.stream()
+				.collect(java.util.stream.Collectors.groupingBy(ProductImageFile::getProductId));
+
+		// ✅ 6) DTO에 주입 (없으면 빈 리스트)
+		for (ProductListResponse p : visibleList) {
+			p.setProductImageList(imageMap.getOrDefault(p.getProductId(), java.util.Collections.emptyList()));
+		}
+
+		// ✅ 7) nextCursor 생성
+		ProductListCursorResponse nextCursor = null;
+		if (hasNext && !visibleList.isEmpty()) {
+			ProductListResponse lastItem = visibleList.get(visibleList.size() - 1);
+
+			nextCursor = new ProductListCursorResponse();
+			nextCursor.setLastProductId(lastItem.getProductId());
+
+			switch (request.getSort()) {
+				case "POPULAR":
+					nextCursor.setLastPopularity(lastItem.getViewCount() + lastItem.getWishCount());
+					break;
+				case "LATEST":
+					nextCursor.setLastCreatedAt(lastItem.getCreatedAt());
+					break;
+				case "PRICE_LOW":
+				case "PRICE_HIGH":
+					nextCursor.setLastPrice(lastItem.getFinalPrice());
+					break;
+			}
+		}
+
+		return new GetProductListResponse(visibleList, hasNext, nextCursor);
 	}
 	@Transactional
 	public void setLike(Integer productId, Integer userNo) {
