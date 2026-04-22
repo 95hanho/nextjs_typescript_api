@@ -37,6 +37,7 @@ public class FileService {
 		}
 		String storeFileName = createStoreFileName(fileName);
 		String fileExtension = extractExt(fileName).toLowerCase();
+		String fileNameWithoutExt = removeExt(originalFileName);
 		String filePath = uploadDir + "/" + storeFileName;
 
 		// 이미지 파일인지 검증(파일 확장자 검증)
@@ -57,7 +58,7 @@ public class FileService {
 		saveFile(file, filePath);
 		// DB 저장
 		FileUploadRequest request = FileUploadRequest.builder()
-				.fileName(fileName)
+				.fileName(fileNameWithoutExt)
 				.storeName(storeFileName)
 				.fileExtension(fileExtension)
 				.filePath(filePath)
