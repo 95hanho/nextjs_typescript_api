@@ -1,6 +1,7 @@
 package me._hanho.nextjs_shop.product;
 
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,12 @@ public class ProductService {
 	private final ProductMapper productMapper;
 	
 	public GetProductListResponse getProductList(GetProductListRequest request) {
-		List<ProductListResponse> productList = productMapper.getProductList(request, PRODUCT_LIST_PAGE_SIZE + 1);
+		 Timestamp lastCreatedAt = null;
+		if (request.getLastCreatedAt() != null && !request.getLastCreatedAt().isBlank()) {
+			lastCreatedAt = Timestamp.from(OffsetDateTime.parse(request.getLastCreatedAt()).toInstant());
+		}
+
+		List<ProductListResponse> productList = productMapper.getProductList(request, lastCreatedAt, PRODUCT_LIST_PAGE_SIZE + 1);
 
 		if (productList.isEmpty()) {
 			return new GetProductListResponse(

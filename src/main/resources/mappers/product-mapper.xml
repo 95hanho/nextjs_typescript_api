@@ -16,14 +16,19 @@
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		WHERE p.sale_stop = 0
 			AND p.menu_sub_id = #{request.menuSubId}
-
+			<!-- AND EXISTS (
+				SELECT 1
+				FROM nextjs_shop_product_image pi
+				WHERE pi.product_id = p.product_id
+				AND pi.is_thumbnail = 1
+			) -->
 		<choose>
 			<!-- 최신순 -->
 			<when test="request.sort == 'LATEST'">
-				<if test="request.lastCreatedAt != null and request.lastProductId != null">
+				<if test="lastCreatedAt != null and request.lastProductId != null">
 					AND (
-						p.created_at &lt; #{request.lastCreatedAt}
-						OR (p.created_at = #{request.lastCreatedAt} AND p.product_id &lt; #{request.lastProductId})
+						p.created_at &lt; #{lastCreatedAt}
+						OR (p.created_at = #{lastCreatedAt} AND p.product_id &lt; #{request.lastProductId})
 					)
 				</if>
 				ORDER BY p.created_at DESC, p.product_id DESC

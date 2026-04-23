@@ -16,13 +16,13 @@ public class GetProductListRequest {
     @NotBlank(message = "sort는 필수입니다.")
     private String sort; // POPULAR | LATEST | PRICE_LOW | PRICE_HIGH
 
-    @NotBlank(message = "popularPeriod는 필수입니다.")
+    // POPULAR 정렬일 때만 유효
     private String popularPeriod; // DAYS_7 | DAYS_30 | YEAR_1 | ALL
 
     @NotNull(message = "menuSubId는 필수입니다.")
     private Integer menuSubId;
 
-    private Timestamp lastCreatedAt;
+    private String lastCreatedAt;
     private Integer lastProductId;
     private Integer lastPopularity;
     private Integer lastPrice;
