@@ -57,6 +57,12 @@ public class ProductController {
 		@Valid @ModelAttribute GetProductListRequest request) {
 		logger.info("[getProductList] request={}", request);
 		Map<String, Object> result = new HashMap<String, Object>();
+
+		if ("POPULAR".equals(request.getSort())) {
+			if (request.getPopularPeriod() == null || request.getPopularPeriod().isBlank()) {
+				throw new BusinessException(ErrorCode.BAD_REQUEST, "popularPeriod는 sort가 POPULAR일 때 필수입니다.");
+			}
+		}
 		// 
 		GetProductListResponse response = productService.getProductList(request);
 				

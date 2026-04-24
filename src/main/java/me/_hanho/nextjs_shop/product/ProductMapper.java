@@ -30,6 +30,7 @@ public interface ProductMapper {
 
 	List<ProductListResponse> getProductList(
 		@Param("request") GetProductListRequest request,
+		@Param("lastCreatedAt") Timestamp lastCreatedAt,
 		@Param("fetchSize") int fetchSize
 	);
 	
