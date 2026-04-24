@@ -243,12 +243,20 @@ public class ProductController {
 	@GetMapping("/detail/{productId}/review")
 	public ResponseEntity<Map<String, Object>> getProductReviewList(
 			@PathVariable("productId") int productId,
+			@RequestParam("page") int page,
 			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("[getProductReviewList] productId={}, userNo={}", productId, userNo);
+		logger.info("[getProductReviewList] productId={}, page={}, userNo={}", productId, page, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
+
+		int size = 10;
+		int totalCount = productService.getProductReviewCount(productId);
+		int totalPage = (int) Math.ceil((double) totalCount / size);
+		int offset = (page - 1) * size;
+
+		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, offset, size, userNo);
 		
-		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, userNo);
-		
+		result.put("page", page);
+		result.put("totalPage", totalPage);
 		result.put("productReviewList", productReviewList);
 		result.put("message", "PRODUCT_REVIEW_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);

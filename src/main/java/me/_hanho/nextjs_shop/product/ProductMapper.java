@@ -94,7 +94,13 @@ public interface ProductMapper {
 	
 	void deleteSellerLike(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
-	List<ProductReviewResponse> getProductReviewList(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+	int getProductReviewCount(Integer productId);
+
+	List<ProductReviewResponse> getProductReviewList(
+		@Param("productId") Integer productId, 
+		@Param("offset") int offset, 
+		@Param("size") int size, 
+		@Param("userNo") Integer userNo);
 
 	void deleteProductReview(@Param("reviewId") int reviewId, @Param("userNo") Integer userNo);
 
