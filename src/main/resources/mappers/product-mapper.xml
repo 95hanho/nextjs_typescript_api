@@ -431,6 +431,17 @@
 		  AND sl.user_no = #{userNo}
 	</delete>
 
+	<select id="getProductReviewCount" resultType="int">
+		SELECT COUNT(*)
+		FROM nextjs_shop_review r
+		JOIN nextjs_shop_user u ON r.user_no = u.user_no
+		JOIN nextjs_shop_order_item oi ON r.order_item_id = oi.order_item_id
+		JOIN nextjs_shop_stock_hold sh ON oi.hold_id = sh.hold_id
+		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+		WHERE po.product_id = #{productId} AND u.withdrawal_status = 'ACTIVE'
+			AND r.is_deleted = 0
+	</select>
+
 	<select id="getProductReviewList">
 		SELECT r.review_id, r.content, r.created_at AS reviewDate, r.rating, r.order_item_id, 
 			r.user_no, u.name AS userName
@@ -447,6 +458,8 @@
 		</if>
 		r.created_at DESC,
 		r.review_id DESC
+		LIMIT #{size} 
+		OFFSET #{offset}
 	</select>
 	<update id ="deleteProductReview">
 		UPDATE nextjs_shop_review

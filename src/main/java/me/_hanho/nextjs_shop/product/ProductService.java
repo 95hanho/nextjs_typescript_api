@@ -260,9 +260,14 @@ public class ProductService {
 			productMapper.deleteSellerLike(productId, userNo);
 		}
 	}
+
+	public int getProductReviewCount(Integer productId) {
+		return productMapper.getProductReviewCount(productId);
+	}
 	
-	public List<ProductReviewResponse> getProductReviewList(Integer productId, Integer userNo) {
-		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, userNo);
+	public List<ProductReviewResponse> getProductReviewList(Integer productId, int offset, int size, Integer userNo) {
+		
+		List<ProductReviewResponse> list = productMapper.getProductReviewList(productId, offset, size, userNo);
 		
 		// 제품 리뷰 이미지 조회
 		List<ReviewImageResponse> allReviewImages = productMapper.getProductReviewImageListByProductId(productId);
