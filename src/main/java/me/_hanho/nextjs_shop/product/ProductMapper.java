@@ -102,9 +102,11 @@ public interface ProductMapper {
 		@Param("size") int size, 
 		@Param("userNo") Integer userNo);
 
-	void deleteProductReview(@Param("reviewId") int reviewId, @Param("userNo") Integer userNo);
-
 	List<ReviewImageResponse> getProductReviewImageListByProductId(Integer productId);
+
+	List<ReviewImageResponse> getProductInitReviewImageListByProductId(Integer productId);
+
+	void deleteProductReview(@Param("reviewId") int reviewId, @Param("userNo") Integer userNo);
 	
 	ProductReviewSummary getProductReviewSummary(Integer productId);
 	

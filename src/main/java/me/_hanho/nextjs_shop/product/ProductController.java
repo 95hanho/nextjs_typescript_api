@@ -26,6 +26,7 @@ import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
+import me._hanho.nextjs_shop.mypage.dto.ReviewImageResponse;
 import me._hanho.nextjs_shop.product.dto.AddCartRequest;
 import me._hanho.nextjs_shop.product.dto.AvailableProductCouponResponse;
 import me._hanho.nextjs_shop.product.dto.CartAddResult;
@@ -254,6 +255,11 @@ public class ProductController {
 		int offset = (page - 1) * size;
 
 		List<ProductReviewResponse> productReviewList = productService.getProductReviewList(productId, offset, size, userNo);
+		// 첫 페이지에서는 사진 리뷰들 7개 조회해서 보여주기
+		if(page == 1) {
+			List<ReviewImageResponse> reviewImageList = productService.getProductInitReviewImageListByProductId(productId);
+			result.put("initReviewImageList", reviewImageList);
+		}
 		
 		result.put("page", page);
 		result.put("totalPage", totalPage);

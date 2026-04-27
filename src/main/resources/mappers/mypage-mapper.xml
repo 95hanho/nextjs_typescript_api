@@ -158,7 +158,7 @@
 	</select>
 	<insert id="insertReview"
 		useGeneratedKeys="true"
-        keyProperty="reviewId"
+        keyProperty="review.reviewId"
         keyColumn="review_id"
 	>
 		INSERT INTO nextjs_shop_review (

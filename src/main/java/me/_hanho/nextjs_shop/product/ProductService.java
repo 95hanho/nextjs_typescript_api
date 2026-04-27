@@ -293,6 +293,10 @@ public class ProductService {
 	    return list;
 	}
 
+	public List<ReviewImageResponse> getProductInitReviewImageListByProductId(Integer productId) {
+		return productMapper.getProductInitReviewImageListByProductId(productId);
+	}
+
 	public void deleteProductReview(int reviewId, Integer userNo) {
 		productMapper.deleteProductReview(reviewId, userNo);
 	}
