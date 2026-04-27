@@ -461,11 +461,6 @@
 		LIMIT #{size} 
 		OFFSET #{offset}
 	</select>
-	<update id ="deleteProductReview">
-		UPDATE nextjs_shop_review
-		SET is_deleted = 1
-		WHERE review_id = #{reviewId} AND user_no = #{userNo}
-	</update>
 	<select id="getProductReviewImageListByProductId">
 		SELECT ri.review_image_id, ri.review_id, ri.file_id,
 			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
@@ -479,6 +474,26 @@
 		WHERE p.product_id = #{productId} AND f.is_deleted = 0
 		ORDER BY r.created_at DESC, ri.sort_key ASC, ri.review_image_id ASC
 	</select>
+	<select id="getProductInitReviewImageListByProductId">
+		SELECT ri.review_image_id, ri.review_id, ri.sort_key,
+			ri.file_id,
+			f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url
+		FROM nextjs_shop_review_image ri
+		JOIN nextjs_shop_file f ON f.file_id = ri.file_id
+		JOIN nextjs_shop_review r ON ri.review_id = r.review_id
+		JOIN nextjs_shop_order_item oi ON oi.order_item_id = r.order_item_id
+		JOIN nextjs_shop_stock_hold sh ON sh.hold_id = oi.hold_id
+		JOIN nextjs_shop_product_option po ON sh.product_option_id = po.product_option_id
+		JOIN nextjs_shop_product p ON po.product_id = p.product_id
+		WHERE p.product_id = #{productId} AND f.is_deleted = 0
+		ORDER BY r.created_at DESC, ri.sort_key ASC, ri.review_image_id ASC
+		LIMIT 7
+	</select>
+	<update id ="deleteProductReview">
+		UPDATE nextjs_shop_review
+		SET is_deleted = 1
+		WHERE review_id = #{reviewId} AND user_no = #{userNo}
+	</update>
 	<select id="getProductReviewSummary">
 		SELECT
 		    AVG(rating) AS avgRating,
