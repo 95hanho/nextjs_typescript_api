@@ -23,36 +23,53 @@
 		from nextjs_shop_product
 	</select>
 	<select id="getMainSlideProducts">
-	    SELECT
-	        p.product_id,
-	        p.name,
-	        p.origin_price,
-	        p.final_price,
-	        p.view_count,
-	        p.wish_count,
-	        f.file_path AS imgPath,
-	        f.copyright,
-	        f.copyright_url
-	    FROM nextjs_shop_product p
-	    LEFT JOIN (
-	        SELECT 
-	            pi.product_id,
-	            pi.file_id
-	        FROM nextjs_shop_product_image pi
-	        INNER JOIN (
-	            SELECT 
-	                product_id, 
-	                MIN(sort_key) AS min_sort_key
-	            FROM nextjs_shop_product_image
-				WHERE is_thumbnail = 1
-	            GROUP BY product_id
-	        ) min_pi 
-	        ON pi.product_id = min_pi.product_id 
-	        AND pi.sort_key = min_pi.min_sort_key
-			WHERE pi.is_thumbnail = 1
-	    ) tpi ON tpi.product_id = p.product_id
-	    LEFT JOIN nextjs_shop_file f ON f.file_id = tpi.file_id
-	    <!-- ORDER BY p.created_at DESC  -->
-	    LIMIT 10
+		SELECT
+			p.product_id,
+			p.name AS productName,
+			p.origin_price,
+			p.final_price,
+			p.view_count,
+			p.wish_count,
+			f.file_id,
+			f.file_name,
+			f.store_name,
+			f.file_path,
+			f.copyright,
+			f.copyright_url,
+			f.file_extension,
+			w.wish_id
+		FROM nextjs_shop_product p
+		JOIN (
+			SELECT 
+				file_id,
+				MAX(product_id) AS product_id
+			FROM (
+				SELECT 
+					pi.product_id,
+					pi.file_id
+				FROM nextjs_shop_product_image pi
+				JOIN (
+					SELECT 
+						product_id, 
+						MIN(sort_key) AS min_sort_key
+					FROM nextjs_shop_product_image
+					WHERE is_thumbnail = 1
+					GROUP BY product_id
+				) min_pi 
+				ON pi.product_id = min_pi.product_id 
+				AND pi.sort_key = min_pi.min_sort_key
+				WHERE pi.is_thumbnail = 1
+			) t
+			GROUP BY file_id
+		) uniq ON uniq.product_id = p.product_id
+
+		JOIN nextjs_shop_file f ON f.file_id = uniq.file_id
+
+		LEFT JOIN nextjs_shop_wish w 
+			ON w.product_id = p.product_id 
+			AND w.user_no = #{userNo}
+
+		ORDER BY p.created_at DESC 
+		LIMIT 30
 	</select>
 </mapper>

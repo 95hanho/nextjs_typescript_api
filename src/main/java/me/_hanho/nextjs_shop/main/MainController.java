@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,11 +41,13 @@ public class MainController {
 	
 	// 메인 슬라이드 제품 가져오기 - 지금은 가장 오래된거 10개 그냥 가져오지만 나중에 규칙만들어서 뽑기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getProducts() {
-		logger.info("[getProducts]");
+	public ResponseEntity<Map<String, Object>> getProducts(
+		@RequestAttribute(value="userNo", required=false) Integer userNo
+	) {
+		logger.info("[getProducts] userNo={}", userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts();
+		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts(userNo);
 		
 		result.put("message", "MAIN_SLIDE_FETCH_SUCCESS");
 		result.put("productList", productList);

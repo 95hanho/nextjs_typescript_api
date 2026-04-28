@@ -15,6 +15,6 @@ public interface MainMapper {
 	
 	List<MenuSubDTO> getMenuSubList(int menuTopId);
 
-	List<ProductMainSlideResponse> getMainSlideProducts();
+	List<ProductMainSlideResponse> getMainSlideProducts(Integer userNo);
 
 }
