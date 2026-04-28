@@ -35,7 +35,6 @@ import me._hanho.nextjs_shop.product.dto.GetProductListResponse;
 import me._hanho.nextjs_shop.product.dto.OtherProduct;
 import me._hanho.nextjs_shop.product.dto.ProductDetailResponse;
 import me._hanho.nextjs_shop.product.dto.ProductImageFile;
-import me._hanho.nextjs_shop.product.dto.ProductListResponse;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 import me._hanho.nextjs_shop.product.dto.ProductQnaRequest;
 import me._hanho.nextjs_shop.product.dto.ProductQnaResponse;
@@ -165,6 +164,7 @@ public class ProductController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		ProductDetailResponse productDetail = productService.getProductDetail(productId, userNo);
+		System.out.println("productDetail = " + productDetail);
 		// 제품 옵션 정보
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
 		// 리뷰 요약 정보 (평점, 리뷰 수 등)

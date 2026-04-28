@@ -11,7 +11,29 @@
 			p.created_at,
 			p.view_count,
 			p.wish_count,
-			s.seller_name
+			s.seller_name,
+			CASE
+				WHEN p.sale_stop = 1 THEN 1
+				WHEN <![CDATA[(
+					SELECT COALESCE(SUM(
+						GREATEST(
+							po.stock - COALESCE((
+								SELECT SUM(sh.count)
+								FROM nextjs_shop_stock_hold sh
+								WHERE sh.product_option_id = po.product_option_id
+								AND sh.status = 'HOLD'
+								AND sh.active_hold = 1
+								AND sh.expires_at > NOW()
+							), 0),
+							0
+						)
+					), 0)
+					FROM nextjs_shop_product_option po
+					WHERE po.product_id = p.product_id
+					AND po.is_displayed = 1
+				) <= 0]]> THEN 1
+				ELSE 0
+			END AS soldOut
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		WHERE p.sale_stop = 0
@@ -377,6 +399,27 @@
 			f.file_path,
 			f.copyright,
 			f.copyright_url,
+			CASE
+				WHEN <![CDATA[(
+					SELECT COALESCE(SUM(
+						GREATEST(
+							po.stock - COALESCE((
+								SELECT SUM(sh.count)
+								FROM nextjs_shop_stock_hold sh
+								WHERE sh.product_option_id = po.product_option_id
+								AND sh.status = 'HOLD'
+								AND sh.active_hold = 1
+								AND sh.expires_at > NOW()
+							), 0),
+							0
+						)
+					), 0)
+					FROM nextjs_shop_product_option po
+					WHERE po.product_id = p.product_id
+					AND po.is_displayed = 1
+				) <= 0]]> THEN 1
+				ELSE 0
+			END AS soldOut,
 			CASE WHEN EXISTS (
 				SELECT 1
 				FROM nextjs_shop_wish w
@@ -396,16 +439,19 @@
 			)
 		LEFT JOIN nextjs_shop_file f 
 			ON f.file_id = pi.file_id
-		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND s.seller_no = (
-			SELECT s2.seller_no
-			FROM nextjs_shop_product p2
-			JOIN nextjs_shop_seller s2 ON s2.seller_no = p2.seller_no
-			WHERE p2.product_id = #{productId}
-		)
-		ORDER BY (p.view_count + p.wish_count) DESC,
+		WHERE p.sale_stop = 0
+			AND p.product_id != #{productId}
+			AND s.seller_no = (
+				SELECT s2.seller_no
+				FROM nextjs_shop_product p2
+				JOIN nextjs_shop_seller s2 ON s2.seller_no = p2.seller_no
+				WHERE p2.product_id = #{productId}
+			)
+		ORDER BY soldOut ASC,
+			(p.view_count + p.wish_count) DESC,
 			p.created_at DESC,
 			p.product_id DESC
-	  	LIMIT 30
+		LIMIT 30
 	</select>
 	<update id="upSellerLike">
 		UPDATE nextjs_shop_seller s
@@ -572,6 +618,27 @@
 			f.file_path,
 			f.copyright,
 			f.copyright_url,
+			CASE
+				WHEN <![CDATA[(
+					SELECT COALESCE(SUM(
+						GREATEST(
+							po.stock - COALESCE((
+								SELECT SUM(sh.count)
+								FROM nextjs_shop_stock_hold sh
+								WHERE sh.product_option_id = po.product_option_id
+								AND sh.status = 'HOLD'
+								AND sh.active_hold = 1
+								AND sh.expires_at > NOW()
+							), 0),
+							0
+						)
+					), 0)
+					FROM nextjs_shop_product_option po
+					WHERE po.product_id = p.product_id
+					AND po.is_displayed = 1
+				) <= 0]]> THEN 1
+				ELSE 0
+			END AS soldOut,
 			CASE WHEN EXISTS (
 				SELECT 1
 				FROM nextjs_shop_wish w
@@ -591,15 +658,18 @@
 			)
 		LEFT JOIN nextjs_shop_file f 
 			ON f.file_id = pi.file_id AND f.is_deleted = 0
-		WHERE p.sale_stop = 0 AND p.product_id != #{productId} AND p.menu_sub_id = (
-			SELECT menu_sub_id
-			FROM nextjs_shop_product
-			WHERE product_id = #{productId}
-		)
-		ORDER BY (p.view_count + p.wish_count) DESC,
+		WHERE p.sale_stop = 0
+			AND p.product_id != #{productId}
+			AND p.menu_sub_id = (
+				SELECT menu_sub_id
+				FROM nextjs_shop_product
+				WHERE product_id = #{productId}
+			)
+		ORDER BY soldOut ASC,
+			(p.view_count + p.wish_count) DESC,
 			p.created_at DESC,
 			p.product_id DESC
-	  	LIMIT 30
+		LIMIT 30
 	</select>
 
 	<insert id="couponDownload"

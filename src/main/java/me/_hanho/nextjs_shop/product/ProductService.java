@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
@@ -215,6 +217,10 @@ public class ProductService {
 	public ProductDetailResponse getProductDetail(int productId, Integer userNo) {
 		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
 		
+		if(productDetail == null) {
+			throw new BusinessException(ErrorCode.PRODUCTDETAIL_NOT_FOUND);
+		}
+
 		productDetail.setProductImageList(
 	        productMapper.getProductImageList(productId)
 	    );

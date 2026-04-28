@@ -272,7 +272,7 @@
 		AND sh.active_hold = 1
 		AND sh.expires_at > NOW()
 		AND s.approval_status = 'APPROVED'
-		AND po.stock > 0
+		AND po.stock > sh.count
 		AND po.is_displayed = 1
 		AND p.sale_stop = 0
 		ORDER BY sh.created_at DESC
@@ -425,7 +425,7 @@
 		AND sh.active_hold = 1
 		AND sh.expires_at > NOW()
 		AND s.approval_status = 'APPROVED'
-		AND po.stock > 0
+		AND po.stock > sh.count
 		AND po.is_displayed = 1
 		AND p.sale_stop = 0
 		ORDER BY sh.created_at DESC

@@ -16,13 +16,15 @@ public class WishlistItemResponse {
 	private Timestamp createdAt;
 	
 	private int productId;
-	private String name;
+	private String productName;
 	private int originPrice;
 	private int finalPrice;
 	private int likeCount;
 	private int viewCount;
 	private int wishCount;
+	private boolean saleStop;
 	
+	private boolean soldOut;
 	private String sellerName;
 	
 	private List<ProductImageFile> productImageList;

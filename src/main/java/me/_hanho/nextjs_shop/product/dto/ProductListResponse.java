@@ -21,6 +21,8 @@ public class ProductListResponse {
 	private int wishCount;
 	
 	private String sellerName;
+
+	private boolean soldOut; // 재고 소진 여부
 	
 	private List<ProductImageFile> productImageList;
 	
