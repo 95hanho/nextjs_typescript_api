@@ -52,6 +52,8 @@ public class ProductDetailResponse {
     private String shippingType; // 출고 방식('IMMEDIATE','RESERVED')
     private LocalDate shippingDueDate; // 출고 예정일
     private String shippingNote; // 출고 관련 추가 안내 문구
+
+    private Integer wishId; // 사용자의 관심상품 여부
     
     private List<ProductImageFile> productImageList;
 }

@@ -387,17 +387,46 @@
 		SELECT w.wish_id, 
 			w.created_at,
 			p.product_id, 
-			p.name, 
+			p.name AS productName,
 			p.origin_price, 
 			p.final_price, 
 			p.like_count, 
 			p.view_count, 
 			p.wish_count,
+			p.sale_stop,
+			CASE
+				WHEN p.sale_stop = 1 THEN 1
+				WHEN <![CDATA[COALESCE(ps.available_stock, 0) <= 0]]> THEN 1
+				ELSE 0
+			END AS soldOut,
 			s.seller_name
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON w.product_id = p.product_id
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
-		WHERE w.user_no= #{userNo}
+		LEFT JOIN (
+			SELECT 
+				po.product_id,
+				SUM(
+					GREATEST(
+						po.stock - COALESCE(hold.hold_count, 0),
+						0
+					)
+				) AS available_stock
+			FROM nextjs_shop_product_option po
+			LEFT JOIN (
+				SELECT 
+					product_option_id,
+					SUM(count) AS hold_count
+				FROM nextjs_shop_stock_hold
+				WHERE status = 'HOLD'
+					AND active_hold = 1
+					AND expires_at > NOW()
+				GROUP BY product_option_id
+			) hold ON hold.product_option_id = po.product_option_id
+			WHERE po.is_displayed = 1
+			GROUP BY po.product_id
+		) ps ON ps.product_id = p.product_id
+		WHERE w.user_no = #{userNo}
 	</select>
 	<select id="getUserAddressList">
 		SELECT address_id, address_name, recipient_name, address_phone, zonecode, address, address_detail, memo, default_address, usedate_at

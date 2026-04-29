@@ -44,7 +44,6 @@ import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
 import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
 import me._hanho.nextjs_shop.product.ProductService;
 import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
-import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 
 @RestController
 @RequiredArgsConstructor

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.common.exception.BusinessException;
+import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.common.util.MaskingUtil;
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.model.UserCoupon;
@@ -44,13 +46,13 @@ public class ProductService {
 
 	private final ProductMapper productMapper;
 	
-	public GetProductListResponse getProductList(GetProductListRequest request) {
+	public GetProductListResponse getProductList(GetProductListRequest request, Integer userNo) {
 		 Timestamp lastCreatedAt = null;
 		if (request.getLastCreatedAt() != null && !request.getLastCreatedAt().isBlank()) {
 			lastCreatedAt = Timestamp.from(OffsetDateTime.parse(request.getLastCreatedAt()).toInstant());
 		}
 
-		List<ProductListResponse> productList = productMapper.getProductList(request, lastCreatedAt, PRODUCT_LIST_PAGE_SIZE + 1);
+		List<ProductListResponse> productList = productMapper.getProductList(request, lastCreatedAt, PRODUCT_LIST_PAGE_SIZE + 1, userNo);
 
 		if (productList.isEmpty()) {
 			return new GetProductListResponse(
@@ -121,10 +123,6 @@ public class ProductService {
 		}
 	}
 
-	public List<Integer> getProductWishList(Integer userNo) {
-		return productMapper.getProductWishList(userNo);
-	}
-	
 	@Transactional
 	public void setWish(Integer productId, Integer userNo) {
 		boolean hasWish = productMapper.isWishExist(productId, userNo);
@@ -213,8 +211,12 @@ public class ProductService {
 	}
 	
 	public ProductDetailResponse getProductDetail(int productId, Integer userNo) {
-		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
+		ProductDetailResponse productDetail = productMapper.getProductDetail(productId, userNo);
 		
+		if(productDetail == null) {
+			throw new BusinessException(ErrorCode.PRODUCTDETAIL_NOT_FOUND);
+		}
+
 		productDetail.setProductImageList(
 	        productMapper.getProductImageList(productId)
 	    );

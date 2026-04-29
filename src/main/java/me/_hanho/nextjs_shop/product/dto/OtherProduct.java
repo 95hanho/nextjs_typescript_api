@@ -28,6 +28,8 @@ public class OtherProduct {
 	private String copyright;
 	private String copyrightUrl;
 
+	private boolean soldOut; // 재고 소진 여부
+	
 	private boolean isWished; // 사용자가 찜한 상품인지 여부
 	
 }
