@@ -31,7 +31,8 @@ public interface ProductMapper {
 	List<ProductListResponse> getProductList(
 		@Param("request") GetProductListRequest request,
 		@Param("lastCreatedAt") Timestamp lastCreatedAt,
-		@Param("fetchSize") int fetchSize
+		@Param("fetchSize") int fetchSize,
+		@Param("userNo") Integer userNo
 	);
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
@@ -46,8 +47,6 @@ public interface ProductMapper {
 
 	void deleteLike(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	
-	List<Integer> getProductWishList(Integer userNo);
-
 	boolean isWishExist(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 	
 	void upProductWish(Integer productId);

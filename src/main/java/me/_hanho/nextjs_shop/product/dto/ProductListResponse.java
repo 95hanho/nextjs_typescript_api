@@ -23,6 +23,8 @@ public class ProductListResponse {
 	private String sellerName;
 
 	private boolean soldOut; // 재고 소진 여부
+
+	private Integer wishId; // 찜 여부 (찜이 존재하면 wishId, 존재하지 않으면 null)
 	
 	private List<ProductImageFile> productImageList;
 	

@@ -33,9 +33,11 @@
 					AND po.is_displayed = 1
 				) <= 0]]> THEN 1
 				ELSE 0
-			END AS soldOut
+			END AS soldOut,
+			w.wish_id
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
+		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = #{userNo}
 		WHERE p.sale_stop = 0
 			AND p.menu_sub_id = #{request.menuSubId}
 			<!-- AND EXISTS (
@@ -158,12 +160,6 @@
           AND user_no = #{userNo}
 	</delete>
 	<!--  -->
-	<select id="getProductWishList">
-		SELECT product_id
-		FROM nextjs_shop_wish
-		WHERE user_no = #{userNo}
-	</select>
-	<!--  -->
 	<select id="isWishExist" resultType="boolean">
 		SELECT EXISTS (
         SELECT 1
@@ -285,7 +281,7 @@
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
 		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = #{userNo}
-		WHERE sale_stop = 0 AND product_id = #{productId}
+		WHERE sale_stop = 0 AND p.product_id = #{productId}
 	</select>
 	<update id="upProductHit">
 		UPDATE nextjs_shop_product
@@ -372,7 +368,7 @@
 		FROM nextjs_shop_product_image pi
 		JOIN nextjs_shop_file f ON pi.file_id = f.file_id
 		WHERE product_id = #{productId} 
-			AND pi.is_thumbnail = 0
+			AND pi.is_thumbnail = 0 AND f.is_deleted = 0
 		ORDER BY pi.product_id ASC, pi.sort_key ASC
 	</select>
 	<select id="isSellerLikeExist">

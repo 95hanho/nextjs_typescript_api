@@ -37,6 +37,7 @@
 			f.copyright,
 			f.copyright_url,
 			f.file_extension,
+			s.seller_name,
 			w.wish_id
 		FROM nextjs_shop_product p
 		JOIN (
@@ -62,13 +63,11 @@
 			) t
 			GROUP BY file_id
 		) uniq ON uniq.product_id = p.product_id
-
 		JOIN nextjs_shop_file f ON f.file_id = uniq.file_id
-
 		LEFT JOIN nextjs_shop_wish w 
 			ON w.product_id = p.product_id 
 			AND w.user_no = #{userNo}
-
+		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		ORDER BY p.created_at DESC 
 		LIMIT 30
 	</select>
