@@ -278,11 +278,13 @@
 		p.material_info, p.manufacturer_name, p.country_of_origin, 
 		p.wash_care_info, p.manufactured_ym, p.quality_guarantee_info, 
 		p.after_service_contact, p.after_service_manager, p.after_service_phone,
-		p.shipping_type, p.shipping_due_date, p.shipping_note
+		p.shipping_type, p.shipping_due_date, p.shipping_note,
+		w.wish_id
 		FROM nextjs_shop_product p
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_menu_top mt ON mt.menu_top_id = ms.menu_top_id
+		LEFT JOIN nextjs_shop_wish w ON w.product_id = p.product_id AND w.user_no = #{userNo}
 		WHERE sale_stop = 0 AND product_id = #{productId}
 	</select>
 	<update id="upProductHit">

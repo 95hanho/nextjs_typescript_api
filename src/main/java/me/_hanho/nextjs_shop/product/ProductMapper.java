@@ -68,7 +68,7 @@ public interface ProductMapper {
 
 	List<CartAppliedRow> getCartAppliedResult(@Param("userNo") Integer userNo, @Param("cartList") List<AddCartItem> cartList);
 
-	ProductDetailResponse getProductDetail(int productId);
+	ProductDetailResponse getProductDetail(@Param("productId") int productId, @Param("userNo") Integer userNo);
 
 	void upProductHit(int productId);
 

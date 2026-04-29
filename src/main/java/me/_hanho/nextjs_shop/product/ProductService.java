@@ -215,7 +215,7 @@ public class ProductService {
 	}
 	
 	public ProductDetailResponse getProductDetail(int productId, Integer userNo) {
-		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
+		ProductDetailResponse productDetail = productMapper.getProductDetail(productId, userNo);
 		
 		if(productDetail == null) {
 			throw new BusinessException(ErrorCode.PRODUCTDETAIL_NOT_FOUND);
