@@ -394,6 +394,7 @@
 			p.view_count, 
 			p.wish_count,
 			p.sale_stop,
+			ms.menu_sub_id,
 			CASE
 				WHEN p.sale_stop = 1 THEN 1
 				WHEN <![CDATA[COALESCE(ps.available_stock, 0) <= 0]]> THEN 1
@@ -402,6 +403,7 @@
 			s.seller_name
 		FROM nextjs_shop_wish w
 		JOIN nextjs_shop_product p ON w.product_id = p.product_id
+		JOIN nextjs_shop_menu_sub ms ON ms.menu_sub_id = p.menu_sub_id
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		LEFT JOIN (
 			SELECT 

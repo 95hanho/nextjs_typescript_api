@@ -23,6 +23,8 @@ public class WishlistItemResponse {
 	private int viewCount;
 	private int wishCount;
 	private boolean saleStop;
+
+	private int menuSubId;
 	
 	private boolean soldOut;
 	private String sellerName;
