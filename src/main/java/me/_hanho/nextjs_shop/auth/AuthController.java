@@ -175,16 +175,27 @@ public class AuthController {
 	@PostMapping("/phone")
 	public ResponseEntity<Map<String, Object>> sendPhoneAuth(
 			@RequestParam("phone") String phone,
-			@RequestParam("mode") String mode,
+			@RequestParam("mode") String mode, // 'JOIN','IDFIND','PWDFIND','CHANGE'
 			@RequestParam("phoneAuthToken") String phoneAuthToken,
+			@RequestParam(value = "userId", required = false) String userId, // 비밀번호찾기인 경우 필요
 			@RequestHeader("user-agent") String userAgent, 
 			@RequestHeader("x-forwarded-for") String forwardedFor,
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
 		logger.info("[sendPhoneAuth] phone={}, mode={}, phoneAuthToken={}, userNo={}", phone, mode, phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
-		
+		// 비밀번호 찾기
+		if(mode.equals("PWDFIND")) {
+			// userId 검사
+			if((userId == null || userId.isEmpty())) {
+				throw new BusinessException(ErrorCode.BAD_REQUEST, "PWDFIND mode requires userId");
+			}
+			// (userId,phone)으로 유저 조회
+			FindUser findUser = authService.getUserByIdAndPhone(userId, phone);
+			if(findUser == null) {
+				throw new BusinessException(ErrorCode.PWD_FIND_USER_NOT_FOUND);
+			}
+		}
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
-		
 		try {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
@@ -311,7 +322,7 @@ public class AuthController {
 	// 비밀번호 변경 - 비밀번호찾기 또는 마이페이지 비번변경
 	@PostMapping("/password")
 	public ResponseEntity<Map<String, Object>> passwordChange(
-			@RequestParam("curPassword") String curPassword,
+			@RequestParam(value="curPassword", required=false) String curPassword,
 			@RequestParam("newPassword") String newPassword,
 			@RequestParam("pwdResetToken") String pwdResetToken) {
 		Map<String, Object> result = new HashMap<String, Object>();

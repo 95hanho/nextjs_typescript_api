@@ -1,5 +1,8 @@
 package me._hanho.nextjs_shop.mypage;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +106,19 @@ public class MypageService {
 	public ReviewResponse getReviewByOrderItemId(Integer orderItemId, Integer userNo) {
 		ReviewResponse review = mypageMapper.getReviewByOrderItemId(orderItemId, userNo);
 
+		// 리뷰 작성한 지 7일 지났으면 오류
+		if (review != null) {
+			LocalDate reviewDate = review.getCreatedAt()
+				.toInstant()
+				.atZone(ZoneId.systemDefault())
+				.toLocalDate();
+			LocalDate today = LocalDate.now();
+			long days = ChronoUnit.DAYS.between(reviewDate, today);
+			if (days >= 7) {
+				throw new BusinessException(ErrorCode.REVIEW_MODIFY_PERIOD_EXPIRED);
+			}
+		}
+
 		// 이미지 불러오기
 		if(review != null) {
 			List<ReviewImageResponse> reviewImages = mypageMapper.getReviewImagesByReviewId(review.getReviewId());
@@ -175,11 +191,11 @@ public class MypageService {
 		// Must : 판매 중지된 상품 삭제, 판매자가 정지계정인 상품 삭제
 		
 		CartSummaryResponse cartSummary = new CartSummaryResponse();
-		// 재고 부족한 얘들 선택 해제
-		int updated = mypageMapper.unselectOutOfStockItems(userNo);
+		// 재고 부족하거나 판매 중지된 제품 선택 해제
+		int updated = mypageMapper.unselectOutOfStockOrSaleStoppedItems(userNo);
 		System.out.println("updated: " + updated);
 		if (updated > 0) {
-			logger.info("재고 부족한 제품 선택 해제: " + updated);
+			logger.info("재고 부족거나 판매 중지된 제품 선택 해제: " + updated);
 		}
 		List<CartProductResponse> cartList = mypageMapper.getCartList(userNo);
 

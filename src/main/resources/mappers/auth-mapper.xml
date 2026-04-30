@@ -45,6 +45,11 @@
 	        WHERE user_id = #{userId}
 	    ) AS exists_flag
 	</select>
+	<select id="getUserByIdAndPhone">
+		SELECT user_no, user_id
+		FROM nextjs_shop_user
+		WHERE user_id = #{userId} AND phone = #{phone} AND withdrawal_status = 'ACTIVE'
+	</select>
 	<select id="hasPhone" resultType="int">
 		SELECT EXISTS (
 	        SELECT 1 FROM nextjs_shop_user
