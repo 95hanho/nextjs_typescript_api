@@ -22,6 +22,7 @@ public enum ErrorCode {
 	LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "아이디 또는 비밀번호가 일치하지 않습니다"),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "존재하지 않는 사용자입니다"),
 	ID_DUPLICATED(HttpStatus.CONFLICT, "ID_DUPLICATED", "중복된 아이디 입니다."),
+	PWD_FIND_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "PWD_FIND_USER_NOT_FOUND", "비밀번호 찾기 정보와 일치하는 사용자가 없습니다"),
 	//
 	PHONE_AUTH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "PHONE_AUTH_TOKEN_EXPIRED", "휴대폰 인증 토큰이 만료되었습니다"),
 	PHONE_AUTH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "PHONE_AUTH_TOKEN_INVALID", "휴대폰 인증 토큰이 유효하지 않습니다"),

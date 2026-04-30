@@ -60,6 +60,10 @@ public class AuthService {
 	public boolean hasId(String userId) {
 		return authMapper.hasId(userId) == 1;
 	}
+
+	public FindUser getUserByIdAndPhone(String userId, String phone) {
+		return authMapper.getUserByIdAndPhone(userId, phone);
+	}
 	
 	public boolean hasPhone(String phone) {
 		return authMapper.hasPhone(phone) == 1;

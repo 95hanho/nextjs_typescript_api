@@ -27,6 +27,8 @@ public interface AuthMapper {
 	String getUserId(Integer userNo);
 	
 	int hasId(String userId);
+
+	FindUser getUserByIdAndPhone(@Param("userId") String userId, @Param("phone") String phone);
 	
 	int hasPhone(String phone);
 	
