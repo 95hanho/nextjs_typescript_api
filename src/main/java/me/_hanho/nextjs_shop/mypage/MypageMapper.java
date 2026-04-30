@@ -60,7 +60,7 @@ public interface MypageMapper {
 	
 	void releaseHoldIfExists(Integer userNo);
 
-	int unselectOutOfStockItems(Integer userNo);
+	int unselectOutOfStockOrSaleStoppedItems(Integer userNo);
 	
 	List<CartProductResponse> getCartList(Integer userNo);
 

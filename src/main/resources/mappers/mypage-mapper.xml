@@ -145,7 +145,7 @@
 		WHERE oi.order_item_id = #{orderItemId} AND sh.user_no = #{userNo}
 	</select>
 	<select id="getReviewByOrderItemId">
-		SELECT review_id, content, rating
+		SELECT review_id, content, rating, created_at
 		FROM nextjs_shop_review
 		WHERE order_item_id = #{orderItemId} AND user_no = #{userNo} AND is_deleted = 0
 	</select>
@@ -223,9 +223,10 @@
 			AND active_hold = 1
 	</update>
 	
-	<update id="unselectOutOfStockItems">
+	<update id="unselectOutOfStockOrSaleStoppedItems">
 		UPDATE nextjs_shop_cart c
 		JOIN nextjs_shop_product_option pd ON pd.product_option_id = c.product_option_id
+		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		SET c.selected = 0
 		WHERE c.user_no = #{userNo}
 		AND (
@@ -237,7 +238,7 @@
 				AND sh.active_hold = 1
 				AND sh.expires_at > NOW()
 			), 0)
-		) &lt; c.quantity
+		) &lt; c.quantity OR p.sale_stop = 1
 	</update>
 	
 	<select id="getCartList">
@@ -253,6 +254,8 @@
 			), 0)) AS stock,
 			pd.size, p.product_id, 
 			p.name AS productName, p.origin_price, p.final_price,
+			p.sale_stop,
+			p.shipping_due_date,
 			w.wish_id,
 			f.file_id, f.file_name, f.store_name, f.file_path, f.copyright, f.copyright_url,
 			s.seller_name, s.base_shipping_fee, s.free_shipping_min_amount, s.extra_shipping_fee,
@@ -367,7 +370,7 @@
 	<update id="updateSelectedCart">
 		UPDATE nextjs_shop_cart
 		SET selected = #{selected}
-		WHERE user_no= #{userNo}
+		WHERE user_no = #{userNo}
 			AND cart_id IN
           <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
             #{cartId}
@@ -376,7 +379,7 @@
 	<update id="deleteCart">
 		UPDATE nextjs_shop_cart
 		SET is_deleted = 1
-		WHERE user_no= #{userNo} AND is_deleted = 0
+		WHERE user_no = #{userNo} AND is_deleted = 0
 			AND cart_id IN
           <foreach collection="cartIdList" item="cartId" open="(" separator="," close=")">
             #{cartId}

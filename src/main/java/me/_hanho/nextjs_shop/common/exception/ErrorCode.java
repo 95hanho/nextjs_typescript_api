@@ -73,6 +73,7 @@ public enum ErrorCode {
 	/* 마이페이지 */
 	MY_ORDER_DETAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "MY_ORDER_DETAIL_NOT_FOUND", "주문 상세 내역이 없습니다"),
 	REVIEW_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_ITEM_NOT_FOUND", "주문 아이템이 없습니다"),
+	REVIEW_MODIFY_PERIOD_EXPIRED(HttpStatus.CONFLICT, "REVIEW_MODIFY_PERIOD_EXPIRED", "리뷰 수정 가능 기간이 지났습니다"),
 	CART_EMPTY(HttpStatus.NOT_FOUND, "CART_EMPTY", "Cart is empty"),
 	CART_NOT_FOUND(HttpStatus.NOT_FOUND, "CART_NOT_FOUND", "Cart not found"),
 	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Address not found"),

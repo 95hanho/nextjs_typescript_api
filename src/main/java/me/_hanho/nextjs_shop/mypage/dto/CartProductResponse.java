@@ -23,6 +23,8 @@ public class CartProductResponse {
     private String productName;
     private int originPrice;
     private int finalPrice;
+    private boolean saleStop; // 판매 중지 여부
+    private String shippingDueDate; // 배송 출고예정일
     
     private Integer wishId;
     
