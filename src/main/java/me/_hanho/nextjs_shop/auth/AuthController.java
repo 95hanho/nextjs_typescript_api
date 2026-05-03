@@ -325,12 +325,16 @@ public class AuthController {
 			@RequestParam(value="curPassword", required=false) String curPassword,
 			@RequestParam("newPassword") String newPassword,
 			@RequestParam("pwdResetToken") String pwdResetToken) {
+		logger.info("[passwordChange] curPassword={}, newPassword={}, pwdResetToken={}", 
+				curPassword != null ? "PROVIDED" : "NULL", 
+				newPassword != null ? "PROVIDED" : "NULL", 
+				pwdResetToken.substring(pwdResetToken.length() - 10));
 		Map<String, Object> result = new HashMap<String, Object>();
 		Integer userNo = null;
 		
 		try {
 			// JWT 파싱 및 복호화
-			Claims claims = tokenService.parseJwtPhoneAuthToken(pwdResetToken);
+			Claims claims = tokenService.parseJwtPwdChangeToken(pwdResetToken);
 			String type = claims.get("type", String.class);
             logger.info("[passwordChange] type={}", type);
             if (type == null) {
