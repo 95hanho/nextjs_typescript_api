@@ -9,13 +9,17 @@
 	<select id="getMenuSubList">
 		SELECT ms.menu_sub_id,
 			ms.menu_name,
+			ms.menu_top_id,
 			COUNT(p.product_id) AS productCount
 		FROM nextjs_shop_menu_sub ms
 		LEFT JOIN nextjs_shop_product p
 			ON p.menu_sub_id = ms.menu_sub_id
 			AND p.sale_stop = 0
-		WHERE ms.menu_top_id = #{menuTopId}
-		GROUP BY ms.menu_sub_id, ms.menu_name
+		WHERE ms.menu_top_id IN
+		<foreach item="menuTopId" collection="menuTopIds" open="(" separator="," close=")">
+			#{menuTopId}
+		</foreach>
+		GROUP BY ms.menu_sub_id, ms.menu_name, ms.menu_top_id
 		ORDER BY ms.menu_sub_id
 	</select>
 	<select id="getMainSlideProducts">
