@@ -1,8 +1,8 @@
 <configuration>
     <appender name="ALL_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/api_spring_default/all-logs.log</file>
+        <file>logs/nextjs-shop/all-logs.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/api_spring_default/all-logs.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/nextjs-shop/all-logs.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>14</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -11,9 +11,9 @@
     </appender>
 
     <appender name="HIGH_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/api_spring_default/high-level-logs.log</file>
+        <file>logs/nextjs-shop/high-level-logs.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/api_spring_default/high-level-logs.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>logs/nextjs-shop/high-level-logs.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>14</maxHistory>
         </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">

@@ -54,8 +54,7 @@ public class ProductController {
 	// 제품 리스트 조회
 	@GetMapping
 	public ResponseEntity<Map<String, Object>> getProductList(
-		@Valid @ModelAttribute GetProductListRequest request,
-		@RequestAttribute(value="userNo", required=false) Integer userNo) {
+		@Valid @ModelAttribute GetProductListRequest request) {
 		logger.info("[getProductList] request={}", request);
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -65,7 +64,7 @@ public class ProductController {
 			}
 		}
 		// 
-		GetProductListResponse response = productService.getProductList(request, userNo);
+		GetProductListResponse response = productService.getProductList(request);
 				
 		result.put("productList", response.getProductList());
 		result.put("hasNext", response.isHasNext());
@@ -101,6 +100,23 @@ public class ProductController {
 		result.put("message", "WISH_SET_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 위시 여부 확인
+	@GetMapping("/wish/check")
+	public ResponseEntity<Map<String, Object>> checkWish(
+			@RequestParam("productIdList") List<Integer> productIdList,
+			@RequestAttribute(value="userNo", required=false) Integer userNo
+	) {
+		if (userNo == null) throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+		logger.info("[checkWish] productIdList={}, userNo={}", productIdList, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		List<Integer> checkedProductIdList = productService.checkWish(productIdList, userNo);
+
+		result.put("checkedProductIdList", checkedProductIdList);
+		result.put("message", "WISH_CHECK_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 장바구니 확인
 	@GetMapping("/cart")
 	public ResponseEntity<Map<String, Object>> cartCheck(
@@ -146,12 +162,11 @@ public class ProductController {
 	// 제품 상세보기 조회
 	@GetMapping("/detail/{productId}")
 	public ResponseEntity<Map<String, Object>> getProductDetail(
-			@PathVariable("productId") int productId,
-			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
-		logger.info("[getProductDetail] productId={}, userNo={}", productId, userNo);
+			@PathVariable("productId") int productId) {
+		logger.info("[getProductDetail] productId={}, userNo={}", productId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		ProductDetailResponse productDetail = productService.getProductDetail(productId, userNo);
+		ProductDetailResponse productDetail = productService.getProductDetail(productId);
 		System.out.println("productDetail = " + productDetail);
 		// 제품 옵션 정보
 		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
@@ -164,6 +179,20 @@ public class ProductController {
 		result.put("message", "PRODUCT_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 제품 상세보기 제품 뷰 테이블 삽입
+	@PostMapping("/detail/{productId}/view")
+	public ResponseEntity<Map<String, Object>> insertProductView(
+			@PathVariable("productId") int productId,
+			@RequestAttribute(name = "userNo", required = false) Integer userNo) {
+		logger.info("[insertProductView] productId={}, userNo={}", productId, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		productService.insertProductView(productId, userNo);
+		
+		result.put("message", "PRODUCT_VIEW_INSERT_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 제품 상세보기 이용가능 쿠폰 조회
 	@GetMapping("/detail/{productId}/coupon")
 	public ResponseEntity<Map<String, Object>> getProductDetailAvailableCoupon(

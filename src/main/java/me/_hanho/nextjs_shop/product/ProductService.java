@@ -46,13 +46,13 @@ public class ProductService {
 
 	private final ProductMapper productMapper;
 	
-	public GetProductListResponse getProductList(GetProductListRequest request, Integer userNo) {
+	public GetProductListResponse getProductList(GetProductListRequest request) {
 		 Timestamp lastCreatedAt = null;
 		if (request.getLastCreatedAt() != null && !request.getLastCreatedAt().isBlank()) {
 			lastCreatedAt = Timestamp.from(OffsetDateTime.parse(request.getLastCreatedAt()).toInstant());
 		}
 
-		List<ProductListResponse> productList = productMapper.getProductList(request, lastCreatedAt, PRODUCT_LIST_PAGE_SIZE + 1, userNo);
+		List<ProductListResponse> productList = productMapper.getProductList(request, lastCreatedAt, PRODUCT_LIST_PAGE_SIZE + 1);
 
 		if (productList.isEmpty()) {
 			return new GetProductListResponse(
@@ -135,6 +135,10 @@ public class ProductService {
 		}
 	}
 
+	public List<Integer> checkWish(List<Integer> productIds, Integer userNo) {
+		return productMapper.checkWish(productIds, userNo);
+	}
+
 	public boolean getProductHasCart (Integer productId, Integer userNo) {
 		List<Integer> addCartList = productMapper.getProductCart(productId, userNo);
 		return addCartList != null && !addCartList.isEmpty();
@@ -210,8 +214,8 @@ public class ProductService {
 		return res;
 	}
 	
-	public ProductDetailResponse getProductDetail(int productId, Integer userNo) {
-		ProductDetailResponse productDetail = productMapper.getProductDetail(productId, userNo);
+	public ProductDetailResponse getProductDetail(int productId) {
+		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
 		
 		if(productDetail == null) {
 			throw new BusinessException(ErrorCode.PRODUCTDETAIL_NOT_FOUND);
@@ -223,12 +227,12 @@ public class ProductService {
 
 		// 조회수 업
 		productMapper.upProductHit(productId);
-		// nextjs_shop_product_view insert
-		if (userNo != null) {
-			productMapper.insertProductView(productId, userNo);
-		}
 		
 		return productDetail;
+	}
+
+	public void insertProductView(int productId, int userNo) {
+		productMapper.insertProductView(productId, userNo);
 	}
 
 	public List<ProductOptionResponse> getProductOptionList(int productId) {

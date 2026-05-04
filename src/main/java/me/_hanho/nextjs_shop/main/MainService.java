@@ -20,8 +20,8 @@ public class MainService {
 		return menuList;
 	}
 
-	public List<ProductMainSlideResponse> getMainSlideProducts(Integer userNo) {
-		return mainMapper.getMainSlideProducts(userNo);
+	public List<ProductMainSlideResponse> getMainSlideProducts() {
+		return mainMapper.getMainSlideProducts();
 	}
 
 

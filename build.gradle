@@ -8,6 +8,14 @@ plugins {
 group = 'me._hanho'
 version = '0.0.1-SNAPSHOT'
 
+bootWar {
+    archiveFileName = 'ROOT.war'
+}
+
+war {
+    enabled = false
+}
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)

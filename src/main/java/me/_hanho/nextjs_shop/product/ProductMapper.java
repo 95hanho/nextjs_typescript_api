@@ -31,8 +31,7 @@ public interface ProductMapper {
 	List<ProductListResponse> getProductList(
 		@Param("request") GetProductListRequest request,
 		@Param("lastCreatedAt") Timestamp lastCreatedAt,
-		@Param("fetchSize") int fetchSize,
-		@Param("userNo") Integer userNo
+		@Param("fetchSize") int fetchSize
 	);
 	
 	List<ProductImageFile> getProductImageListByProductIds(List<Integer> productIds);
@@ -56,6 +55,8 @@ public interface ProductMapper {
 	void downProductWish(Integer productId);
 
 	void deleteWish(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
+
+	List<Integer> checkWish(@Param("productIds") List<Integer> productIds, @Param("userNo") Integer userNo);
 	//
 	List<Integer> getProductCart(@Param("productId") Integer productId, @Param("userNo") Integer userNo);
 
@@ -67,7 +68,7 @@ public interface ProductMapper {
 
 	List<CartAppliedRow> getCartAppliedResult(@Param("userNo") Integer userNo, @Param("cartList") List<AddCartItem> cartList);
 
-	ProductDetailResponse getProductDetail(@Param("productId") int productId, @Param("userNo") Integer userNo);
+	ProductDetailResponse getProductDetail(@Param("productId") int productId);
 
 	void upProductHit(int productId);
 

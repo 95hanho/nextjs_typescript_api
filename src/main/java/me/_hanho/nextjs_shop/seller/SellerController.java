@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,8 +34,6 @@ import me._hanho.nextjs_shop.product.ProductService;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
-import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
-import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
@@ -51,8 +48,6 @@ import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
-import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
-import me._hanho.nextjs_shop.seller.dto.UserInCartCountResponse;
 
 
 @RestController

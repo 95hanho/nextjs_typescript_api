@@ -26,5 +26,4 @@ public class ProductMainSlideResponse {
 
     private String sellerName; // 판매자 이름
 
-    private Integer wishId; // 위시 여부 확인용 (null이면 위시 안한 것)
 }
