@@ -30,24 +30,31 @@ public class MainController {
 	@GetMapping("/menu")
 	public ResponseEntity<Map<String, Object>> getMenuList() {
 		logger.info("[getMenuList]");
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		List<MenuResponse> menuList = mainService.getMenuList();
-		
-		result.put("message", "MENU_FETCH_SUCCESS");
-		result.put("menuList", menuList);
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			List<MenuResponse> menuList = mainService.getMenuList();
+
+			result.put("message", "MENU_FETCH_SUCCESS");
+			result.put("menuList", menuList);
+			return new ResponseEntity<>(result, HttpStatus.OK);
+
+		} catch (Exception e) {
+			// 🔥 핵심: 에러 전체 출력
+			logger.error("[getMenuList] DB_ERROR", e);
+
+			result.put("message", "DB_ERROR");
+			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
-	// 메인 슬라이드 제품 가져오기 - 지금은 가장 오래된거 10개 그냥 가져오지만 나중에 규칙만들어서 뽑기
+	// 메인 슬라이드 제품 가져오기
 	@GetMapping
-	public ResponseEntity<Map<String, Object>> getProducts(
-		@RequestAttribute(value="userNo", required=false) Integer userNo
-	) {
-		logger.info("[getProducts] userNo={}", userNo);
+	public ResponseEntity<Map<String, Object>> getProducts() {
+		logger.info("[getProducts]");
 		Map<String, Object> result = new HashMap<String, Object>();
 		
-		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts(userNo);
+		List<ProductMainSlideResponse> productList = mainService.getMainSlideProducts();
 		
 		result.put("message", "MAIN_SLIDE_FETCH_SUCCESS");
 		result.put("productList", productList);

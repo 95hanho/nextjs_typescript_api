@@ -18,10 +18,6 @@
 		GROUP BY ms.menu_sub_id, ms.menu_name
 		ORDER BY ms.menu_sub_id
 	</select>
-	<select id="getMainImages">
-		select *
-		from nextjs_shop_product
-	</select>
 	<select id="getMainSlideProducts">
 		SELECT
 			p.product_id,
@@ -37,8 +33,7 @@
 			f.copyright,
 			f.copyright_url,
 			f.file_extension,
-			s.seller_name,
-			w.wish_id
+			s.seller_name
 		FROM nextjs_shop_product p
 		JOIN (
 			SELECT 
@@ -64,9 +59,6 @@
 			GROUP BY file_id
 		) uniq ON uniq.product_id = p.product_id
 		JOIN nextjs_shop_file f ON f.file_id = uniq.file_id
-		LEFT JOIN nextjs_shop_wish w 
-			ON w.product_id = p.product_id 
-			AND w.user_no = #{userNo}
 		JOIN nextjs_shop_seller s ON s.seller_no = p.seller_no
 		ORDER BY p.created_at DESC 
 		LIMIT 30
