@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuSubDTO {
+    private int menuTopId;
+
     private int menuSubId;
     private String menuName;
     private int productCount;

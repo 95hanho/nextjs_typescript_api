@@ -13,7 +13,7 @@ public interface MainMapper {
 	
 	List<MenuResponse> getMenuList();
 	
-	List<MenuSubDTO> getMenuSubList(int menuTopId);
+	List<MenuSubDTO> getMenuSubList(List<Integer> menuTopIds);
 
 	List<ProductMainSlideResponse> getMainSlideProducts();
 
