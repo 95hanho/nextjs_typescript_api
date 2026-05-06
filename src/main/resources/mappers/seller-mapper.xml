@@ -42,6 +42,10 @@
 	        WHERE seller_id = #{sellerId}
 	    ) AS exists_flag
 	</select>
+	<insert id="insertPhoneAuth">
+		INSERT INTO nextjs_shop_phone_auth(phone_auth_token, phone, verification_code, mode, connect_ip, connect_agent)
+		VALUES(#{phoneAuthToken}, #{phone}, #{verificationCode}, #{mode}, #{connectIp}, #{connectAgent})
+	</insert>
 	<insert id="setSeller">
 		INSERT INTO nextjs_shop_seller(seller_id,password,seller_name,seller_name_en,extension_number,mobile_number,email,
 			business_registration_number,telecom_sales_number,representative_name,business_zipcode,business_address,business_address_detail,

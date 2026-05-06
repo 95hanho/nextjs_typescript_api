@@ -29,6 +29,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerPhoneAuthDTO;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
@@ -69,6 +70,9 @@ public class SellerService {
 	}
 	public boolean hasId(String sellerId) {
 		return sellerMapper.hasId(sellerId) == 1;
+	}
+	public void insertPhoneAuth(SellerPhoneAuthDTO phoneAuth) {
+		sellerMapper.insertPhoneAuth(phoneAuth);
 	}
 	public void setSeller(SellerRegisterRequest seller) {
 		seller.setPassword(passwordEncoder.encode(seller.getPassword()));

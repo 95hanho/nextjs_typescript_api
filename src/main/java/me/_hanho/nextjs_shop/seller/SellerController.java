@@ -22,13 +22,18 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import me._hanho.nextjs_shop.auth.AuthService;
+import me._hanho.nextjs_shop.auth.PhoneAuthCodeService;
 import me._hanho.nextjs_shop.auth.TokenService;
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
+import me._hanho.nextjs_shop.model.PhoneAuth;
 import me._hanho.nextjs_shop.model.ProductQnaType;
 import me._hanho.nextjs_shop.product.ProductService;
 import me._hanho.nextjs_shop.seller.dto.AddCouponRequest;
@@ -38,6 +43,7 @@ import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerPhoneAuthDTO;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
@@ -61,6 +67,7 @@ public class SellerController {
 	private final AuthService authService;
 	private final TokenService tokenService;
 	private final ProductService productService;
+	private final PhoneAuthCodeService phoneAuthCodeService;
 	
 	// 로그인
 	@PostMapping
@@ -171,6 +178,115 @@ public class SellerController {
 			result.put("message", "SELLER_ID_AVAILABLE");
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		}
+	}
+	// 판매자 전화번호 인증
+	@PostMapping("/phone")
+	public ResponseEntity<Map<String, Object>> sellerSendPhoneAuth(
+			@RequestParam("phone") String phone,
+			@RequestParam("mode") String mode, // 'REGISTRATION'
+			@RequestParam("phoneAuthToken") String phoneAuthToken,
+			@RequestHeader("user-agent") String userAgent, 
+			@RequestHeader("x-forwarded-for") String forwardedFor,
+			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
+		logger.info("[sellerSendPhoneAuth] phone={}, mode={}, phoneAuthToken={}, userNo={}", phone, mode, phoneAuthToken, userNo);
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		boolean hasPhone = authService.hasPhone(phone);
+
+		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		try {
+			// JWT 파싱 및 복호화
+			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
+			String type = claims.get("type", String.class);
+            logger.info("[sellerSendPhoneAuth] type={}", type);
+            if (type == null) {
+				logger.warn("[sellerSendPhoneAuth] PHONE_AUTH_TOKEN_INVALID type is null");
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+            }
+            if (!"PHONEAUTH".equals(type)) {
+				logger.warn("[sellerSendPhoneAuth] PHONE_AUTH_TOKEN_WRONG_TYPE type={}", type);
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
+            }
+		} catch (ExpiredJwtException e) {
+			logger.warn("[sellerSendPhoneAuth] PHONE_AUTH_TOKEN_EXPIRED phoneAuthToken={}", phoneAuthToken);
+			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
+	    } catch (JwtException | IllegalArgumentException e) {
+			logger.warn("[sellerSendPhoneAuth] PHONE_AUTH_TOKEN_INVALID phoneAuthToken={}", phoneAuthToken);
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+	    }
+		if(List.of("REGISTRATION").contains(mode) && hasPhone) {
+			logger.warn("[sellerSendPhoneAuth] PHONE_DUPLICATED phone={}, mode={}", phone, mode);
+			throw new BusinessException(ErrorCode.PHONE_DUPLICATED);
+		}
+		// 인증번호(6자리?)를 생성
+		String verificationCode = phoneAuthCodeService.generate6DigitCode();
+		logger.info("[sellerSendPhoneAuth] phoneAuth-verificationCode : {}", verificationCode);
+		
+        // 토큰을 휴대폰인증DB에 (id, userId, phoneAuthToken, phone, verificationCode) 형태로 저장
+		SellerPhoneAuthDTO phoneAuth = SellerPhoneAuthDTO.builder().phoneAuthToken(phoneAuthToken)
+				.phone(phone).verificationCode(verificationCode).mode(mode)
+				.connectIp(ipAddress).connectAgent(userAgent).build();
+		sellerService.insertPhoneAuth(phoneAuth);
+		
+		// 인증번호를 휴대폰으로 보냄!!
+		// 실제로는 SMS API 연동해서 보내야하지만 여기서는 로그로 대체
+		
+		result.put("message", "VERIFICATION_SENT");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	// 판매자 전화번호 인증 확인
+	@PostMapping("/phone/check")
+	public ResponseEntity<Map<String, Object>> sellerPhoneAuthCheck(
+			@RequestParam("authNumber") String authNumber,
+			@RequestParam("phoneAuthToken") String phoneAuthToken) {
+		logger.info("[sellerPhoneAuthCheck] authNumber={}, phoneAuthToken={}", authNumber, phoneAuthToken);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		try {
+			// JWT 파싱 및 복호화
+			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
+			String type = claims.get("type", String.class);
+            logger.info("[phoneAuthCheck] type={}", type);
+            if (type == null) {
+				logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_INVALID type is null");
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+            }
+            if (!"PHONEAUTH".equals(type)) {
+				logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_WRONG_TYPE type={}", type);
+                throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
+            }
+		} catch (ExpiredJwtException e) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_EXPIRED phoneAuthToken={}", phoneAuthToken);
+			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
+	    } catch (JwtException | IllegalArgumentException e) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_INVALID phoneAuthToken={}", phoneAuthToken);
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
+	    }
+		
+		PhoneAuth phoneAuth = authService.getPhoneAuthCode(phoneAuthToken);
+	    if (phoneAuth == null) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_NOT_FOUND No phone authentication record found for token={}", phoneAuthToken);
+	        throw new BusinessException(ErrorCode.PHONE_AUTH_NOT_FOUND);
+	    }
+	    String mode = phoneAuth.getMode(); 
+	    // 인증번호가 올바르지 않음
+	    if (!authNumber.equals(phoneAuth.getVerificationCode())) {
+			logger.warn("[phoneAuthCheck] INVALID_VERIFICATION_CODE authNumber={}, phoneAuthToken={}", authNumber, phoneAuthToken);
+	        throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
+	    }
+		// 인증번호 검증 성공(사용토큰으로 변경)
+		authService.markPhoneAuthUsed(phoneAuth.getPhoneAuthId());
+		
+		// 회원가입, 전화번호 변경
+		if(List.of("REGISTRATION").contains(mode)) {
+			result.put("message", "PHONEAUTH_VALIDATE"); // 인증 성공
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		}
+        
+        result.put("message", "INVALID_REQUEST");
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(result);
 	}
 	// 판매자 등록요청(회원가입)
 	@PostMapping("/registration")
