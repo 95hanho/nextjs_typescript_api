@@ -22,6 +22,7 @@ public enum ErrorCode {
 	LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "LOGIN_FAILED", "아이디 또는 비밀번호가 일치하지 않습니다"),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "존재하지 않는 사용자입니다"),
 	ID_DUPLICATED(HttpStatus.CONFLICT, "ID_DUPLICATED", "중복된 아이디 입니다."),
+	PHONE_NOT_FOUND(HttpStatus.NOT_FOUND, "PHONE_NOT_FOUND", "존재하지 않는 번호입니다."),
 	PWD_FIND_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "PWD_FIND_USER_NOT_FOUND", "비밀번호 찾기 정보와 일치하는 사용자가 없습니다"),
 	//
 	PHONE_AUTH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "PHONE_AUTH_TOKEN_EXPIRED", "휴대폰 인증 토큰이 만료되었습니다"),
@@ -85,6 +86,7 @@ public enum ErrorCode {
 	PRODUCT_OPTION_SIZE_DUPLICATED(HttpStatus.CONFLICT, "PRODUCT_OPTION_SIZE_DUPLICATED", "이미 존재하는 옵션입니다"),
 
 	/* 판매자 */
+	SELLER_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "SELLER_LOGIN_FAILED", "판매자 로그인 실패"),
 	NO_PERMISSION_OR_PRODUCT_NOT_FOUND(HttpStatus.FORBIDDEN, "NO_PERMISSION_OR_PRODUCT_NOT_FOUND", "권한이 없거나 상품이 없습니다"),
 	QNA_ANSWER_ALREADY_READ(HttpStatus.CONFLICT, "QNA_ANSWER_ALREADY_READ", "QnA answer already read"),
 	// 쿠폰

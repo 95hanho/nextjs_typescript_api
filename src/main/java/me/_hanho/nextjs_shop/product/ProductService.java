@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +43,7 @@ import me._hanho.nextjs_shop.product.dto.UpdateProductQnaRequest;
 @RequiredArgsConstructor
 public class ProductService {
 	
-//	private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 	private static final int PRODUCT_LIST_PAGE_SIZE = 12;
 
 	private final ProductMapper productMapper;
@@ -218,6 +220,7 @@ public class ProductService {
 		ProductDetailResponse productDetail = productMapper.getProductDetail(productId);
 		
 		if(productDetail == null) {
+			logger.warn("[getProductDetail] PRODUCTDETAIL_NOT_FOUND productId={}", productId);
 			throw new BusinessException(ErrorCode.PRODUCTDETAIL_NOT_FOUND);
 		}
 

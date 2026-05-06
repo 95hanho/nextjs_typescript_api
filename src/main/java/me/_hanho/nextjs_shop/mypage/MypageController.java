@@ -99,6 +99,7 @@ public class MypageController {
 		List<MyOrderDetailItem> items = mypageService.getMyOrderDetailItems(orderId, userNo);
 		
 		if(myOrderDetail == null || items == null || items.isEmpty()) {
+			logger.warn("[getMyOrderDetail] MY_ORDER_DETAIL_NOT_FOUND orderId={}, userNo={}", orderId, userNo);
 			throw new BusinessException(ErrorCode.MY_ORDER_DETAIL_NOT_FOUND);
 		}
 

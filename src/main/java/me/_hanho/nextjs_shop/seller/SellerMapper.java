@@ -18,6 +18,7 @@ import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerLogin;
+import me._hanho.nextjs_shop.seller.dto.SellerPhoneAuthDTO;
 import me._hanho.nextjs_shop.seller.dto.SellerProductDetailResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerProductResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerQnaResponse;
@@ -43,6 +44,8 @@ public interface SellerMapper {
 	SellerInfoResponse getSeller(Integer sellerNo);
 
 	int hasId(String sellerId);
+
+	void insertPhoneAuth(SellerPhoneAuthDTO phoneAuth);
 	
 	void setSeller(SellerRegisterRequest seller);
 

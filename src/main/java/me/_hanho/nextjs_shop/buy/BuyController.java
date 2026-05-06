@@ -64,6 +64,7 @@ public class BuyController {
         HoldTryResult res = buyService.preparePurchaseWithHold(buyCheck, userNo);
 
         if (!res.isOk()) {
+			logger.warn("[saleStatusCheck] STOCK_HOLD_FAILED userNo={}, buyCheck={}", userNo, buyCheck);
             throw new BusinessException(ErrorCode.STOCK_HOLD_FAILED);
         }
 
@@ -90,6 +91,7 @@ public class BuyController {
         result.put("updatedCount", updated);
         // 400 (잘못된 요청)
         if (requested == 0) {
+			logger.warn("[extendStockHold] HOLD_IDS_REQUIRED userNo={}", userNo);
     	    throw new BusinessException(ErrorCode.HOLD_IDS_REQUIRED);
     	}
         // 성공
@@ -99,7 +101,11 @@ public class BuyController {
     	}
     	// updated == 0 → “전부 무효” (만료/판매불가/해제 등) STOCK_HOLD_EXPIRED
     	// 0 < updated < requested → “부분 무효” (일부만 유효) STOCK_HOLD_PARTIAL_EXPIRED
-    	if(updated == 0) throw new BusinessException(ErrorCode.STOCK_HOLD_EXPIRED);
+    	if(updated == 0) {
+			logger.warn("[extendStockHold] STOCK_HOLD_EXPIRED userNo={}", userNo);
+    	    throw new BusinessException(ErrorCode.STOCK_HOLD_EXPIRED);
+    	}
+		logger.warn("[extendStockHold] STOCK_HOLD_PARTIAL_EXPIRED userNo={}", userNo);
     	throw new BusinessException(ErrorCode.STOCK_HOLD_PARTIAL_EXPIRED);
     }
     
@@ -170,6 +176,7 @@ public class BuyController {
 
 			if (latestHolds == null || latestHolds.isEmpty()) {
 				// 해당 계정으로 점유 자체가 없을 경우 - 메인 페이지로 보내기(잘 못 된 접근)
+				logger.warn("[getStockHoldProduct] NO_ACTIVE_HOLDS userNo={}", userNo);
 				throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS, "/");
 			}
 
@@ -180,6 +187,7 @@ public class BuyController {
 			);
 			if (hasPaid) {
 				// 이미 결제된 점유 - 메인페이지로 보내기
+				logger.warn("[getStockHoldProduct] ALREADY_PAID_HOLD userNo={}", userNo);
 				throw new BusinessException(ErrorCode.ALREADY_PAID_HOLD, "/");
 			}
 
@@ -199,8 +207,10 @@ public class BuyController {
 			boolean hasSaleStopped = latestHolds.stream().anyMatch(h -> h.getStock() <= 0 || !h.isDisplayed() ||  h.isSaleStop());
 			if (hasSaleStopped) {
 				if(isExpireWithinOneHour) {
+					logger.warn("[getStockHoldProduct] PRODUCT_SALE_STOPPED userNo={}", userNo);
 					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, returnUrl);
 				} else {
+					logger.warn("[getStockHoldProduct] PRODUCT_SALE_STOPPED userNo={}", userNo);
 					throw new BusinessException(ErrorCode.PRODUCT_SALE_STOPPED, "/");
 				}
 			}
@@ -211,8 +221,10 @@ public class BuyController {
 			);
 			if (hasSellerUnavailable) {
 				if(isExpireWithinOneHour) {
+					logger.warn("[getStockHoldProduct] SELLER_UNAVAILABLE userNo={}", userNo);
 					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, returnUrl);
 				} else {
+					logger.warn("[getStockHoldProduct] SELLER_UNAVAILABLE userNo={}", userNo);
 					throw new BusinessException(ErrorCode.SELLER_UNAVAILABLE, "/");
 				}
 			}
@@ -228,13 +240,16 @@ public class BuyController {
 			if (hasExpired) {
 				// HOLD상태이지만 이미 만료된 점유 - 한시간 이내면 returnUrl로, 아니면 메인 페이지로
 				if(isExpireWithinOneHour) {
+					logger.warn("[getStockHoldProduct] HOLD_EXPIRED userNo={}", userNo);
 					throw new BusinessException(ErrorCode.HOLD_EXPIRED, returnUrl);
 				} else {
+					logger.warn("[getStockHoldProduct] HOLD_EXPIRED userNo={}", userNo);
 					throw new BusinessException(ErrorCode.HOLD_EXPIRED, "/");
 				}
 			}
 
 			// 그 외의 경우 - 메인페이지로
+			logger.warn("[getStockHoldProduct] NO_ACTIVE_HOLDS userNo={}", userNo);
 			throw new BusinessException(ErrorCode.NO_ACTIVE_HOLDS, "/");
 		}
 
@@ -281,12 +296,14 @@ public class BuyController {
 		
 		// 파라미터 체크
 		if(payRequest.getShippingAddress() == null || payRequest.getPaymentMethod() == null || payRequest.getHoldIds() == null) {
+			logger.warn("[pay] BAD_REQUEST userNo={}, payRequest={}", userNo, payRequest);
 			throw new BusinessException(ErrorCode.BAD_REQUEST, "필수 파라미터가 누락되었습니다.");
 		}
 
 		// holdId 중복 체크
 		Set<Integer> holdIdSet = new LinkedHashSet<>(payRequest.getHoldIds());
 		if (holdIdSet.size() != payRequest.getHoldIds().size()) {
+			logger.warn("[pay] BAD_REQUEST_DUPLICATE_HOLD_IDS userNo={}, payRequest={}", userNo, payRequest);
 			throw new BusinessException(ErrorCode.BAD_REQUEST);
 		}
 
