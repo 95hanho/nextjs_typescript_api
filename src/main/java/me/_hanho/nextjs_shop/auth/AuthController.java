@@ -58,6 +58,7 @@ public class AuthController {
 		
 		UserInfoResponse user = authService.getUserInfo(userNo);
 		if(user == null) {
+			logger.warn("[getUserInfo] USER_NOT_FOUND userNo={}", userNo);
 			throw new BusinessException(ErrorCode.USER_NOT_FOUND);
 		}
 		// 추가 정보
@@ -83,6 +84,7 @@ public class AuthController {
 		
 		UserLoginResponse checkUser = authService.getUserForPassword(userId);
 		if (checkUser == null || !authService.passwordCheck(password, checkUser.getPassword())) {
+			logger.warn("[login] LOGIN_FAILED userId={}", userId);
 			throw new BusinessException(ErrorCode.LOGIN_FAILED);
 		}
 		result.put("userNo", checkUser.getUserNo());
@@ -166,7 +168,10 @@ public class AuthController {
 		boolean hasId = authService.hasId(userId);
 		logger.info("[idDuplcheck] hasId={}", hasId);
 		
-		if(hasId) throw new BusinessException(ErrorCode.ID_DUPLICATED);
+		if(hasId) {
+			logger.warn("[idDuplcheck] ID_DUPLICATED userId={}", userId);
+			throw new BusinessException(ErrorCode.ID_DUPLICATED);
+		}
 		
 		result.put("message", "ID_AVAILABLE");
 		return new ResponseEntity<>(result, HttpStatus.OK);
@@ -183,15 +188,24 @@ public class AuthController {
 			@RequestAttribute(required = false, name = "userNo") Integer userNo) {
 		logger.info("[sendPhoneAuth] phone={}, mode={}, phoneAuthToken={}, userNo={}", phone, mode, phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
+
+		boolean hasPhone = authService.hasPhone(phone);
+		// 번호 존재 확인
+		if(!hasPhone && List.of("IDFIND", "CHANGE", "PWDFIND").contains(mode)) {
+			logger.warn("[sendPhoneAuth] PHONE_NOT_FOUND phone={}, mode={}", phone, mode);
+			throw new BusinessException(ErrorCode.PHONE_NOT_FOUND);
+		}
 		// 비밀번호 찾기
 		if(mode.equals("PWDFIND")) {
 			// userId 검사
 			if((userId == null || userId.isEmpty())) {
+				logger.warn("[sendPhoneAuth] BAD_REQUEST PWDFIND mode requires userId phone={}, mode={}", phone, mode);
 				throw new BusinessException(ErrorCode.BAD_REQUEST, "PWDFIND mode requires userId");
 			}
 			// (userId,phone)으로 유저 조회
 			FindUser findUser = authService.getUserByIdAndPhone(userId, phone);
 			if(findUser == null) {
+				logger.warn("[sendPhoneAuth] PWD_FIND_USER_NOT_FOUND No matching user for userId={} and phone={}", userId, phone);
 				throw new BusinessException(ErrorCode.PWD_FIND_USER_NOT_FOUND);
 			}
 		}
@@ -202,18 +216,22 @@ public class AuthController {
 			String type = claims.get("type", String.class);
             logger.info("[sendPhoneAuth] type={}", type);
             if (type == null) {
+				logger.warn("[sendPhoneAuth] PHONE_AUTH_TOKEN_INVALID type is null");
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
             }
             if (!"PHONEAUTH".equals(type)) {
+				logger.warn("[sendPhoneAuth] PHONE_AUTH_TOKEN_WRONG_TYPE type={}", type);
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
             }
 		} catch (ExpiredJwtException e) {
+			logger.warn("[sendPhoneAuth] PHONE_AUTH_TOKEN_EXPIRED phoneAuthToken={}", phoneAuthToken);
 			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
 	    } catch (JwtException | IllegalArgumentException e) {
+			logger.warn("[sendPhoneAuth] PHONE_AUTH_TOKEN_INVALID phoneAuthToken={}", phoneAuthToken);
 	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
 	    }
-		boolean hasPhone = authService.hasPhone(phone);
 		if(List.of("JOIN", "CHANGE").contains(mode) && hasPhone) {
+			logger.warn("[sendPhoneAuth] PHONE_DUPLICATED phone={}, mode={}", phone, mode);
 			throw new BusinessException(ErrorCode.PHONE_DUPLICATED);
 		}
 		// 인증번호(6자리?)를 생성
@@ -246,24 +264,30 @@ public class AuthController {
 			String type = claims.get("type", String.class);
             logger.info("[phoneAuthCheck] type={}", type);
             if (type == null) {
+				logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_INVALID type is null");
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
             }
             if (!"PHONEAUTH".equals(type)) {
+				logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_WRONG_TYPE type={}", type);
                 throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_WRONG_TYPE);
             }
 		} catch (ExpiredJwtException e) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_EXPIRED phoneAuthToken={}", phoneAuthToken);
 			throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_EXPIRED);
 	    } catch (JwtException | IllegalArgumentException e) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_TOKEN_INVALID phoneAuthToken={}", phoneAuthToken);
 	        throw new BusinessException(ErrorCode.PHONE_AUTH_TOKEN_INVALID);
 	    }
 		
 		PhoneAuth phoneAuth = authService.getPhoneAuthCode(phoneAuthToken);
 	    if (phoneAuth == null) {
+			logger.warn("[phoneAuthCheck] PHONE_AUTH_NOT_FOUND No phone authentication record found for token={}", phoneAuthToken);
 	        throw new BusinessException(ErrorCode.PHONE_AUTH_NOT_FOUND);
 	    }
 	    String mode = phoneAuth.getMode(); 
 	    // 인증번호가 올바르지 않음
 	    if (!authNumber.equals(phoneAuth.getVerificationCode())) {
+			logger.warn("[phoneAuthCheck] INVALID_VERIFICATION_CODE authNumber={}, phoneAuthToken={}", authNumber, phoneAuthToken);
 	        throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
 	    }
 		// 인증번호 검증 성공(사용토큰으로 변경)
@@ -275,7 +299,10 @@ public class AuthController {
 			return new ResponseEntity<>(result, HttpStatus.OK);
 		}
 		FindUser findUser = authService.getUserByPhone(phoneAuth.getPhone());
-		if(findUser == null) throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND);
+		if(findUser == null) {
+			logger.warn("[phoneAuthCheck] USER_NO_NOT_FOUND No matching user for phone={}", phoneAuth.getPhone());
+			throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND);
+		}
 		// 아이디 찾기
 		if("IDFIND".equals(mode)){
 			result.put("userId", findUser.getUserId());
@@ -338,18 +365,23 @@ public class AuthController {
 			String type = claims.get("type", String.class);
             logger.info("[passwordChange] type={}", type);
             if (type == null) {
+                logger.warn("[passwordChange] PWD_RESET_TOKEN_INVALID type is null");
                 throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_INVALID);
             }
             if (!"PWDRESET".equals(type)) {
+                logger.warn("[passwordChange] PWD_RESET_TOKEN_WRONG_TYPE type={}", type);
                 throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_WRONG_TYPE);
             }
             userNo = claims.get("userNo", Integer.class);
 		} catch (ExpiredJwtException e) {
+			logger.warn("[passwordChange] PWD_RESET_TOKEN_EXPIRED pwdResetToken={}", pwdResetToken);
 			throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_EXPIRED);
 	    } catch (JwtException | IllegalArgumentException e) {
+	        logger.warn("[passwordChange] PWD_RESET_TOKEN_INVALID pwdResetToken={}", pwdResetToken);
 	        throw new BusinessException(ErrorCode.PWD_RESET_TOKEN_INVALID);
 	    }
 		if (userNo == null) {
+			logger.warn("[passwordChange] USER_NO_NOT_FOUND_IN_TOKEN No userNo found in token claims for token={}", pwdResetToken);
 	        throw new BusinessException(ErrorCode.USER_NO_NOT_FOUND_IN_TOKEN);
 	    }
 		
@@ -359,11 +391,13 @@ public class AuthController {
 		if(curPassword != null) {
 			// 현재 비밀번호가 일치하는 지 검사.
 			if(!authService.passwordCheck(curPassword, checkPassword)) {
+				logger.warn("[passwordChange] CURRENT_PASSWORD_MISMATCH Provided current password does not match stored password for userNo={}", userNo);
 				throw new BusinessException(ErrorCode.CURRENT_PASSWORD_MISMATCH);
 			}
 		}
 		// 현재비밀번호와 새 비밀번호 같은지 검사
 		if(authService.passwordCheck(newPassword, checkPassword)) {
+			logger.warn("[passwordChange] CURRENT_PASSWORD_EQUAL New password must be different from current password for userNo={}", userNo);
 			throw new BusinessException(ErrorCode.CURRENT_PASSWORD_EQUAL);
 		}
 		

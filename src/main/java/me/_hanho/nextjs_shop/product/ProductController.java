@@ -60,6 +60,7 @@ public class ProductController {
 
 		if ("POPULAR".equals(request.getSort())) {
 			if (request.getPopularPeriod() == null || request.getPopularPeriod().isBlank()) {
+				logger.warn("[getProductList] BAD_REQUEST popularPeriod is required when sort is POPULAR");
 				throw new BusinessException(ErrorCode.BAD_REQUEST, "popularPeriod는 sort가 POPULAR일 때 필수입니다.");
 			}
 		}

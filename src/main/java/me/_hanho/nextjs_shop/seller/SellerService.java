@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.auth.dto.ReToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
@@ -24,8 +25,6 @@ import me._hanho.nextjs_shop.seller.dto.AddFileMeta;
 import me._hanho.nextjs_shop.seller.dto.AddProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.AddProductRequest;
 import me._hanho.nextjs_shop.seller.dto.ProductImageResponse;
-import me._hanho.nextjs_shop.seller.dto.ProductViewCountResponse;
-import me._hanho.nextjs_shop.seller.dto.ProductWishCountResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerCouponResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInfoResponse;
 import me._hanho.nextjs_shop.seller.dto.SellerInterestingUserSummaryResponse;
@@ -40,13 +39,13 @@ import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
-import me._hanho.nextjs_shop.seller.dto.UserInBookmarkResponse;
-import me._hanho.nextjs_shop.seller.dto.UserInCartCountResponse;
 import me._hanho.nextjs_shop.util.CouponCodeGenerator;
 
 @Service
 @RequiredArgsConstructor
 public class SellerService {
+
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SellerService.class);
 	
 	private final SellerMapper sellerMapper;
 	private final FileService fileService;
@@ -110,6 +109,7 @@ public class SellerService {
 	public void updateProduct(UpdateProductRequest product, Integer sellerNo) {
 	    int updated = sellerMapper.updateProduct(product, sellerNo);
 	    if (updated == 0) {
+			logger.warn("[updateProduct] NO_PERMISSION_OR_PRODUCT_NOT_FOUND productId={}, sellerNo={}", product.getProductId(), sellerNo);
 	        throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 	    }
 	}
@@ -132,6 +132,7 @@ public class SellerService {
 		try {
 			if (addFiles != null && !addFiles.isEmpty()) {
 				if (files == null || addFiles.size() != files.size()) {
+					logger.warn("[setProductImages] INVALID_REQUEST addFiles size={}, files size={}", addFiles.size(), files == null ? "null" : files.size());
 					throw new BusinessException(ErrorCode.BAD_REQUEST);
 				}
 				for (int i = 0; i < addFiles.size(); i++) {
@@ -160,6 +161,7 @@ public class SellerService {
 	public SellerProductDetailResponse getProductDetail(Integer productId, Integer sellerNo) {
 		SellerProductDetailResponse productDetail = sellerMapper.getProductDetail(productId, sellerNo);
 		if (productDetail == null) {
+			logger.warn("[getProductDetail] NO_PERMISSION_OR_PRODUCT_NOT_FOUND productId={}, sellerNo={}", productId, sellerNo);
 			throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 		}
 		// 이미지 조회
@@ -177,9 +179,11 @@ public class SellerService {
 		    int inserted = sellerMapper.addProductOption(productOption, sellerNo);
 		    if (inserted == 0) {
 		        // product가 없거나 / 내 상품이 아님
+				logger.warn("[addProductOption] NO_PERMISSION_OR_PRODUCT_NOT_FOUND productOption={}, sellerNo={}", productOption, sellerNo);
 		    	throw new BusinessException(ErrorCode.NO_PERMISSION_OR_PRODUCT_NOT_FOUND);
 		    }
 		} catch (DuplicateKeyException e) {
+			logger.warn("[addProductOption] PRODUCT_OPTION_SIZE_DUPLICATED productOption={}, sellerNo={}", productOption, sellerNo);
 			throw new BusinessException(ErrorCode.PRODUCT_OPTION_SIZE_DUPLICATED);
 		}
 	}
@@ -187,10 +191,12 @@ public class SellerService {
 		try {
 			int updated = sellerMapper.updateProductOption(productOption, sellerNo);
 		    if (updated == 0) {
+		        logger.warn("[updateProductOption] PRODUCT_OPTION_NOT_FOUND productOption={}, sellerNo={}", productOption, sellerNo);
 		        throw new BusinessException(ErrorCode.PRODUCT_OPTION_NOT_FOUND,
 		            "Product option not found: " + productOption.getProductOptionId());
 		    }
 		} catch (DuplicateKeyException e) {
+			logger.warn("[updateProductOption] PRODUCT_OPTION_SIZE_DUPLICATED productOption={}, sellerNo={}", productOption, sellerNo);
 			throw new BusinessException(ErrorCode.PRODUCT_OPTION_SIZE_DUPLICATED);
 		}
 	}
@@ -261,8 +267,11 @@ public class SellerService {
 			case "ORDER":
 				userNos = sellerMapper.getOrderedUserNos(couponId, sellerNo);
 				break;
-			default:
+			default: {
+				logger.warn("[issueCouponsToUsers] COUPON_INVALID_TYPE invalid type={} for couponId={}, sellerNo={}", type, couponId, sellerNo);
 				throw new BusinessException(ErrorCode.BAD_REQUEST, "Invalid type for issuing coupons: " + type);
+			}
+				
 		}
 
 		if (userNos == null || userNos.isEmpty()) {
@@ -281,6 +290,7 @@ public class SellerService {
 		int result = sellerMapper.updateQnaAnswer(productQnaId, answer, sellerNo);
 		// answerRead가 true인 경우 result는 0
 		if(result == 0) {
+			logger.warn("[updateQnaAnswer] QNA_ANSWER_ALREADY_READ productQnaId={}, sellerNo={}", productQnaId, sellerNo);
 			throw new BusinessException(ErrorCode.QNA_ANSWER_ALREADY_READ, "QnA answer already read: " + productQnaId);
 		}
 	}

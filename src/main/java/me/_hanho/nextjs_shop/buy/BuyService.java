@@ -11,10 +11,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.buy.dto.AvailabilityRow;
 import me._hanho.nextjs_shop.buy.dto.AvailableCartCouponAtBuyResponse;
 import me._hanho.nextjs_shop.buy.dto.AvailableSellerCouponAtBuyResponse;
@@ -42,6 +45,8 @@ import me._hanho.nextjs_shop.util.OrderCodeGenerator;
 @RequiredArgsConstructor
 public class BuyService {
 	
+    private static final Logger logger = LoggerFactory.getLogger(BuyService.class);
+
 	private static final int HOLD_TTL_SECONDS = 180; // 3분(연장1분마다 최소 2분 여유)
 	// private static final int HOLD_TTL_SECONDS = 60 * 60 * 24; // TEST 용 1일
 
@@ -92,6 +97,8 @@ public class BuyService {
                 Integer existingCartId = cartIdByPd.get(pdId);
 
                 if (!java.util.Objects.equals(existingCartId, cartId)) {
+                    logger.warn("[preparePurchaseWithHold] BAD_REQUEST_MIXED_CART_IDS userNo={}, pdId={}, existingCartId={}, newCartId={}",
+                        userNo, pdId, existingCartId, cartId);
                     throw new BusinessException(ErrorCode.BAD_REQUEST);
                 }
             } else {
@@ -182,6 +189,8 @@ public class BuyService {
             Integer actual = heldCountMap.get(optionId);
 
             if (actual == null || actual != expected) {
+                logger.warn("[preparePurchaseWithHold] STOCK_HOLD_UPSERT_INCOMPLETE userNo={}, productOptionId={}, expectedCount={}, actualCount={}",
+                    userNo, optionId, expected, actual);
                 throw new BusinessException(ErrorCode.STOCK_HOLD_UPSERT_INCOMPLETE);
             }
         }
@@ -250,6 +259,7 @@ public class BuyService {
 
                 // hold 매핑이 없으면 비정상 상태
                 if (holdId == null) {
+                    logger.warn("[preparePurchaseWithHold] NOT_MATCHED_HOLD userNo={}, productOptionId={}", userNo, item.getProductOptionId());
                     throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
                 }
 
@@ -266,6 +276,7 @@ public class BuyService {
 
                     // 다운로드 후에도 user_coupon_id를 못 찾으면 비정상
                     if (userCouponId == null) {
+                        logger.warn("[preparePurchaseWithHold] COUPON_APPLY_FAILED userNo={}, couponId={}", userNo, couponId);
                         throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
                     }
 
@@ -282,6 +293,7 @@ public class BuyService {
                 int inserted = buyMapper.applyCoupons(holdCouponRows);
 
                 if (inserted != holdCouponRows.size()) {
+                    logger.warn("[preparePurchaseWithHold] COUPON_APPLY_FAILED userNo={}, expected={}, actual={}", userNo, holdCouponRows.size(), inserted);
                     throw new BusinessException(ErrorCode.COUPON_APPLY_FAILED);
                 }
             }
@@ -421,6 +433,7 @@ public class BuyService {
         // Check : request의 holdId와 일치하는지 검증(집합 비교)
         if (stockHoldProductList.size() != holdIds.size()) {
             // > ERROR : 일치하지 한꺼번에 않으면 예외 처리("구매과정 중 오류가 발생했습니다.")
+            logger.warn("[getValidatedStockHoldProductList] NOT_MATCHED_HOLD userNo={}, holdIds={}", userNo, holdIds);
             throw new BusinessException(ErrorCode.NOT_MATCHED_HOLD);
         }
 
@@ -437,6 +450,8 @@ public class BuyService {
         // Check : 쿠폰 갯수 비교 (점유에 적용된 쿠폰 갯수와 실제 적용할 수 있는 쿠폰 갯수 비교)
         if (appliedCouponCount != availableCoupons.size()) {
             // > ERROR : 일치하지 않으면 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
+            logger.warn("[getValidatedAvailableCoupons] COUPON_UNAVAILABLE_FAILED userNo={}, holdIds={}, appliedCouponCount={}, availableCouponCount={}",
+                userNo, holdIds, appliedCouponCount, availableCoupons.size());
             throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
         }
 
@@ -492,12 +507,16 @@ public class BuyService {
                     hasNonStackableCoupon = true;
                 } else if (!c.getIsStackable() && hasNonStackableCoupon) {
                     // > ERROR : 스택 불가능한 쿠폰이 이미 스택 가능한 쿠폰과 함께 사용된 경우 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
+                    logger.warn("[preparePaymentData] COUPON_UNAVAILABLE_FAILED userNo={}, holdId={}, couponId={}, reason=NON_STACKABLE_COUPON_ALREADY_USED",
+                        sh.getHoldId(), c.getCouponId());
                     throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
                 }
                 // ---- 쿠폰 적용가 계산
                 int discountAmount = 0;
                 if (priceBeforeCoupon < c.getMinimumOrderBeforeAmount().intValue()) {
                     // > ERROR : 쿠폰의 최소 주문 금액 조건 미충족 시 예외 처리("쿠폰 적용 과정 중 오류가 발생했습니다.")
+                    logger.warn("[preparePaymentData] COUPON_UNAVAILABLE_FAILED userNo={}, holdId={}, couponId={}, reason=MINIMUM_ORDER_AMOUNT_NOT_MET, priceBeforeCoupon={}, minimumOrderAmount={}",
+                        sh.getHoldId(), c.getCouponId(), priceBeforeCoupon, c.getMinimumOrderBeforeAmount());
                     throw new BusinessException(ErrorCode.COUPON_UNAVAILABLE_FAILED);
                 }
                 if (c.getDiscountType().equals("fixed_amount")) {
@@ -602,6 +621,8 @@ public class BuyService {
 
         // Check : 사용 마일리지 검증(보유 마일리지보다 사용 마일리지가 많으면 예외 처리("마일리지 사용 과정 중 오류가 발생했습니다."))
         if (payRequest.getUsedMileage() > hasMileage) {
+            logger.warn("[getValidatedMileage] MILEAGE_UNAVAILABLE_FAILED userNo={}, usedMileage={}, hasMileage={}",
+                userNo, payRequest.getUsedMileage(), hasMileage);
             throw new BusinessException(ErrorCode.MILEAGE_UNAVAILABLE_FAILED);
         }
 
@@ -651,6 +672,8 @@ public class BuyService {
 
         // > ERROR : 재고 변경이 필요한 holdId 수와 실제 변경된 수가 일치하지 않으면 예외 처리("재고 변경 과정 중 오류가 발생했습니다.")
         if (updateProductOptionResult != holdIds.size()) {
+            logger.warn("[updateProductOptionStock] STOCK_UPDATE_FAILED holdIds={}, expectedUpdatedCount={}, actualUpdatedCount={}",
+                holdIds, holdIds.size(), updateProductOptionResult);
             throw new BusinessException(ErrorCode.STOCK_UPDATE_FAILED);
         }
     }
@@ -673,6 +696,7 @@ public class BuyService {
                 }
                 if (orderItemId == null) {
                     // > ERROR : holdId에 해당하는 주문 아이템이 없는 경우 예외 처리("주문 처리 중 오류가 발생했습니다.")
+                    logger.warn("[processOrderItemCoupons] ORDER_ITEM_NOT_FOUND holdId={}, orderItemIds={}", holdId, orderItemIds.stream().map(OrderItem::getOrderItemId).collect(Collectors.toList()));
                     throw new BusinessException(ErrorCode.ORDER_ITEM_NOT_FOUND);
                 }
                 coupon.setOrderItemId(orderItemId);
@@ -698,6 +722,8 @@ public class BuyService {
         // [Mapper] : user mileage 차감, 적립 처리(보유 마일리지 부족 시 실패 처리  -> 이미 처리됨.)
         int updateUserMileageResult = buyMapper.updateUserMileage(payRequest.getUsedMileage(), userNo);
         if (updateUserMileageResult != 1) {
+            logger.warn("[updateUserMileage] MILEAGE_UPDATE_FAILED userNo={}, usedMileage={}, updateResult={}",
+                userNo, payRequest.getUsedMileage(), updateUserMileageResult);
             throw new BusinessException(ErrorCode.MILEAGE_UPDATE_FAILED);
         }
     }
@@ -706,6 +732,8 @@ public class BuyService {
         // [Mapper] : stock_hold status를 PAID로 변경(row count 검증)
         int updateStockHoldStatusResult = buyMapper.updateStockHoldStatusToPaid(holdIds, userNo);
         if (updateStockHoldStatusResult != holdIds.size()) {
+            logger.warn("[updateStockHoldStatus] STOCK_HOLD_UPDATE_FAILED userNo={}, holdIds={}, expectedUpdatedCount={}, actualUpdatedCount={}",
+                userNo, holdIds, holdIds.size(), updateStockHoldStatusResult);
             throw new BusinessException(ErrorCode.STOCK_HOLD_UPDATE_FAILED);
         }
     }

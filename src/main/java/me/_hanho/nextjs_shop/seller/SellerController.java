@@ -71,14 +71,9 @@ public class SellerController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerLogin checkSeller = sellerService.isSeller(sellerId);
-		System.out.println("checkSeller : " + checkSeller);
 		if (checkSeller == null || !sellerService.passwordCheck(password, checkSeller.getPassword())) {
-			result.put("message", "SELLER_NOT_FOUND"); // 입력하신 아이디 또는 비밀번호가 일치하지 않습니다
-			logger.error("입력하신 아이디 또는 비밀번호가 일치하지 않습니다");
-			
-			return new ResponseEntity<>(
-					result
-					, HttpStatus.UNAUTHORIZED);
+			logger.warn("[sellerLogin] SELLER_LOGIN_FAILED sellerId={}", sellerId);
+			throw new BusinessException(ErrorCode.SELLER_LOGIN_FAILED);
 		} else {
 			result.put("sellerNo", checkSeller.getSellerNo());
 			result.put("message", "LOGIN_SUCCESS");
@@ -112,13 +107,13 @@ public class SellerController {
 	}
 	// 로그인 토큰 수정(재저장)
 	@PostMapping("/token/refresh")
-	public ResponseEntity<Map<String, Object>> updateToken(
+	public ResponseEntity<Map<String, Object>> updateSellerToken(
 	        @RequestParam("beforeToken") String beforeToken,
 	        @RequestParam("refreshToken") String refreshToken,
 	        @RequestHeader("user-agent") String userAgent,
 	        @RequestHeader("x-forwarded-for") String forwardedFor
 	) {
-		logger.info("[updateToken] beforeToken={}, refreshToken={}, userAgent={}, forwardedFor={}", 
+		logger.info("[updateSellerToken] beforeToken={}, refreshToken={}, userAgent={}, forwardedFor={}", 
 				beforeToken.substring(beforeToken.length() - 10), refreshToken.substring(refreshToken.length() - 10), userAgent, forwardedFor);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -132,6 +127,12 @@ public class SellerController {
 
 	    Integer sellerNo = sellerService.getSellerNoByToken(token);
 	    if (sellerNo == null) {
+			logger.warn(
+				"[updateSellerToken] WRONG_TOKEN sellerNo not found. beforeToken={}, refreshToken={}, ip={}",
+				beforeToken.substring(Math.max(0, beforeToken.length() - 10)),
+				refreshToken.substring(Math.max(0, refreshToken.length() - 10)),
+				ipAddress
+			);
 	        throw new BusinessException(ErrorCode.WRONG_TOKEN);
 	    }
 
@@ -347,13 +348,16 @@ public class SellerController {
 		// discount_type에 따른 규칙
 		if ("percentage".equals(coupon.getDiscountType())) {
 		    if (coupon.getMaxDiscount() == null) {
+				logger.warn("[addCoupon] COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE discountType=percentage but maxDiscount is null");
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
 		    }
 		} else if ("fixed_amount".equals(coupon.getDiscountType())) {
 		    if (coupon.getMaxDiscount() != null) {
+				logger.warn("[addCoupon] COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT discountType=fixed_amount but maxDiscount is not null");
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
 		    }
 		} else {
+			logger.warn("[addCoupon] COUPON_INVALID_DISCOUNT_TYPE invalid discountType={}", coupon.getDiscountType());
 		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
 		}
 		
@@ -374,13 +378,16 @@ public class SellerController {
 		// discount_type에 따른 규칙
 		if ("percentage".equals(coupon.getDiscountType())) {
 		    if (coupon.getMaxDiscount() == null) {
+				logger.warn("[updateCoupon] COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE discountType=percentage but maxDiscount is null");
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
 		    }
 		} else if ("fixed_amount".equals(coupon.getDiscountType())) {
 		    if (coupon.getMaxDiscount() != null) {
+				logger.warn("[updateCoupon] COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT discountType=fixed_amount but maxDiscount is not null");
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
 		    }
 		} else {
+			logger.warn("[updateCoupon] COUPON_INVALID_DISCOUNT_TYPE invalid discountType={}", coupon.getDiscountType());
 		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
 		}
 		

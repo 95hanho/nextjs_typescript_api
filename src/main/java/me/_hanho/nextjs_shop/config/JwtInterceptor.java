@@ -58,13 +58,17 @@ public class JwtInterceptor implements HandlerInterceptor {
 	                String type = claims.get("type", String.class);
 	                logger.info("type : " + type);
 	                if (type == null) {
-	                	 throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Token type is missing");
+						logger.warn("[preHandle] UNAUTHORIZED_TOKEN userNo={}, reason=Token type is missing", request.getAttribute("userNo"));
+						throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Token type is missing");
 	                }
 	                // 유저 a토큰
 	                if("ACCESS".equals(type)) {
 	                	// userNo 추출
 	                	Integer userNo = claims.get("userNo", Integer.class);
-	                	if (userNo == null) throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid ACCESS token: missing userNo");
+	                	if (userNo == null) {
+							logger.warn("[preHandle] UNAUTHORIZED_TOKEN userNo={}, reason=Invalid ACCESS token: missing userNo", request.getAttribute("userNo"));
+							throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid ACCESS token: missing userNo");
+	                	}
 	                	logger.info("type : " + type + ", userNo : " + userNo);
 	                	request.setAttribute("userNo", userNo);
 	                }
@@ -72,7 +76,10 @@ public class JwtInterceptor implements HandlerInterceptor {
 	                else if("SELLER".equals(type)) {
 	                	// sellerNo 추출
 	                	Integer sellerNo = claims.get("sellerNo", Integer.class);
-	                	if (sellerNo == null) throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid SELLER token: missing sellerNo");
+	                	if (sellerNo == null) {
+							logger.warn("[preHandle] UNAUTHORIZED_TOKEN userNo={}, reason=Invalid SELLER token: missing sellerNo", request.getAttribute("userNo"));
+							throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid SELLER token: missing sellerNo");
+	                	}
 	                    logger.info("type : " + type + ", sellerNo : " + sellerNo);
 	                    request.setAttribute("sellerNo", sellerNo);
 	                }
@@ -80,10 +87,14 @@ public class JwtInterceptor implements HandlerInterceptor {
 	                else if("ADMIN".equals(type)) {
 	                	// adminNo 추출
 	                	Integer adminNo = claims.get("adminNo", Integer.class);
-	                	if (adminNo == null) throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid ADMIN token: missing adminNo");
+	                	if (adminNo == null) {
+							logger.warn("[preHandle] UNAUTHORIZED_TOKEN userNo={}, reason=Invalid ADMIN token: missing adminNo", request.getAttribute("userNo"));
+							throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Invalid ADMIN token: missing adminNo");
+	                	}
 	                    logger.info("type : " + type + ", adminNo : " + adminNo);
 	                    request.setAttribute("adminNo", adminNo);
 	                } else {
+						logger.warn("[preHandle] UNAUTHORIZED_TOKEN userNo={}, reason=Unknown token type: {}", request.getAttribute("userNo"), type);
 	                	throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "Unknown token type");
 	                }
 	            }

@@ -1,5 +1,7 @@
 package me._hanho.nextjs_shop.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +22,7 @@ import me._hanho.nextjs_shop.model.PhoneAuth;
 @RequiredArgsConstructor
 public class AuthService {
 	
-//	private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+	private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private final PasswordEncoder passwordEncoder;
     private final AuthMapper authMapper;
@@ -49,6 +51,7 @@ public class AuthService {
 	public void updateToken(ReToken token) {
 	    int updated = authMapper.updateToken(token);
 	    if (updated == 0) {
+			logger.warn("[updateToken] TOKEN_NOT_FOUND No token found for token={}", token);
 	        throw new BusinessException(ErrorCode.TOKEN_NOT_FOUND, "updateToken => Token not found");
 	    }
 	}
@@ -94,6 +97,7 @@ public class AuthService {
 	public void userInfoUpdate(UpdateUserRequest user, Integer userNo) {
 	    int updated = authMapper.userInfoUpdate(user, userNo);
 	    if (updated == 0) {
+			logger.warn("[userInfoUpdate] USER_NOT_FOUND No user found for userNo={}", userNo);
 	        throw new BusinessException(ErrorCode.USER_NOT_FOUND, "userInfoUpdate => User not found");
 	    }
 	}

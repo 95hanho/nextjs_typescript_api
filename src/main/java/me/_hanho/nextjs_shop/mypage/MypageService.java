@@ -6,8 +6,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,7 +47,7 @@ import me._hanho.nextjs_shop.product.dto.ProductImageFile;
 @RequiredArgsConstructor
 public class MypageService {
 	
-	private static final Logger logger = Logger.getLogger(MypageService.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(MypageService.class);
 
 	private final MypageMapper mypageMapper;
 	private final ProductMapper productMapper;
@@ -99,6 +100,7 @@ public class MypageService {
 	public ReviewOrderInfoResponse getReviewOrderInfo(Integer orderItemId, Integer userNo) {
 		ReviewOrderInfoResponse reviewOrderInfo = mypageMapper.getReviewOrderInfo(orderItemId, userNo);
 		if(reviewOrderInfo == null) {
+			logger.warn("[getReviewOrderInfo] REVIEW_ITEM_NOT_FOUND orderItemId={}, userNo={}", orderItemId, userNo);
 			throw new BusinessException(ErrorCode.REVIEW_ITEM_NOT_FOUND, "Order item not found for review: " + orderItemId);
 		}
 		return reviewOrderInfo;
@@ -115,6 +117,7 @@ public class MypageService {
 			LocalDate today = LocalDate.now();
 			long days = ChronoUnit.DAYS.between(reviewDate, today);
 			if (days >= 7) {
+				logger.warn("[getReviewByOrderItemId] REVIEW_MODIFY_PERIOD_EXPIRED orderItemId={}, userNo={}", orderItemId, userNo);
 				throw new BusinessException(ErrorCode.REVIEW_MODIFY_PERIOD_EXPIRED);
 			}
 		}
@@ -156,6 +159,7 @@ public class MypageService {
 		try {
 			if (addFiles != null && !addFiles.isEmpty()) {
 				if (files == null || addFiles.size() != files.size()) {
+					logger.warn("[setReviewImages] INVALID_REQUEST reviewId={}, userNo={}, addFilesSize={}, filesSize={}", reviewId, userNo, addFiles.size(), files == null ? 0 : files.size());
 					throw new BusinessException(ErrorCode.BAD_REQUEST);
 				}
 				for (int i = 0; i < addFiles.size(); i++) {
@@ -200,6 +204,7 @@ public class MypageService {
 		List<CartProductResponse> cartList = mypageMapper.getCartList(userNo);
 
 		if(cartList.isEmpty()) {
+			logger.warn("[getCartSummary] CART_EMPTY userNo={}", userNo);
 			throw new BusinessException(ErrorCode.CART_EMPTY, "Cart is empty for userNo: " + userNo);
 		}
 
@@ -225,18 +230,21 @@ public class MypageService {
 	public void updateCart(UpdateCartRequest cart, Integer userNo) {
 	    int updated = mypageMapper.updateCart(cart, userNo);
 	    if (updated == 0) {
+			logger.warn("[updateCart] CART_NOT_FOUND cartId={}, userNo={}", cart.getCartId(), userNo);
 	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cart.getCartId());
 	    }
 	}
 	public void updateSelectedCart(List<Integer> cartIdList, Boolean selected, Integer userNo) {
 	    int updated = mypageMapper.updateSelectedCart(cartIdList, selected, userNo);
 	    if (updated == 0) {
+			logger.warn("[updateSelectedCart] CART_NOT_FOUND cartIds={}, userNo={}", cartIdList, userNo);
 	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cartIdList);
 	    }
 	}
 	public void deleteCart(List<Integer> cartIdList, Integer userNo) {
 	    int updated = mypageMapper.deleteCart(cartIdList, userNo);
 	    if (updated == 0) {
+			logger.warn("[deleteCart] CART_NOT_FOUND cartIds={}, userNo={}", cartIdList, userNo);
 	        throw new BusinessException(ErrorCode.CART_NOT_FOUND, "Cart not found: " + cartIdList);
 	    }
 	}
@@ -278,6 +286,7 @@ public class MypageService {
 	    }
 	    int updated = mypageMapper.updateUserAddress(userAddress, userNo);
 	    if (updated == 0) {
+			logger.warn("[updateUserAddress] ADDRESS_NOT_FOUND addressId={}, userNo={}", userAddress.getAddressId(), userNo);
 	        throw new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found: " + userAddress.getAddressId());
 	    }
 	}
@@ -286,6 +295,7 @@ public class MypageService {
 		int isDefault = mypageMapper.isDefaultAddress(addressId, userNo);
 		int updated = mypageMapper.deleteUserAddress(addressId, userNo);
 	    if (updated == 0) {
+			logger.warn("[deleteUserAddress] ADDRESS_NOT_FOUND addressId={}, userNo={}", addressId, userNo);
 	        throw new BusinessException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found: " + addressId);
 	    }
 		if(isDefault == 1) {

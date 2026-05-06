@@ -3,6 +3,8 @@ package me._hanho.nextjs_shop.file;
 import java.io.File;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
+import me._hanho.nextjs_shop.auth.AuthService;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.file.dto.FileUploadRequest;
@@ -18,6 +21,8 @@ import me._hanho.nextjs_shop.model.FileInfo;
 @Service
 @RequiredArgsConstructor
 public class FileService {
+
+	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
 	@Value("${spring.servlet.multipart.location}")
     private String uploadDir;
@@ -33,6 +38,7 @@ public class FileService {
 		// 파일명 설정
 		String fileName = file.getOriginalFilename();
 		if (fileName == null || fileName.isBlank()) {
+			logger.warn("[fileUploadImage] INVALID_FILE_NAME originalFileName={}", fileName);
 			throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
 		}
 		String storeFileName = createStoreFileName(fileName);
@@ -42,15 +48,18 @@ public class FileService {
 
 		// 이미지 파일인지 검증(파일 확장자 검증)
 		if (!fileExtension.matches("jpg|jpeg|png|gif|webp")) {
+			logger.warn("[fileUploadImage] INVALID_FILE_TYPE originalFileName={}, fileExtension={}", fileName, fileExtension);
 			throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
 		}
 		// 파일크기 제한
 		if (file.getSize() > 5 * 1024 * 1024) {
+			logger.warn("[fileUploadImage] FILE_SIZE_EXCEEDED originalFileName={}, fileSize={}", fileName, file.getSize());
 			throw new BusinessException(ErrorCode.FILE_SIZE_EXCEEDED);
 		}
 		// MIME 타입 체크
 		String contentType = file.getContentType();
 		if (contentType == null || !contentType.startsWith("image/")) {
+			logger.warn("[fileUploadImage] INVALID_FILE_TYPE originalFileName={}, contentType={}", fileName, contentType);
 			throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
 		}
 
@@ -83,6 +92,7 @@ public class FileService {
 	private String extractExt(String originalFileName) {
 		int pos = originalFileName.lastIndexOf(".");
 		if (pos == -1 || pos == originalFileName.length() - 1) {
+			logger.warn("[extractExt] INVALID_FILE_TYPE originalFileName={}", originalFileName);
 			throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
 		}
 		return originalFileName.substring(pos + 1);
@@ -112,6 +122,7 @@ public class FileService {
 			file.transferTo(dest);
 		} catch (IllegalStateException | java.io.IOException e) {
 			e.printStackTrace();
+			logger.error("[saveFile] FILE_UPLOAD_FAILED filePath={}, error={}", filePath, e.getMessage());
 			throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
 		}
 	}

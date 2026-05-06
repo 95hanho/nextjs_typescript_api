@@ -3,6 +3,8 @@ package me._hanho.nextjs_shop.auth;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import me._hanho.nextjs_shop.common.exception.ErrorCode;
 
 @Service
 public class TokenService {
+
+	private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
 	
 	@Value("${jwt.secret.refresh}")
 	private String REFRESH_SECRET_KEY;
@@ -88,6 +92,7 @@ public class TokenService {
 	                .getBody();
 	    } catch (JwtException | IllegalArgumentException e) {
 	        // IllegalArgumentException: token null/empty 같은 케이스
+	        logger.warn("[parseJwtRefreshToken] Invalid refresh token token={}", token);
 	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtRefreshToken] Invalid refresh token");
 	    }
 	}
@@ -108,10 +113,12 @@ public class TokenService {
 	            try {
 	                return parseWithAdminKey(token);
 	            } catch (JwtException e3) {
+					logger.warn("[parseJwtToken] Invalid token for user, seller, or admin token token={}", token);
 	                throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtToken] Invalid user|seller|admin token");
 	            }
 	        }
 	    } catch (IllegalArgumentException e) {
+	        logger.warn("[parseJwtToken] Invalid token token={}", token);
 	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtToken] Invalid token");
 	    }
 	}
@@ -153,6 +160,7 @@ public class TokenService {
 	        Key key = Keys.hmacShaKeyFor(PHONEAUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 	        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 	    } catch (JwtException | IllegalArgumentException e) {
+	        logger.warn("[parseJwtPhoneAuthToken] Invalid phone auth token token={}", token);
 	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtPhoneAuthToken] Invalid phone auth token");
 	    }
 	}
@@ -167,6 +175,7 @@ public class TokenService {
 			Key key = Keys.hmacShaKeyFor(PHONEAUTH_COMPLETE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 		} catch (JwtException | IllegalArgumentException e) {
+	        logger.warn("[parseJwtPhoneAuthCompleteToken] Invalid phone auth complete token token={}", token);
 	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtPhoneAuthCompleteToken] Invalid phone auth complete token");
 	    }
 	}
@@ -182,6 +191,7 @@ public class TokenService {
 			Key key = Keys.hmacShaKeyFor(PWDCHANGE_SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 			return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 		} catch (JwtException | IllegalArgumentException e) {
+			logger.warn("[parseJwtPwdChangeToken] Invalid password change token token={}", token);
 	        throw new BusinessException(ErrorCode.UNAUTHORIZED_TOKEN, "[parseJwtPwdChangeToken] Invalid password change token");
 	    }
 	}

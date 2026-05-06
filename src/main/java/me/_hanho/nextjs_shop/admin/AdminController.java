@@ -146,6 +146,11 @@ public class AdminController {
 		
 		Integer adminNo = adminService.getAdminNoByToken(token);
 		if (adminNo == null) {
+			logger.warn("[updateToken] WRONG_TOKEN adminNo not found. beforeToken={}, refreshToken={}, ip={}",
+					beforeToken.substring(Math.max(0, beforeToken.length() - 10)),
+					refreshToken.substring(Math.max(0, refreshToken.length() - 10)),
+					ipAddress
+			);
 	        throw new BusinessException(ErrorCode.WRONG_TOKEN);
 	    }
 		
@@ -175,6 +180,7 @@ public class AdminController {
 		Map<String, Object> result = new HashMap<String, Object>();
 
 		if(adminService.hasSeller(seller.getSellerId())) {
+			logger.warn("[addSeller] SELLER_DUPLICATED sellerId={} already exists", seller.getSellerId());
 			throw new BusinessException(ErrorCode.SELLER_DUPLICATED);
 		}
 		
@@ -192,7 +198,8 @@ public class AdminController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		if("REJECTED".equals(sellerApproval.getApprovalStatus()) && sellerApproval.getRejectReason() == null) {
-			throw new BusinessException(ErrorCode.AUTHENTICATION_REQUIRED);
+			logger.warn("[setSellerApproval] REASON_NOT_FOUND Reject reason is required when approval status is REJECTED. sellerApproval={}, adminNo={}", sellerApproval, adminNo);
+			throw new BusinessException(ErrorCode.REASON_NOT_FOUND);
 		}
 		
 		adminService.setSellerApproval(sellerApproval, adminNo);
@@ -270,13 +277,16 @@ public class AdminController {
 		// discount_type에 따른 규칙
 		if ("percentage".equals(commonCoupon.getDiscountType())) {
 		    if (commonCoupon.getMaxDiscount() == null) {
+				logger.warn("[addCommonCoupon] COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE maxDiscount is required when discount type is percentage. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
 		    }
 		} else if ("fixed_amount".equals(commonCoupon.getDiscountType())) {
 		    if (commonCoupon.getMaxDiscount() != null) {
+				logger.warn("[addCommonCoupon] COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT maxDiscount must be null when discount type is fixed_amount. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
 		    }
 		} else {
+			logger.warn("[addCommonCoupon] COUPON_INVALID_DISCOUNT_TYPE invalid discount type. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
 		}
 		
@@ -297,13 +307,16 @@ public class AdminController {
 		// discount_type에 따른 규칙
 		if ("percentage".equals(commonCoupon.getDiscountType())) {
 		    if (commonCoupon.getMaxDiscount() == null) {
+				logger.warn("[updateCommonCoupon] COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE maxDiscount is required when discount type is percentage. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_REQUIRED_FOR_PERCENTAGE);
 		    }
 		} else if ("fixed_amount".equals(commonCoupon.getDiscountType())) {
 		    if (commonCoupon.getMaxDiscount() != null) {
+				logger.warn("[updateCommonCoupon] COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT maxDiscount must be null when discount type is fixed_amount. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		        throw new BusinessException(ErrorCode.COUPON_MAX_DISCOUNT_MUST_BE_NULL_FOR_FIXED_AMOUNT);
 		    }
 		} else {
+			logger.warn("[updateCommonCoupon] COUPON_INVALID_DISCOUNT_TYPE invalid discount type. commonCoupon={}, adminNo={}", commonCoupon, adminNo);
 		    throw new BusinessException(ErrorCode.COUPON_INVALID_DISCOUNT_TYPE);
 		}
 		
