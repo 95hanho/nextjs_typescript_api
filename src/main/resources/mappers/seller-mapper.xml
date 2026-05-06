@@ -16,7 +16,8 @@
 		SELECT s.seller_no
 		FROM nextjs_shop_token t
 		JOIN nextjs_shop_seller s ON t.seller_no = s.seller_no 
-		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp} AND connect_agent = #{connectAgent}
+		WHERE refresh_token = #{refreshToken} AND connect_ip = #{connectIp}
+		<!-- AND connect_agent = #{connectAgent} -->
 		ORDER BY created_at DESC, token_id DESC
 		LIMIT 1
 	</select>

@@ -125,6 +125,7 @@ public class SellerController {
 
 	    authService.updateToken(token);
 
+		System.out.println("token : " + token);
 	    Integer sellerNo = sellerService.getSellerNoByToken(token);
 	    if (sellerNo == null) {
 			logger.warn(

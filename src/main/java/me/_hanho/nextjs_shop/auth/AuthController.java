@@ -70,7 +70,6 @@ public class AuthController {
 		result.put("orderCount", orderCount);
 		result.put("message", "USER_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
-		
 	}
 	// 로그인
 	@PostMapping
