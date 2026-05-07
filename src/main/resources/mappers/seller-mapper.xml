@@ -4,9 +4,9 @@
 
 	<!-- 로그인 관련 -->
 	<select id="isSeller">
-		SELECT seller_no, seller_id, password
+		SELECT seller_no, seller_id, password, approval_status
 		FROM nextjs_shop_seller
-		WHERE seller_id = #{sellerId} AND approval_status = 'APPROVED'
+		WHERE seller_id = #{sellerId}
 	</select>
 	<insert id="insertToken">
 		INSERT INTO nextjs_shop_token(connect_ip, connect_agent, refresh_token, seller_no)
@@ -40,6 +40,12 @@
 	    SELECT EXISTS (
 	        SELECT 1 FROM nextjs_shop_seller
 	        WHERE seller_id = #{sellerId}
+	    ) AS exists_flag
+	</select>
+	<select id="hasPhone" resultType="int">
+	    SELECT EXISTS (
+	        SELECT 1 FROM nextjs_shop_seller
+	        WHERE mobile_number = #{phone}
 	    ) AS exists_flag
 	</select>
 	<insert id="insertPhoneAuth">

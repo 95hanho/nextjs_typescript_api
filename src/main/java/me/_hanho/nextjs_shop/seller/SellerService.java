@@ -71,6 +71,9 @@ public class SellerService {
 	public boolean hasId(String sellerId) {
 		return sellerMapper.hasId(sellerId) == 1;
 	}
+	public boolean hasPhone(String phone) {
+		return sellerMapper.hasPhone(phone) == 1;
+	}
 	public void insertPhoneAuth(SellerPhoneAuthDTO phoneAuth) {
 		sellerMapper.insertPhoneAuth(phoneAuth);
 	}

@@ -78,9 +78,19 @@ public class SellerController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		
 		SellerLogin checkSeller = sellerService.isSeller(sellerId);
+		String approvalStatus = checkSeller != null ? checkSeller.getApprovalStatus() : null;
 		if (checkSeller == null || !sellerService.passwordCheck(password, checkSeller.getPassword())) {
 			logger.warn("[sellerLogin] SELLER_LOGIN_FAILED sellerId={}", sellerId);
 			throw new BusinessException(ErrorCode.SELLER_LOGIN_FAILED);
+		} else if(approvalStatus.equals("PENDING")) {
+			logger.warn("[sellerLogin] SELLER_APPROVAL_PENDING sellerId={}", sellerId);
+			throw new BusinessException(ErrorCode.SELLER_APPROVAL_PENDING);
+		} else if(approvalStatus.equals("REJECTED")) {
+			logger.warn("[sellerLogin] SELLER_APPROVAL_REJECTED sellerId={}", sellerId);
+			throw new BusinessException(ErrorCode.SELLER_APPROVAL_REJECTED);
+		} else if(approvalStatus.equals("SUSPENDED")) {
+			logger.warn("[sellerLogin] SELLER_SUSPENDED sellerId={}", sellerId);
+			throw new BusinessException(ErrorCode.SELLER_SUSPENDED);
 		} else {
 			result.put("sellerNo", checkSeller.getSellerNo());
 			result.put("message", "LOGIN_SUCCESS");
@@ -191,7 +201,7 @@ public class SellerController {
 		logger.info("[sellerSendPhoneAuth] phone={}, mode={}, phoneAuthToken={}, userNo={}", phone, mode, phoneAuthToken, userNo);
 		Map<String, Object> result = new HashMap<String, Object>();
 
-		boolean hasPhone = authService.hasPhone(phone);
+		boolean hasPhone = sellerService.hasPhone(phone);
 
 		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
 		try {

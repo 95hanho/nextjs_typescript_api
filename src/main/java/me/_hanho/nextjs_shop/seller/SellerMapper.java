@@ -45,6 +45,8 @@ public interface SellerMapper {
 
 	int hasId(String sellerId);
 
+	int hasPhone(String phone);
+
 	void insertPhoneAuth(SellerPhoneAuthDTO phoneAuth);
 	
 	void setSeller(SellerRegisterRequest seller);

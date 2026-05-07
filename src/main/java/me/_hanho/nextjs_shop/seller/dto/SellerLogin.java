@@ -11,4 +11,5 @@ public class SellerLogin {
 	private int sellerNo;
     private String sellerId; // 아이디
     private String password; // 비밀번호
+    private String approvalStatus; // 'PENDING','APPROVED','REJECTED','SUSPENDED'
 }
