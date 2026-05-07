@@ -241,6 +241,9 @@ public class SellerController {
 		// 인증번호를 휴대폰으로 보냄!!
 		// 실제로는 SMS API 연동해서 보내야하지만 여기서는 로그로 대체
 		
+		// TODO: 삭제 예정, 테스트용으로 응답에 포함
+		result.put("testCode", verificationCode); 
+		//
 		result.put("message", "VERIFICATION_SENT");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}

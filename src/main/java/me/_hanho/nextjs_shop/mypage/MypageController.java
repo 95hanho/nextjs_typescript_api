@@ -238,19 +238,6 @@ public class MypageController {
 		result.put("message", "CART_DELETE_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	// 장바구니 옵션조회 - 장바구니 제품 다른 option조회
-	@GetMapping("/cart/option")
-	public ResponseEntity<Map<String, Object>> getCartOptionProductOptionList(
-			@RequestParam("productId") Integer productId) {
-		logger.info("[getCartOptionProductOptionList] productId={}", productId);
-		Map<String, Object> result = new HashMap<String, Object>();
-		
-		List<ProductOptionResponse> cartOptionProductOptionList = productService.getProductOptionList(productId);
-		
-		result.put("cartOptionProductOptionList", cartOptionProductOptionList);
-		result.put("message", "CART_OPTION_FETCH_SUCCESS");
-		return new ResponseEntity<>(result, HttpStatus.OK);
-	}
 	// 위시리스트 조회
 	@GetMapping("/wish")
 	public ResponseEntity<Map<String, Object>> getWishList(
