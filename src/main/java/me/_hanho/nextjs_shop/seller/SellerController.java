@@ -172,7 +172,7 @@ public class SellerController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	// 판매자id 중복확인
-	@PostMapping("/id")
+	@GetMapping("/id")
 	public ResponseEntity<Map<String, Object>> sellerIdDuplCheck(
 		@RequestParam("sellerId") String sellerId) {
 		logger.info("[sellerIdDuplCheck] sellerId={}", sellerId);
