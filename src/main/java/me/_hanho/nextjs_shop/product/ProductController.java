@@ -180,6 +180,20 @@ public class ProductController {
 		result.put("message", "PRODUCT_DETAIL_FETCH_SUCCESS");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	// 제품상세보기 옵션 조회
+	@GetMapping("/detail/{productId}/option")
+	public ResponseEntity<Map<String, Object>> getProductOptionList(
+			@PathVariable("productId") int productId) {
+		logger.info("[getProductOptionList] productId={}", productId);
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		List<ProductOptionResponse> productOptionList = productService.getProductOptionList(productId);
+		
+		result.put("productOptionList", productOptionList);
+		result.put("message", "PRODUCT_OPTION_FETCH_SUCCESS");
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 	// 제품 상세보기 제품 뷰 테이블 삽입
 	@PostMapping("/detail/{productId}/view")
 	public ResponseEntity<Map<String, Object>> insertProductView(

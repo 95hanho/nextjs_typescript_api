@@ -190,7 +190,7 @@ public class AuthController {
 
 		boolean hasPhone = authService.hasPhone(phone);
 		// 번호 존재 확인
-		if(!hasPhone && List.of("IDFIND", "CHANGE", "PWDFIND").contains(mode)) {
+		if(!hasPhone && List.of("IDFIND", "PWDFIND").contains(mode)) {
 			logger.warn("[sendPhoneAuth] PHONE_NOT_FOUND phone={}, mode={}", phone, mode);
 			throw new BusinessException(ErrorCode.PHONE_NOT_FOUND);
 		}
@@ -244,8 +244,11 @@ public class AuthController {
 		authService.insertPhoneAuth(phoneAuth);
 		
 		// 인증번호를 휴대폰으로 보냄!!
+		// 실제로는 SMS API 연동해서 보내야하지만 여기서는 로그로 대체
+
+		// TODO: 삭제 예정, 테스트용으로 응답에 포함
+		result.put("testCode", verificationCode); 
 		//
-		
 		result.put("message", "VERIFICATION_SENT");
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
