@@ -159,8 +159,9 @@ public class AuthController {
 	}
 	
 	// 아이디 중복확인
-	@PostMapping("/id")
-	public ResponseEntity<Map<String, Object>> idDuplcheck(@RequestParam("userId") String userId) {
+	@GetMapping("/id/duplicate")
+	public ResponseEntity<Map<String, Object>> idDuplcheck(
+		@RequestParam("userId") String userId) {
 		logger.info("[idDuplcheck] userId={}", userId);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
