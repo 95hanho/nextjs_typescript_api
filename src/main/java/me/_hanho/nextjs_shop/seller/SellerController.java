@@ -54,6 +54,7 @@ import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
+import me._hanho.nextjs_shop.util.IpUtils;
 
 
 @RestController
@@ -114,7 +115,7 @@ public class SellerController {
 		
 	    tokenService.parseJwtRefreshToken(refreshToken); // 여기서 유효하지 않으면 예외 던지게
 	
-	    String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+	   	String ipAddress = IpUtils.extractClientIp(forwardedFor);
 	    SellerToken token = SellerToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).build();
 	
 	    sellerService.insertToken(token, sellerNo);
@@ -137,7 +138,7 @@ public class SellerController {
 	    tokenService.parseJwtRefreshToken(beforeToken);
 	    tokenService.parseJwtRefreshToken(refreshToken);
 
-	    String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+	    String ipAddress = IpUtils.extractClientIp(forwardedFor);
 	    ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build();
 
 	    authService.updateToken(token);
@@ -203,7 +204,7 @@ public class SellerController {
 
 		boolean hasPhone = sellerService.hasPhone(phone);
 
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		try {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);

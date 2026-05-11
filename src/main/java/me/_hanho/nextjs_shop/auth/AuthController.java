@@ -36,6 +36,7 @@ import me._hanho.nextjs_shop.auth.dto.UserToken;
 import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.PhoneAuth;
+import me._hanho.nextjs_shop.util.IpUtils;
 
 @RestController
 @RequiredArgsConstructor
@@ -105,7 +106,7 @@ public class AuthController {
 		
 		tokenService.parseJwtRefreshToken(refreshToken);
 		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		UserToken token = UserToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).userNo(userNo).build(); 
 		authService.insertToken(token);
 		
@@ -127,7 +128,7 @@ public class AuthController {
 		tokenService.parseJwtRefreshToken(beforeToken);
 		tokenService.parseJwtRefreshToken(refreshToken);
 		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		
 		authService.updateToken(token);
@@ -209,7 +210,7 @@ public class AuthController {
 				throw new BusinessException(ErrorCode.PWD_FIND_USER_NOT_FOUND);
 			}
 		}
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		try {
 			// JWT 파싱 및 복호화
 			Claims claims = tokenService.parseJwtPhoneAuthToken(phoneAuthToken);
