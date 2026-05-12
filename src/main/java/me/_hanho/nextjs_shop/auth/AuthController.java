@@ -132,12 +132,16 @@ public class AuthController {
 		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		
 		authService.updateToken(token);
-		
+
+		// 검사 : 토큰안의 유저 조회
 		Integer userNo = authService.getUserNoByToken(token);
 		if(userNo == null) {
+			logger.warn("[updateToken] WRONG_TOKEN No user found for provided token");
 			result.put("message", "WRONG_TOKEN");
 			return new ResponseEntity<>(result, HttpStatus.UNAUTHORIZED);
 		}
+
+		logger.info("[updateToken] TOKEN_UPDATE_SUCCESS userNo={}, token={}", userNo, token);
 		
 		result.put("userNo", userNo);
 		result.put("message", "TOKEN_UPDATE_SUCCESS");
