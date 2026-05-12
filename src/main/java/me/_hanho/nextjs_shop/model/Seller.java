@@ -35,4 +35,5 @@ public class Seller {
     private int baseShippingFee; // 기본 배송비
     private int freeShippingMinAmount; // 무료배송 최소 주문금액
     private int extraShippingFee; // 제주/도서산간 추가 배송비
+    private int likeCount; // 좋아요 수
 }

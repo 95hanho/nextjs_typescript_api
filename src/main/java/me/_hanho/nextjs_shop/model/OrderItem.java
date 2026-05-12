@@ -16,6 +16,7 @@ public class OrderItem {
     private int orderItemId;
     private int orderId;
     private int holdId;
+    
     private String productName;
     private int count;
     private String size; // 'XS','S','M','L','XL','XXL'

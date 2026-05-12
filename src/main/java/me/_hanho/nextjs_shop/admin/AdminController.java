@@ -38,6 +38,7 @@ import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.model.Seller;
 import me._hanho.nextjs_shop.seller.dto.SellerRegisterRequest;
+import me._hanho.nextjs_shop.util.IpUtils;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,7 +53,8 @@ public class AdminController {
 	
 	// 암호화 비번 출력
 	@PostMapping("/hash-password")
-	public ResponseEntity<Map<String, Object>> getEncryptionPassword(@RequestParam("password") String password) {
+	public ResponseEntity<Map<String, Object>> getEncryptionPassword(
+			@RequestParam("password") String password) {
 		logger.info("[getEncryptionPassword] :" + password);
 		Map<String, Object> result = new HashMap<String, Object>();
 		
@@ -117,7 +119,7 @@ public class AdminController {
 		
 		tokenService.parseJwtRefreshToken(refreshToken);
 		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		AdminToken token = AdminToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).adminNo(adminNo).build(); 
 		
 		adminService.insertToken(token);
@@ -139,7 +141,7 @@ public class AdminController {
 		tokenService.parseJwtRefreshToken(beforeToken);
 		tokenService.parseJwtRefreshToken(refreshToken);
 		
-		String ipAddress = forwardedFor != null ? forwardedFor : "unknown";
+		String ipAddress = IpUtils.extractClientIp(forwardedFor);
 		ReToken token = ReToken.builder().connectIp(ipAddress).connectAgent(userAgent).refreshToken(refreshToken).beforeToken(beforeToken).build(); 
 		
 		authService.updateToken(token);
