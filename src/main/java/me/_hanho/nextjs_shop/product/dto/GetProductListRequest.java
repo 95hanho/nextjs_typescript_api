@@ -1,7 +1,5 @@
 package me._hanho.nextjs_shop.product.dto;
 
-import java.sql.Timestamp;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

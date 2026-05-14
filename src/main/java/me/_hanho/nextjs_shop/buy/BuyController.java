@@ -286,7 +286,7 @@ public class BuyController {
     }
 	
 	// 상품 구매/결제
-	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액, 
+	@PostMapping("pay") // 어떤 제품을 구매하는지, 쿠폰을 어떤걸 적용시켰는지, 배송지는 어디인지, 결제수단은 어떻게되는지, 적립금 사용액
 	public ResponseEntity<Map<String, Object>> pay(
 			@RequestBody PayRequest payRequest, 
 			@RequestAttribute(value="userNo", required=false) Integer userNo) {
