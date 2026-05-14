@@ -83,6 +83,28 @@ Spring Boot 기반 커머스 포트폴리오 프로젝트의 백엔드 API 서�
 - [주요 구현 포인트](./docs/IMPLEMENTATION.md)
 - [트러블슈팅](./docs/TROUBLESHOOTING.md)
 
+## 환경 설정
+
+실행 환경에 따라 `application.yml`의 active profile을 변경합니다.
+
+### Local
+
+```yaml
+spring:
+  profiles:
+    active: local
+```
+
+### Production
+
+```yaml
+spring:
+  profiles:
+    active: prod
+```
+
+로컬 개발 시에는 `local`, WAR 빌드 후 Cafe24 Tomcat 서버에 배포할 때는 `prod` profile을 사용합니다.
+
 ## 실행 방법
 
 Spring Boot DevTools를 정상적으로 사용하려면 두 개의 터미널을 실행합니다.
