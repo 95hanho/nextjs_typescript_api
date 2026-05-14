@@ -42,8 +42,6 @@ import me._hanho.nextjs_shop.mypage.dto.UpdateUserAddressRequest;
 import me._hanho.nextjs_shop.mypage.dto.UserAddressResponse;
 import me._hanho.nextjs_shop.mypage.dto.UserCouponResponse;
 import me._hanho.nextjs_shop.mypage.dto.WishlistItemResponse;
-import me._hanho.nextjs_shop.product.ProductService;
-import me._hanho.nextjs_shop.product.dto.ProductOptionResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,8 +51,6 @@ public class MypageController {
 	private static final Logger logger = LoggerFactory.getLogger(MypageController.class);
 	
 	private final MypageService mypageService;
-	
-	private final ProductService productService;
 	
 	// 유저 쿠폰 조회
 	@GetMapping("/user-coupon")
