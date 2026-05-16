@@ -229,16 +229,20 @@
 		JOIN nextjs_shop_product p ON p.product_id = pd.product_id
 		SET c.selected = 0
 		WHERE c.user_no = #{userNo}
+		AND c.selected = 1
 		AND (
-			pd.stock - COALESCE((
-				SELECT SUM(sh.count)
-				FROM nextjs_shop_stock_hold sh
-				WHERE sh.product_option_id = pd.product_option_id
-				AND sh.status = 'HOLD'
-				AND sh.active_hold = 1
-				AND sh.expires_at > NOW()
-			), 0)
-		) &lt; c.quantity OR p.sale_stop = 1
+			(
+				pd.stock - COALESCE((
+					SELECT SUM(sh.count)
+					FROM nextjs_shop_stock_hold sh
+					WHERE sh.product_option_id = pd.product_option_id
+						AND sh.status = 'HOLD'
+						AND sh.active_hold = 1
+						AND sh.expires_at > NOW()
+				), 0)
+			) &lt; c.quantity
+			OR p.sale_stop = 1
+		)
 	</update>
 	
 	<select id="getCartList">
