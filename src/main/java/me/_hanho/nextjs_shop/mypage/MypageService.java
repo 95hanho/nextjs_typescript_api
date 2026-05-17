@@ -165,7 +165,7 @@ public class MypageService {
 				for (int i = 0; i < addFiles.size(); i++) {
 					AddReviewFileMeta meta = addFiles.get(i);
 					MultipartFile file = files.get(i);
-					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file);
+					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file, null);
 					storeNames.add(fileUploadRequest.getStoreName());
 					meta.setFileId(fileUploadRequest.getFileId());
 					mypageMapper.insertReviewImage(meta, reviewId, userNo);

@@ -17,6 +17,7 @@ import me._hanho.nextjs_shop.common.exception.BusinessException;
 import me._hanho.nextjs_shop.common.exception.ErrorCode;
 import me._hanho.nextjs_shop.file.dto.FileUploadRequest;
 import me._hanho.nextjs_shop.model.FileInfo;
+import me._hanho.nextjs_shop.seller.util.SellerTestDataUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class FileService {
 	}
 	
 	@Transactional
-	public FileUploadRequest fileUploadImage(MultipartFile file) {
+	public FileUploadRequest fileUploadImage(MultipartFile file, Integer sellerNo) {
 		// 파일명 설정
 		String fileName = file.getOriginalFilename();
 		if (fileName == null || fileName.isBlank()) {
@@ -72,7 +73,9 @@ public class FileService {
 				.fileExtension(fileExtension)
 				.filePath(filePath)
 				.build();
-
+		if(sellerNo != null) {
+			request.setFileName(SellerTestDataUtil.addTestPrefixForTestSeller(fileNameWithoutExt, sellerNo));
+		}
 		fileMapper.insertFile(request);
 
 		return request;
