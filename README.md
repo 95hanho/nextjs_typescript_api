@@ -26,6 +26,17 @@ Spring Boot 기반 커머스 포트폴리오 프로젝트의 백엔드 API 서�
 - Spring Boot DevTools
 - Cafe24 Tomcat
 
+## 테스트 안내
+
+배포된 프론트엔드 서비스에서 아래 계정으로 주요 기능을 확인할 수 있습니다.
+
+- Frontend URL: https://nextjs-shop-henna.vercel.app/
+- 일반 사용자: `test / aaaaaa1!`
+- 판매자: `seller11 / a123159!!`
+- 테스트 추천 경로: `상의 > 반소매 티셔츠`
+
+해당 카테고리에 상품 목록, 정렬, 무한스크롤, 상품 상세, 장바구니 테스트용 데이터가 가장 많이 등록되어 있습니다.
+
 ## 주요 기능
 
 ### 사용자

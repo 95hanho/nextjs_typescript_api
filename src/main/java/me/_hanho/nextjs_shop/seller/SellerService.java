@@ -40,6 +40,7 @@ import me._hanho.nextjs_shop.seller.dto.SetProductImageRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateCouponRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductOptionRequest;
 import me._hanho.nextjs_shop.seller.dto.UpdateProductRequest;
+import me._hanho.nextjs_shop.seller.util.SellerTestDataUtil;
 import me._hanho.nextjs_shop.util.CouponCodeGenerator;
 
 @Service
@@ -110,10 +111,12 @@ public class SellerService {
 		return sellerProductList;
 	}
 	public Integer addProduct(AddProductRequest product, Integer sellerNo) {
+		product.setName(SellerTestDataUtil.addTestPrefixForTestSeller(product.getName(), sellerNo));
 		sellerMapper.addProduct(product, sellerNo);
 		return product.getProductId();
 	}
 	public void updateProduct(UpdateProductRequest product, Integer sellerNo) {
+		product.setName(SellerTestDataUtil.addTestPrefixForTestSeller(product.getName(), sellerNo));
 	    int updated = sellerMapper.updateProduct(product, sellerNo);
 	    if (updated == 0) {
 			logger.warn("[updateProduct] NO_PERMISSION_OR_PRODUCT_NOT_FOUND productId={}, sellerNo={}", product.getProductId(), sellerNo);
@@ -128,7 +131,7 @@ public class SellerService {
 		if(productImageRequest.getDeleteImageIds().size() > 0) {
 			sellerMapper.deleteProductImages(productImageRequest.getDeleteImageIds(), sellerNo);
 		}
-		// 4. 수정 처리
+		// 4. 수정 처리(sortKey 변경)
 		if(productImageRequest.getUpdateFiles().size() > 0) {
 			sellerMapper.updateProductImages(productImageRequest.getUpdateFiles(), sellerNo);
 		}
@@ -145,7 +148,7 @@ public class SellerService {
 				for (int i = 0; i < addFiles.size(); i++) {
 					AddFileMeta meta = addFiles.get(i);
 					MultipartFile file = files.get(i);
-					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file);
+					FileUploadRequest fileUploadRequest = fileService.fileUploadImage(file, sellerNo);
 					storeNames.add(fileUploadRequest.getStoreName());
 					meta.setFileId(fileUploadRequest.getFileId());
 					sellerMapper.insertProductImage(meta, productId, sellerNo);
@@ -226,6 +229,7 @@ public class SellerService {
     }
 	@Transactional
 	public void addCoupon(AddCouponRequest coupon, Integer sellerNo) {
+		coupon.setDescription(SellerTestDataUtil.addTestPrefixForTestSeller(coupon.getDescription(), sellerNo));
 		coupon.setCouponCode(generateUniqueCouponCode());
 		sellerMapper.addCoupon(coupon, sellerNo);
 	}
@@ -294,6 +298,7 @@ public class SellerService {
 		return sellerMapper.getSellerQnaList(sellerNo);
 	}
 	public void updateQnaAnswer(Integer productQnaId, String answer, Integer sellerNo) {
+		answer = SellerTestDataUtil.addTestPrefixForTestSeller(answer, sellerNo);
 		int result = sellerMapper.updateQnaAnswer(productQnaId, answer, sellerNo);
 		// answerRead가 true인 경우 result는 0
 		if(result == 0) {
