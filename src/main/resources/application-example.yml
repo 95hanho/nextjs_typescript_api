@@ -65,7 +65,7 @@ logging:
     "[org.apache.ibatis]": DEBUG
     "[java.sql]": DEBUG
     "[com.p6spy]": INFO
-    "[me._hanho.nextjs_shop.mapper]": DEBUG
+    #"[me._hanho.nextjs_shop.mapper]": DEBUG
 
 # ==============================
 # JWT 설정 (환경변수 사용)
